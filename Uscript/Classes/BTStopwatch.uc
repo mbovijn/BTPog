@@ -1,67 +1,34 @@
-class BTStopwatch extends Mutator;
+class BTStopwatch extends Actor;
 
 var PlayerPawn PlayerPawn;
-var BTStopwatchTrigger Stopwatch;
+var BTStopwatchTrigger StopwatchTrigger;
 
 function PreBeginPlay()
 {
     PlayerPawn = PlayerPawn(Owner);
-	Level.Game.BaseMutator.AddMutator(self);
 }
 
-// Called by the engine whenever a player spawns.
-function ModifyPlayer(Pawn Other)
+function PlayerSpawnedEvent()
 {
-	if (PlayerPawn.PlayerReplicationInfo.PlayerID == Other.PlayerReplicationInfo.PlayerID)
-		SetPlayerSpawnTime(Level.TimeSeconds);
-
-	Super.ModifyPlayer(Other);
-}
-
-function SetPlayerSpawnTime(float SpawnTime)
-{
-	if (Stopwatch != None)
-	{
-		PlayerPawn.ClientMessage("DEBUG - Setting player spawn time"); // To figure out the bug
-		Stopwatch.SetPlayerSpawnTime(SpawnTime);
-	}
+	if (StopwatchTrigger != None) StopwatchTrigger.SetPlayerSpawnTime(Level.TimeSeconds);
 }
 
 function ExecuteCommand(string MutateString)
 {
-	switch(class'Utils'.static.GetArgument(MutateString, 2))
+	switch (class'Utils'.static.GetArgument(MutateString, 2))
 	{
-		case "set":
-			switch (class'Utils'.static.GetArgument(MutateString, 3))
-			{
-				case "":
-					Set(Owner.Location);
-					break;
-				default: Set(ToVector(class'Utils'.static.GetArgument(MutateString, 3)));
-			}
+		case "":
+			Set(Owner.Location);
 			break;
-		case "clear":
-			Clear();
-			break;
-		default:
+		default: Set(ToVector(class'Utils'.static.GetArgument(MutateString, 2)));
 	}
 }
 
 function Set(Vector Location)
 {
-	if (Stopwatch != None) Stopwatch.Destroy();
-    Stopwatch = Spawn(class'BTStopwatchTrigger', Owner, , RemoveDecimals(Location));
-    ClientMessage("Set stopwatch at location ("$ToString(Location)$")");
-}
-
-function Clear()
-{
-    if (Stopwatch != None)
-	{
-		Stopwatch.Destroy();
-		Stopwatch = None;
-		ClientMessage("Cleared stopwatch.");
-	}
+	if (StopwatchTrigger != None) StopwatchTrigger.Destroy();
+    StopwatchTrigger = Spawn(class'BTStopwatchTrigger', Owner, , RemoveDecimals(Location));
+    ClientMessage("Stopwatch set at location "$ToString(Location)$"");
 }
 
 function Vector ToVector(String VectorString)

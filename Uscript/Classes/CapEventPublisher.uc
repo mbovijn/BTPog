@@ -1,11 +1,12 @@
-// TODO: test with flagbase which has event set
 class CapEventPublisher extends Actor;
 
 var Main Subscriber;
+var Settings Settings;
 
-function PreBeginPlay()
+function Init(Main aSubscriber, Settings aSettings)
 {
-    Subscriber = Main(Owner);
+    Settings = aSettings;
+    Subscriber = aSubscriber;
 
     SetupFlagBaseSubscriptions();
 }
@@ -25,7 +26,7 @@ function SetEventIfNotExistsOnAllFlagBases()
     local FlagBase FlagBase;
     foreach AllActors(class'FlagBase', FlagBase)
     {
-        Log("FlagBase Event = "$FlagBase.Event); // TODO: only log if isDebuggingEnabled
+        if (Settings.IsDebugging) Log("FlagBase Event = "$FlagBase.Event);
         if (FlagBase.Event == '') FlagBase.Event = 'BTPog';
     }
 }
@@ -52,7 +53,7 @@ function SpawnCapEventPublisherHelpers(name Events[16]) {
     {
         if (Events[i] != '')
         {
-            Log("Spawning CapEventPublisherHelper with Event = "$Events[i]); // TODO: only log if isDebuggingEnabled
+            if (Settings.IsDebugging) Log("Spawning CapEventPublisherHelper with Event = "$Events[i]);
             Spawn(class'CapEventPublisherHelper', Self, Events[i]);
         }
     }

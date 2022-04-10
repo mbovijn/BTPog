@@ -1,14 +1,23 @@
 class Main expands Mutator;
 
-var Controller Controllers[1024];
-var int ControllersLength;
+var PlayerController PlayerControllers[1024];
+var int PlayerControllersLength;
+
+var Settings Settings;
+var CapEventPublisher CapEventPublisher;
+var BTCapLoggerFile BTCapLoggerFile;
 
 // Called once by the engine when the map starts.
 function PreBeginPlay()
 {
 	Log("BTPog by Fulcrum (https://github.com/mbovijn/BTPog)");
 
-	Spawn(class'CapEventPublisher', Self);
+	Settings = Spawn(class'Settings');
+	
+	CapEventPublisher = Spawn(class'CapEventPublisher');
+	CapEventPublisher.Init(Self, Settings);
+
+	BTCapLoggerFile = Spawn(class'BTCapLoggerFile');
 
 	Level.Game.BaseMutator.AddMutator(Self);
 	Level.Game.RegisterMessageMutator(Self);
@@ -33,20 +42,28 @@ function bool MutatorTeamMessage(Actor Sender, Pawn Receiver, PlayerReplicationI
 }
 
 // Called by the CapEventPublisher whenever a player caps.
+
 function PlayerCappedEvent(Pawn Pawn)
 {
-	GetController(Pawn).PlayerCappedEvent();
+	GetPlayerController(Pawn).PlayerCappedEvent();
+}
+
+// Called by the engine whenever the game ends.
+function bool HandleEndGame()
+{
+	BTCapLoggerFile.CloseLogFile();
+	return Super.HandleEndGame();
 }
 
 // Called by the engine whenever a player spawns.
 function ModifyPlayer(Pawn Other)
 {
-	local Controller Controller;
+	local PlayerController PlayerController;
 
 	if (PlayerPawn(Other) != None && Other.bIsPlayer && !Other.PlayerReplicationInfo.bIsSpectator)
 	{
-		Controller = GetControllerOrNew(Other);
-		Controller.PlayerSpawnedEvent();
+		PlayerController = GetPlayerControllerOrNew(Other);
+		PlayerController.PlayerSpawnedEvent();
 	}
 	
 	Super.ModifyPlayer(Other);
@@ -54,29 +71,33 @@ function ModifyPlayer(Pawn Other)
 
 function ExecuteCommand(PlayerPawn Sender, string MutateString)
 {
-	GetController(Sender).ExecuteCommand(MutateString);
+	GetPlayerController(Sender).ExecuteCommand(MutateString);
 }
 
-function Controller GetControllerOrNew(Pawn Other)
+function PlayerController GetPlayerControllerOrNew(Pawn Other)
 {
-	local Controller Controller;
+	local PlayerController PlayerController;
 
-	Controller = GetController(Other);
-	if (Controller == None)
+	PlayerController = GetPlayerController(Other);
+	if (PlayerController == None)
 	{
-		Controller = Spawn(class'Controller', Other);
-		Controllers[ControllersLength] = Controller;
-		ControllersLength++;
+		if (Settings.IsDebugging) Log("[BTPog] New player registered = "$Other.PlayerReplicationInfo.PlayerName);
+
+		PlayerController = Spawn(class'PlayerController', Other);
+		PlayerController.Init(Settings, BTCapLoggerFile);
+
+		PlayerControllers[PlayerControllersLength] = PlayerController;
+		PlayerControllersLength++;
 	}
 
-	return Controller;
+	return PlayerController;
 }
 
-function Controller GetController(Pawn Other)
+function PlayerController GetPlayerController(Pawn Other)
 {
 	local int i;
-	for (i = 0; i < ControllersLength; i++)
-		if (Controllers[i] != None && Controllers[i].PlayerPawn.PlayerReplicationInfo.PlayerID == Other.PlayerReplicationInfo.PlayerID)
-			return Controllers[i];
+	for (i = 0; i < PlayerControllersLength; i++)
+		if (PlayerControllers[i] != None && PlayerControllers[i].PlayerPawn.PlayerReplicationInfo.PlayerID == Other.PlayerReplicationInfo.PlayerID)
+			return PlayerControllers[i];
 	return None;
 }

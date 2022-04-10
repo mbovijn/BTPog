@@ -27,7 +27,7 @@ function Touch(Actor Other)
 			TriggerTime = Level.TimeSeconds;
 		}
 
-		ClientProgressMessage(class'Utils'.static.TimeDeltaToString(Level.TimeSeconds - PlayerSpawnTime));
+		ClientProgressMessage(class'Utils'.static.TimeDeltaToString(Level.TimeSeconds - PlayerSpawnTime, Level.TimeDilation));
 	}
 }
 

@@ -1,12 +1,14 @@
 class BTStats extends Actor config (BTPog);
 
 var PlayerPawn PlayerPawn;
+
 var config bool IsActive;
+var config bool IsDebugging;
 
 var EDodgeDir PreviousDodgeDir;
-var float EndOfDodgeTimestamp;
+var float StoppedDodgingTimestamp;
 var float DodgeBlockDuration;
-var float DodgeDoubleTapDelta;
+var float DodgeDoubleTapInterval;
 
 var EPhysics PreviousPhysics;
 var float StartedFallingTimestamp;
@@ -14,14 +16,10 @@ var float AirTime;
 var float StartedWalkingTimestamp;
 var float GroundTime;
 
-// temp
-var bool shouldLog;
-var float counter;
-
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, Set;
+		PlayerPawn, ToggleIsActive, ToggleIsDebugging;
 }
 
 function PreBeginPlay()
@@ -33,19 +31,25 @@ function ExecuteCommand(string MutateString)
 {
 	switch(class'Utils'.static.GetArgument(MutateString, 2))
 	{
-		case "on":
-			Set(True);
+		case "debug":
+			ToggleIsDebugging();
 			break;
-		case "off":
-			Set(False);
-			break;
-        default:
+		default:
+            ToggleIsActive();
+            break;
 	}
 }
 
-simulated function Set(bool Active)
+simulated function ToggleIsActive()
 {
-    IsActive = Active;
+    IsActive = !IsActive;
+    SaveConfig();
+}
+
+simulated function ToggleIsDebugging()
+{
+    IsDebugging = !IsDebugging;
+    ClientMessage("BTStats Debugging Enabled = "$IsDebugging);
     SaveConfig();
 }
 
@@ -55,96 +59,76 @@ simulated function Tick(float DeltaTime)
 
 	if (Role < ROLE_Authority && IsActive)
     {
-		if (IsStartOfDodge())
-		{
-			DodgeDoubleTapDelta = PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer;
-		}
-		else if (IsEndOfDodge())
-		{
-			EndOfDodgeTimestamp = Level.TimeSeconds;
-			shouldLog = True;
-			counter=0;
-		}
-		else if (IsAfterDodgeBlock())
-		{
-			DodgeBlockDuration = Level.TimeSeconds - EndOfDodgeTimestamp;
-			shouldLog = False;
-		}
+		UpdateStats(DeltaTime);
 
-		if (HasStartedFalling())
-		{
-			StartedFallingTimestamp = Level.TimeSeconds;
-		}
-		else if (HasFinishedFalling())
-		{
-			AirTime = Level.TimeSeconds - StartedFallingTimestamp;
-		}
-		
-		if (HasStartedWalking())
-		{
-			StartedWalkingTimestamp = Level.TimeSeconds;
-		}
-		else if (HasFinishedWalking())
-		{
-			GroundTime = Level.TimeSeconds - StartedWalkingTimestamp;
-		}
-
-		PreviousDodgeDir = PlayerPawn.DodgeDir;
-		PreviousPhysics = PlayerPawn.Physics;
-
-		if (shouldLog)
-		{
-			Log(GetEnum(Enum'EDodgeDir', PlayerPawn.DodgeDir)$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$counter);
-			counter += DeltaTime;
-		}
-
-		// These times haven't been adjusted for time dilation due to BT hardcore mode.
-		Messages[0] = "Dodge Double Tap Delta = "$class'Utils'.static.FloatToString(DodgeDoubleTapDelta)$" seconds";
-		Messages[1] = "Dodge Block Duration = "$class'Utils'.static.FloatToString(DodgeBlockDuration)$" seconds";
-		Messages[2] = "Air Time = "$class'Utils'.static.FloatToString(AirTime)$" seconds";
-		Messages[3] = "Ground Time = "$class'Utils'.static.FloatToString(GroundTime)$" seconds";
+		Messages[0] = "Dodge Double Tap Interval = "$class'Utils'.static.TimeDeltaToString(DodgeDoubleTapInterval, Level.TimeDilation)$" seconds";
+		Messages[1] = "Dodge Block Duration = "$class'Utils'.static.TimeDeltaToString(DodgeBlockDuration, Level.TimeDilation)$" seconds";
+		Messages[2] = "Air Time = "$class'Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
+		Messages[3] = "Ground Time = "$class'Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
 		ClientProgressMessage(Messages);
     }
 }
 
-// TODO: can we remove the fact that dodge block time depends on ping?
-// If we're during a dodge, and during a particular tick we notice that DodgeClickTimer == 0, or DodgeClickTimer == DeltaTime, then
-// reset the DodgeClickTimer to 'PreviousDodgeClickTimer + DeltaTime'
-
-// TODO: testen op een echte server met wat meer ping bruh
-
-// TODO: cap time depends on ping, can we register the cap time on the client instead?
-// TODO: is this extra time static? or does it increase with the cap duration?
-
-// TODO more abstract functions for reuse
-
-simulated function bool HasStartedFalling()
+simulated function UpdateStats(float DeltaTime)
 {
-	return PreviousPhysics != PHYS_Falling && PlayerPawn.Physics == PHYS_Falling;
+	if (IsDebugging && PlayerPawn.DodgeDir != DODGE_None)
+	{
+		Log("[BTPog/BTStats] "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
+	}
+	
+	if (HasStartedDodging())
+	{
+		DodgeDoubleTapInterval = PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer;
+	}
+	else if (HasStoppedDodging())
+	{
+		StoppedDodgingTimestamp = Level.TimeSeconds;
+	}
+	else if (IsAfterDodgeBlock())
+	{
+		DodgeBlockDuration = Level.TimeSeconds - StoppedDodgingTimestamp;
+		if (IsDebugging) Log("[BTPog/BTStats] Dodge Block Duration = "$DodgeBlockDuration);
+	}
+
+	if (HasStarted(PHYS_Falling))
+	{
+		StartedFallingTimestamp = Level.TimeSeconds;
+	}
+	else if (HasStopped(PHYS_Falling))
+	{
+		AirTime = Level.TimeSeconds - StartedFallingTimestamp;
+	}
+	
+	if (HasStarted(PHYS_Walking))
+	{
+		StartedWalkingTimestamp = Level.TimeSeconds;
+	}
+	else if (HasStopped(PHYS_Walking))
+	{
+		GroundTime = Level.TimeSeconds - StartedWalkingTimestamp;
+	}
+
+	PreviousDodgeDir = PlayerPawn.DodgeDir;
+	PreviousPhysics = PlayerPawn.Physics;
 }
 
-simulated function bool HasFinishedFalling()
+simulated function bool HasStarted(EPhysics Physics)
 {
-	return PreviousPhysics == PHYS_Falling && PlayerPawn.Physics != PHYS_Falling;
+	return PreviousPhysics != Physics && PlayerPawn.Physics == Physics;
 }
 
-simulated function bool HasStartedWalking()
+simulated function bool HasStopped(EPhysics Physics)
 {
-	return PreviousPhysics != PHYS_Walking && PlayerPawn.Physics == PHYS_Walking;
+	return PreviousPhysics == Physics && PlayerPawn.Physics != Physics;
 }
 
-simulated function bool HasFinishedWalking()
-{
-	return PreviousPhysics == PHYS_Walking && PlayerPawn.Physics != PHYS_Walking;
-}
-
-simulated function bool IsStartOfDodge()
+simulated function bool HasStartedDodging()
 {
 	return (PreviousDodgeDir == Dodge_Forward || PreviousDodgeDir == Dodge_Back || PreviousDodgeDir == Dodge_Left || PreviousDodgeDir == Dodge_Right)
 				&& PlayerPawn.DodgeDir == Dodge_Active;
 }
 
-simulated function bool IsEndOfDodge()
+simulated function bool HasStoppedDodging()
 {
 	return PreviousDodgeDir == DODGE_Active && PlayerPawn.DodgeDir == DODGE_Done;
 }
@@ -169,7 +153,14 @@ simulated function ClientProgressMessage(string Messages[7])
     	if (Messages[i] != "") PlayerPawn.SetProgressMessage(Messages[i], ArrayCount(Messages) - i);
 }
 
+simulated function ClientMessage(String Message)
+{
+    PlayerPawn.ClientMessage("[BTPog] "$Message);
+}
+
 defaultproperties
 {
 	RemoteRole=ROLE_SimulatedProxy
+	IsActive=False
+	IsDebugging=False
 }

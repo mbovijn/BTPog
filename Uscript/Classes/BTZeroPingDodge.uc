@@ -1,14 +1,16 @@
 class BTZeroPingDodge extends Actor config (BTPog);
 
 var PlayerPawn PlayerPawn;
+
 var config bool IsActive;
+var config bool IsDebugging;
 
 var float PreviousDodgeClickTimer;
 
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, Set;
+		PlayerPawn, ToggleIsDebugging, ToggleIsActive;
 }
 
 function PreBeginPlay()
@@ -18,22 +20,28 @@ function PreBeginPlay()
 
 function ExecuteCommand(string MutateString)
 {
-	// TODO provide a message with feedback to the user
     switch(class'Utils'.static.GetArgument(MutateString, 2))
 	{
-		case "on":
-			Set(True);
+		case "debug":
+			ToggleIsDebugging();
 			break;
-		case "off":
-			Set(False);
-			break;
-        default:
+		default:
+            ToggleIsActive();
+            break;
 	}
 }
 
-simulated function Set(bool Active)
+simulated function ToggleIsActive()
 {
-    IsActive = Active;
+    IsActive = !IsActive;
+    ClientMessage("ZPDodge Enabled = "$IsActive);
+    SaveConfig();
+}
+
+simulated function ToggleIsDebugging()
+{
+    IsDebugging = !IsDebugging;
+    ClientMessage("ZPDodge Debugging Enabled = "$IsDebugging);
     SaveConfig();
 }
 
@@ -43,17 +51,21 @@ simulated function Tick(float DeltaTime)
     {
         if (PlayerPawn.DodgeDir == DODGE_Done && PlayerPawn.DodgeClickTimer > PreviousDodgeClickTimer)
         {
-            PlayerPawn.ClientMessage("I got you bro");
+            if (IsDebugging) PlayerPawn.ClientMessage("ZPDodge reduced the dodge block duration by "$class'Utils'.static.TimeDeltaToString(Abs(PreviousDodgeClickTimer), Level.TimeDilation)$" seconds");
             PlayerPawn.DodgeClickTimer = PreviousDodgeClickTimer - DeltaTime;
-            // TODO: add logging if debugging is enabled (in order to check when this occurs) (does it also occur at e.g. 50ms ping? Need a real server bruh)
         }
-
         PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
     }
+}
+
+simulated function ClientMessage(string Message)
+{
+    PlayerPawn.ClientMessage("[BTPog] "$Message);
 }
 
 defaultproperties
 {
 	RemoteRole=ROLE_SimulatedProxy
     IsActive=True
+    IsDebugging=False
 }

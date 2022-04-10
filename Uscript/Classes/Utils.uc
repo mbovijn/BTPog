@@ -22,10 +22,9 @@ static function string GetStringPart(string FullString, int PartNumber, string D
 	return GetStringPart(Mid(FullString, InStr(FullString, Delimiter) + 1), PartNumber - 1, Delimiter);
 }
 
-static function string TimeDeltaToString(float TimeDelta)
+static function string TimeDeltaToString(float TimeDelta, float TimeDilation)
 {
-	// Multiplier to account for time dilation on hardcore mode.
-	return FloatToString(0.90909090909 * TimeDelta);
+	return FloatToString(TimeDelta / TimeDilation);
 }
 
 static function string FloatToString(float Number)
