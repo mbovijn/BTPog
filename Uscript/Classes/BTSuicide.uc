@@ -1,4 +1,4 @@
-class BTSuicide extends Actor;
+class BTSuicide extends Info;
 
 var PlayerPawn PlayerPawn;
 

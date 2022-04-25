@@ -1,4 +1,4 @@
-class BTCapLoggerAbstract extends Actor abstract;
+class BTCapLoggerAbstract extends Info abstract;
 
 struct StatsAnalysis
 {

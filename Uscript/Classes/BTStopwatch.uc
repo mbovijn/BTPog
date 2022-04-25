@@ -1,4 +1,4 @@
-class BTStopwatch extends Actor;
+class BTStopwatch extends Info;
 
 var PlayerPawn PlayerPawn;
 var BTStopwatchTrigger StopwatchTrigger;

@@ -1,4 +1,4 @@
-class BTStats extends Actor config (BTPog);
+class BTStats extends Info config (BTPog);
 
 var PlayerPawn PlayerPawn;
 
@@ -71,9 +71,10 @@ simulated function Tick(float DeltaTime)
 
 simulated function UpdateStats(float DeltaTime)
 {
-	if (IsDebugging && PlayerPawn.DodgeDir != DODGE_None)
+	if (IsDebugging)
 	{
-		Log("[BTPog/BTStats] "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
+		Log("[BTPog/BTStats] "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
+			$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
 	}
 	
 	if (HasStartedDodging())

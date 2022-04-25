@@ -43,10 +43,10 @@ function LogCap(
 {
 	if (LogFile == None) InitLogFile();
 
-    LogFile.FileLog(
+	LogFile.FileLog(
 		GetAbsoluteTimeISO8601()$","$
         GetMap()$","$
-		Repl(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
+		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
 		class'Utils'.static.TimeDeltaToString(CapTime, Level.TimeDilation)$","$
 		StatsAnalysisToString(DodgeBlock)$","$
@@ -55,6 +55,18 @@ function LogCap(
 	);
 
     LogFile.FileFlush();
+}
+
+function string Replace(string Source, string Search, string Replace)
+{
+	local int Position;
+	
+	Position = InStr(Source, Search);
+	if (Position >= 0) {
+		Source = Left(Source, Position) $ Replace $ Mid(Source, Position + Len(Search));
+	}
+	
+	return Source;
 }
 
 function string StatsAnalysisToString(StatsAnalysis Analysis)

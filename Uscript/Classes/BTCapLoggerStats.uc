@@ -17,7 +17,7 @@ function StatsAnalysis Analyze()
 {
     local StatsAnalysis StatsAnalysis;
 
-    SortArray(0, Index - 1);
+    if (Index > 1) SortArray(0, Index - 1);
 
     StatsAnalysis.PC1 = Values[0];
     StatsAnalysis.PC5 = Values[int(Index*0.05)];

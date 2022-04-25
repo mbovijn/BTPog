@@ -35,17 +35,17 @@ function Mutate(string MutateString, PlayerPawn Sender)
 // Called by the engine whenever a player types in chat.
 function bool MutatorTeamMessage(Actor Sender, Pawn Receiver, PlayerReplicationInfo PRI, coerce string S, name Type, optional bool bBeep)
 {
-	if (class'Utils'.static.GetArgument(S, 0) ~= "!btpog")
+	if (Sender == Receiver && PlayerPawn(Sender) != None && class'Utils'.static.GetArgument(S, 0) ~= "!btpog")
 		ExecuteCommand(PlayerPawn(Sender), S);
 
 	return Super.MutatorTeamMessage(Sender, Receiver, PRI, S, Type, bBeep);
 }
 
-// Called by the CapEventPublisher whenever a player caps.
-
-function PlayerCappedEvent(Pawn Pawn)
+// Called by the CapEventPublisher whenever a pawn caps. 
+function PawnCappedEvent(Pawn Pawn)
 {
-	GetPlayerController(Pawn).PlayerCappedEvent();
+	if (PlayerPawn(Pawn) != None)
+		GetPlayerController(PlayerPawn(Pawn)).PlayerCappedEvent();
 }
 
 // Called by the engine whenever the game ends.
@@ -62,7 +62,7 @@ function ModifyPlayer(Pawn Other)
 
 	if (PlayerPawn(Other) != None && Other.bIsPlayer && !Other.PlayerReplicationInfo.bIsSpectator)
 	{
-		PlayerController = GetPlayerControllerOrNew(Other);
+		PlayerController = GetPlayerControllerOrNew(PlayerPawn(Other));
 		PlayerController.PlayerSpawnedEvent();
 	}
 	
@@ -74,7 +74,7 @@ function ExecuteCommand(PlayerPawn Sender, string MutateString)
 	GetPlayerController(Sender).ExecuteCommand(MutateString);
 }
 
-function PlayerController GetPlayerControllerOrNew(Pawn Other)
+function PlayerController GetPlayerControllerOrNew(PlayerPawn Other)
 {
 	local PlayerController PlayerController;
 
@@ -93,7 +93,7 @@ function PlayerController GetPlayerControllerOrNew(Pawn Other)
 	return PlayerController;
 }
 
-function PlayerController GetPlayerController(Pawn Other)
+function PlayerController GetPlayerController(PlayerPawn Other)
 {
 	local int i;
 	for (i = 0; i < PlayerControllersLength; i++)

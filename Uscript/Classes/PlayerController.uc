@@ -1,4 +1,4 @@
-class PlayerController extends Actor;
+class PlayerController extends Info;
 
 var PlayerPawn PlayerPawn;
 
@@ -32,35 +32,27 @@ function ExecuteCommand(string MutateString)
 	{
 		case "suicide":
             if (BTSuicide == None)
-            {
                 ClientMessage("BTSuicide module is disabled on this server");
-                break;
-            }
-			BTSuicide.ExecuteCommand(MutateString);
-			break;
+            else
+			    BTSuicide.ExecuteCommand(MutateString);
+            break;
 		case "stopwatch":
             if (BTStopwatch == None)
-            {
                 ClientMessage("BTStopwatch module is disabled on this server");
-                break;
-            }
-			BTStopwatch.ExecuteCommand(MutateString);
-			break;
+            else
+			    BTStopwatch.ExecuteCommand(MutateString);
+            break;
 		case "stats":
             if (BTStats == None)
-            {
                 ClientMessage("BTStats module is disabled on this server");
-                break;
-            }
-			BTStats.ExecuteCommand(MutateString);
+            else
+			    BTStats.ExecuteCommand(MutateString);
 			break;
         case "zpdodge":
             if (BTZeroPingDodge == None)
-            {
                 ClientMessage("BTZeroPingDodge module is disabled on this server");
-                break;
-            }
-			BTZeroPingDodge.ExecuteCommand(MutateString);
+            else
+			    BTZeroPingDodge.ExecuteCommand(MutateString);
 			break;
 		default: ClientMessage("More info at https://github.com/mbovijn/BTPog");
 	}

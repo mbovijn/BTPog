@@ -1,4 +1,4 @@
-class CapEventPublisher extends Actor;
+class CapEventPublisher extends Info;
 
 var Main Subscriber;
 var Settings Settings;
@@ -59,7 +59,7 @@ function SpawnCapEventPublisherHelpers(name Events[16]) {
     }
 }
 
-function PlayerCappedEvent(Pawn Player)
+function PawnCappedEvent(Pawn aPawn)
 {
-    Subscriber.PlayerCappedEvent(Player);
+    Subscriber.PawnCappedEvent(aPawn);
 }
