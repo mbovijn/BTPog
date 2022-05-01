@@ -12,6 +12,8 @@ var float StoppedDodgingTimestamp;
 var EPhysics PreviousPhysics;
 var float HasLandedTimeStamp;
 
+var int PreviousHealth;
+
 var BTCapLoggerStats DodgeBlockStats;
 var BTCapLoggerStats DodgeDoubleTapStats;
 var BTCapLoggerStats DodgeAfterLandingStats;
@@ -113,6 +115,7 @@ simulated function Tick(float DeltaTime)
 
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
+	PreviousHealth = PlayerPawn.Health;
 }
 
 simulated function bool HasStartedDodging()
@@ -128,7 +131,7 @@ simulated function bool HasStoppedDodging()
 
 simulated function bool IsAfterDodgeBlock()
 {
-	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None;
+	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0;
 }
 
 simulated function bool HasStopped(EPhysics Physics)

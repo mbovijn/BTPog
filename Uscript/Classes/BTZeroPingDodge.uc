@@ -8,6 +8,7 @@ var config bool IsDebugging;
 var float PreviousDodgeClickTimer;
 var EDodgeDir PreviousDodgeDir;
 var EPhysics PreviousPhysics;
+var int PreviousHealth;
 
 replication
 {
@@ -65,7 +66,8 @@ simulated function Tick(float DeltaTime)
         // the client has already initiated a dodge by pressing a movement key.
         if (PlayerPawn.Physics == PHYS_Walking && PreviousPhysics == PHYS_Walking
             && PlayerPawn.DodgeDir == DODGE_None && PreviousDodgeDir != DODGE_None
-            && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer && PlayerPawn.DodgeClickTimer > 0)
+            && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer && PlayerPawn.DodgeClickTimer > 0
+            && PreviousHealth > 0)
         {
             if (IsDebugging) ClientMessage("Removed dodge block (after jump) of "
                                 $class'Utils'.static.TimeDeltaToString((PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer), Level.TimeDilation)$" seconds");
@@ -76,6 +78,7 @@ simulated function Tick(float DeltaTime)
         PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
         PreviousDodgeDir = PlayerPawn.DodgeDir;
         PreviousPhysics = PlayerPawn.Physics;
+        PreviousHealth = PlayerPawn.Health;
     }
 }
 

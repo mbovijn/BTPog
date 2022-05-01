@@ -16,6 +16,8 @@ var float AirTime;
 var float StartedWalkingTimestamp;
 var float GroundTime;
 
+var int PreviousHealth;
+
 replication
 {
 	reliable if (Role == ROLE_Authority)
@@ -66,17 +68,17 @@ simulated function Tick(float DeltaTime)
 		Messages[2] = "Air Time = "$class'Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
 		Messages[3] = "Ground Time = "$class'Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
 		ClientProgressMessage(Messages);
+
+		if (IsDebugging)
+		{
+			Log("[BTPog/BTStats] "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
+				$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
+		}
     }
 }
 
 simulated function UpdateStats(float DeltaTime)
 {
-	if (IsDebugging)
-	{
-		Log("[BTPog/BTStats] "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
-			$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
-	}
-	
 	if (HasStartedDodging())
 	{
 		DodgeDoubleTapInterval = PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer;
@@ -111,6 +113,7 @@ simulated function UpdateStats(float DeltaTime)
 
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
+	PreviousHealth = PlayerPawn.Health;
 }
 
 simulated function bool HasStarted(EPhysics Physics)
@@ -136,7 +139,7 @@ simulated function bool HasStoppedDodging()
 
 simulated function bool IsAfterDodgeBlock()
 {
-	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None;
+	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0;
 }
 
 // Alternative would be to draw using:
