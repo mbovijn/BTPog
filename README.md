@@ -73,14 +73,14 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v01.Main
-ServerPackages=BTPog_v01
+ServerActors=BTPog_v03.Main
+ServerPackages=BTPog_v03
 ```
 
 # Configuration
 As a server admin you can configure which modules you want to be active on your server. Here's an example of a BTPog.ini file:
 ```
-[BTPog_v01.Settings]
+[BTPog_v03.Settings]
 IsDebugging=False
 IsBTStatsEnabled=True
 IsBTStopwatchEnabled=True
