@@ -6,6 +6,7 @@ var int PlayerControllersLength;
 var Settings Settings;
 var CapEventPublisher CapEventPublisher;
 var BTCapLoggerFile BTCapLoggerFile;
+var BTCapLoggerSettings BTCapLoggerSettings;
 
 // Called once by the engine when the map starts.
 function PreBeginPlay()
@@ -18,6 +19,8 @@ function PreBeginPlay()
 	CapEventPublisher.Init(Self, Settings);
 
 	BTCapLoggerFile = Spawn(class'BTCapLoggerFile');
+
+	BTCapLoggerSettings = Spawn(class'BTCapLoggerSettings');
 
 	Level.Game.BaseMutator.AddMutator(Self);
 	Level.Game.RegisterMessageMutator(Self);
@@ -84,7 +87,7 @@ function PlayerController GetPlayerControllerOrNew(PlayerPawn Other)
 		if (Settings.IsDebugging) Log("[BTPog] New player registered = "$Other.PlayerReplicationInfo.PlayerName);
 
 		PlayerController = Spawn(class'PlayerController', Other);
-		PlayerController.Init(Settings, BTCapLoggerFile);
+		PlayerController.Init(Settings, BTCapLoggerFile, BTCapLoggerSettings);
 
 		PlayerControllers[PlayerControllersLength] = PlayerController;
 		PlayerControllersLength++;

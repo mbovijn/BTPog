@@ -13,7 +13,7 @@ function PreBeginPlay()
     PlayerPawn = PlayerPawn(Owner);
 }
 
-function Init(Settings Settings, BTCapLoggerFile BTCapLoggerFile)
+function Init(Settings Settings, BTCapLoggerFile BTCapLoggerFile, BTCapLoggerSettings BTCapLoggerSettings)
 {
     if (Settings.IsBTSuicideEnabled) BTSuicide = Spawn(class'BTSuicide', Owner);
     if (Settings.IsBTStopwatchEnabled) BTStopwatch = Spawn(class'BTStopwatch', Owner);
@@ -22,7 +22,7 @@ function Init(Settings Settings, BTCapLoggerFile BTCapLoggerFile)
     if (Settings.IsBTCapLoggerEnabled)
     {
         BTCapLogger = Spawn(class'BTCapLogger', Owner);
-        BTCapLogger.Init(BTCapLoggerFile);
+        BTCapLogger.Init(BTCapLoggerFile, BTCapLoggerSettings);
     }
 }
 

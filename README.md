@@ -31,15 +31,16 @@ Shows the following information on-screen:
 ## BTCapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
-Timestamp,Map,PlayerName,IP,CapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC
-2022-04-17T13:15:57.055,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,13.542,0.318,0.318,0.320,0.323,0.126,0.126,0.138,0.153,0.000,0.000,0.000,0.000
-2022-04-17T13:16:05.324,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,7.344,0.319,0.319,0.321,0.322,0.096,0.096,0.107,0.133,0.000,0.000,0.000,0.000
-2022-04-17T13:16:14.092,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,7.644,0.319,0.319,0.320,0.321,0.085,0.085,0.114,0.133,0.000,0.000,0.000,0.000
-2022-04-17T13:16:23.794,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,7.350,0.319,0.319,0.320,0.321,0.074,0.074,0.113,0.120,0.000,0.000,0.000,0.000
+Timestamp,Map,PlayerName,IP,CapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC
+2022-06-11T23:10:41.669,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,7.751,0.318,0.318,0.322,0.325,0.123,0.123,0.123,0.145,0.000,0.000,0.000,0.000,36.800,52.082,115.390,119.047
+2022-06-11T23:10:50.441,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,7.601,0.325,0.325,0.325,0.325,0.122,0.122,0.137,0.162,0.000,0.000,0.000,0.000,116.279,119.047,119.047,120.481
+2022-06-11T23:11:05.598,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,14.183,0.067,0.067,0.320,0.324,0.104,0.104,0.112,0.122,0.174,0.174,0.174,0.174,116.279,117.647,119.047,120.481
+2022-06-11T23:11:24.346,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,17.758,0.323,0.323,0.324,0.325,0.070,0.070,0.105,0.113,0.133,0.133,0.133,0.133,90.090,117.647,119.047,120.481
 ```
 - DodgeBlock: percentiles on how long a player got blocked from dodging after just having dodged.
 - DodgeDoubleTap: percentiles on the time interval between two consecutive key presses which resulted in a dodge.
 - DodgeAfterLanding: percentiles on how quick a player dodged after having landed on the ground.
+- FPS: percentiles on the FPS of a player. The FPS calculation can be tweaked with the 'TicksPerFPSCalculation' server-side setting.
 
 These statistics are interesting if you want to analyze whether a player cheated.
 
@@ -73,18 +74,21 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v03.Main
-ServerPackages=BTPog_v03
+ServerActors=BTPog_v04.Main
+ServerPackages=BTPog_v04
 ```
 
 # Configuration
 As a server admin you can configure which modules you want to be active on your server. Here's an example of a BTPog.ini file:
 ```
-[BTPog_v03.Settings]
+[BTPog_v04.Settings]
 IsDebugging=False
 IsBTStatsEnabled=True
 IsBTStopwatchEnabled=True
 IsBTSuicideEnabled=True
 IsBTZeroPingDodgeEnabled=True
 IsBTCapLoggerEnabled=True
+
+[BTPog_v04.BTCapLoggerSettings]
+TicksPerFPSCalculation=10
 ```

@@ -20,7 +20,8 @@ function InitLogFile()
     LogFile.FileLog("Timestamp,Map,PlayerName,IP,CapTime,"
 		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,"
 		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,"
-		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC");
+		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,"
+		$"FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC");
 }
 
 function CloseLogFile()
@@ -38,7 +39,8 @@ function LogCap(
 	float CapTime,
 	StatsAnalysis DodgeBlock,
 	StatsAnalysis DodgeDoubleTap,
-	StatsAnalysis DodgeAfterLanding
+	StatsAnalysis DodgeAfterLanding,
+	StatsAnalysis FPS
 )
 {
 	if (LogFile == None) InitLogFile();
@@ -48,10 +50,11 @@ function LogCap(
         GetMap()$","$
 		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
-		class'Utils'.static.TimeDeltaToString(CapTime, Level.TimeDilation)$","$
+		class'Utils'.static.FloatToString(CapTime)$","$
 		StatsAnalysisToString(DodgeBlock)$","$
 		StatsAnalysisToString(DodgeDoubleTap)$","$
-        StatsAnalysisToString(DodgeAfterLanding)
+        StatsAnalysisToString(DodgeAfterLanding)$","$
+		StatsAnalysisToString(FPS)
 	);
 
     LogFile.FileFlush();
@@ -71,10 +74,10 @@ function string Replace(string Source, string Search, string Replace)
 
 function string StatsAnalysisToString(StatsAnalysis Analysis)
 {
-	return class'Utils'.static.TimeDeltaToString(Analysis.PC1, Level.TimeDilation)$","$
-		class'Utils'.static.TimeDeltaToString(Analysis.PC5, Level.TimeDilation)$","$
-		class'Utils'.static.TimeDeltaToString(Analysis.PC25, Level.TimeDilation)$","$
-		class'Utils'.static.TimeDeltaToString(Analysis.PC50, Level.TimeDilation);
+	return class'Utils'.static.FloatToString(Analysis.PC1)$","$
+		class'Utils'.static.FloatToString(Analysis.PC5)$","$
+		class'Utils'.static.FloatToString(Analysis.PC25)$","$
+		class'Utils'.static.FloatToString(Analysis.PC50);
 }
 
 function string GetMap()

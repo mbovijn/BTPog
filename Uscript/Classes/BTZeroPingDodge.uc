@@ -56,21 +56,21 @@ simulated function Tick(float DeltaTime)
         // Undoes the DodgeClickTimer being set to 0 by a Landed replay event.
         if (PlayerPawn.DodgeDir == DODGE_Done && PlayerPawn.DodgeClickTimer > PreviousDodgeClickTimer)
         {
-            if (IsDebugging) ClientMessage("Reduced dodge block (after dodge) by "
+            if (IsDebugging) ClientMessage("Reduced dodge block by "
                                 $class'Utils'.static.TimeDeltaToString(Abs(PreviousDodgeClickTimer), Level.TimeDilation)$" seconds");
             PlayerPawn.DodgeClickTimer = PreviousDodgeClickTimer - DeltaTime;
         }
 
         // https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4078
-        // Undoes the DodgeDir being set to DODGE_None by a Landed replay event, when
-        // the client has already initiated a dodge by pressing a movement key.
+        // Undoes the DodgeDir being set to DODGE_None by a Landed replay event. This is problematic when
+        // the player already pressed a movement key with the intent to dodge, as it means that the dodge
+        // would get cancelled.
         if (PlayerPawn.Physics == PHYS_Walking && PreviousPhysics == PHYS_Walking
             && PlayerPawn.DodgeDir == DODGE_None && PreviousDodgeDir != DODGE_None
             && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer && PlayerPawn.DodgeClickTimer > 0
             && PreviousHealth > 0)
         {
-            if (IsDebugging) ClientMessage("Removed dodge block (after jump) of "
-                                $class'Utils'.static.TimeDeltaToString((PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer), Level.TimeDilation)$" seconds");
+            if (IsDebugging) ClientMessage("Prevented dodge from being cancelled after landing a jump");
             PlayerPawn.DodgeDir = PreviousDodgeDir;
             PlayerPawn.DodgeClickTimer = PlayerPawn.DodgeClickTimer - DeltaTime;
         }
