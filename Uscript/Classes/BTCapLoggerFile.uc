@@ -17,11 +17,12 @@ function InitLogFile()
 	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$".csv";
 	LogFile.OpenLog();
 
-    LogFile.FileLog("Timestamp,Map,PlayerName,IP,CapTime,"
+    LogFile.FileLog("Timestamp,Map,PlayerName,IP,EngineVersion,CapTime,ClientCapTime,"
 		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,"
 		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,"
 		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,"
-		$"FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC");
+		$"FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,"
+		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC");
 }
 
 function CloseLogFile()
@@ -40,7 +41,10 @@ function LogCap(
 	StatsAnalysis DodgeBlock,
 	StatsAnalysis DodgeDoubleTap,
 	StatsAnalysis DodgeAfterLanding,
-	StatsAnalysis FPS
+	StatsAnalysis FPS,
+	StatsAnalysis Ping,
+	float ClientCapTime,
+	String ClientEngineVersion
 )
 {
 	if (LogFile == None) InitLogFile();
@@ -50,11 +54,14 @@ function LogCap(
         GetMap()$","$
 		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
-		class'Utils'.static.FloatToString(CapTime)$","$
-		StatsAnalysisToString(DodgeBlock)$","$
-		StatsAnalysisToString(DodgeDoubleTap)$","$
-        StatsAnalysisToString(DodgeAfterLanding)$","$
-		StatsAnalysisToString(FPS)
+		ClientEngineVersion$","$
+		class'Utils'.static.FloatToString(CapTime, 3)$","$
+		class'Utils'.static.FloatToString(ClientCapTime, 3)$","$
+		StatsAnalysisToString(DodgeBlock, 3)$","$
+		StatsAnalysisToString(DodgeDoubleTap, 3)$","$
+        StatsAnalysisToString(DodgeAfterLanding, 3)$","$
+		StatsAnalysisToString(FPS, 0)$","$
+		StatsAnalysisToString(Ping, 0)
 	);
 
     LogFile.FileFlush();
@@ -72,12 +79,12 @@ function string Replace(string Source, string Search, string Replace)
 	return Source;
 }
 
-function string StatsAnalysisToString(StatsAnalysis Analysis)
+function string StatsAnalysisToString(StatsAnalysis Analysis, int Decimals)
 {
-	return class'Utils'.static.FloatToString(Analysis.PC1)$","$
-		class'Utils'.static.FloatToString(Analysis.PC5)$","$
-		class'Utils'.static.FloatToString(Analysis.PC25)$","$
-		class'Utils'.static.FloatToString(Analysis.PC50);
+	return class'Utils'.static.FloatToString(Analysis.PC1, Decimals)$","$
+		class'Utils'.static.FloatToString(Analysis.PC5, Decimals)$","$
+		class'Utils'.static.FloatToString(Analysis.PC25, Decimals)$","$
+		class'Utils'.static.FloatToString(Analysis.PC50, Decimals);
 }
 
 function string GetMap()

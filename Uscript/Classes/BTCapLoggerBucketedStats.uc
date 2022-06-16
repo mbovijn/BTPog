@@ -34,13 +34,13 @@ function StatsAnalysis Analyze()
             if (TotalCounter == 0)
                 StatsAnalysis.PC1 = Buckets[BucketIndex].Value;
         
-            if ((TotalCounter < int(TotalCount*0.05)) && ((TotalCounter + Buckets[BucketIndex].Count) >= int(TotalCount*0.05)))
+            if (TotalCounter <= int(TotalCount*0.05) && int(TotalCount*0.05) < (TotalCounter + Buckets[BucketIndex].Count))
                 StatsAnalysis.PC5 = Buckets[BucketIndex].Value;
             
-            if ((TotalCounter < int(TotalCount*0.25)) && ((TotalCounter + Buckets[BucketIndex].Count) >= int(TotalCount*0.25)))
+            if (TotalCounter <= int(TotalCount*0.25) && int(TotalCount*0.25) < (TotalCounter + Buckets[BucketIndex].Count))
                 StatsAnalysis.PC25 = Buckets[BucketIndex].Value;
             
-            if ((TotalCounter < int(TotalCount*0.50)) && ((TotalCounter + Buckets[BucketIndex].Count) >= int(TotalCount*0.50)))
+            if (TotalCounter <= int(TotalCount*0.50) && int(TotalCount*0.50) < (TotalCounter + Buckets[BucketIndex].Count))
                 StatsAnalysis.PC50 = Buckets[BucketIndex].Value;
 
             TotalCounter += Buckets[BucketIndex].Count;

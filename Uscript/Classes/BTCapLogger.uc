@@ -18,6 +18,7 @@ var BTCapLoggerStats DodgeBlockStats;
 var BTCapLoggerStats DodgeDoubleTapStats;
 var BTCapLoggerStats DodgeAfterLandingStats;
 var BTCapLoggerBucketedStats FPSStats;
+var BTCapLoggerBucketedStats PingStats;
 
 var int TicksPerFPSCalculation; // See BTCapLoggerSettings
 var float FPSTimePassed; // Time passed in seconds since last FPS calculation
@@ -59,11 +60,15 @@ simulated function PlayerSpawnedEvent_ToClient()
 	if (DodgeDoubleTapStats != None) DodgeDoubleTapStats.Destroy();
 	if (DodgeAfterLandingStats != None) DodgeAfterLandingStats.Destroy();
 	if (FPSStats != None) FPSStats.Destroy();
+	if (PingStats != None) PingStats.Destroy();
 
 	DodgeBlockStats = Spawn(class'BTCapLoggerStats', Owner);
 	DodgeDoubleTapStats = Spawn(class'BTCapLoggerStats', Owner);
 	DodgeAfterLandingStats = Spawn(class'BTCapLoggerStats', Owner);
 	FPSStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
+	PingStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
+
+	SpawnTimestamp = Level.TimeSeconds;
 }
 
 function PlayerCappedEvent()
@@ -74,11 +79,16 @@ function PlayerCappedEvent()
 
 simulated function PlayerCappedEvent_ToClient()
 {
+	CapTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
+
 	ReportInfo_ToServer(
 		DodgeBlockStats.Analyze(),
 		DodgeDoubleTapStats.Analyze(),
 		DodgeAfterLandingStats.Analyze(),
-		FPSStats.Analyze()
+		FPSStats.Analyze(),
+		PingStats.Analyze(),
+		CapTime, // ClientCapTime
+		Level.EngineVersion // Cannot use Level.EngineRevision here since the field is not present in UT versions lower than 469
 	);
 }
 
@@ -86,7 +96,10 @@ function ReportInfo_ToServer(
 	StatsAnalysis DodgeBlock,
 	StatsAnalysis DodgeDoubleTap,
 	StatsAnalysis DodgeAfterLanding,
-	StatsAnalysis FPS
+	StatsAnalysis FPS,
+	StatsAnalysis Ping,
+	float ClientCapTime,
+	String ClientEngineVersion
 )
 {
 	BTCapLoggerFile.LogCap(
@@ -95,14 +108,21 @@ function ReportInfo_ToServer(
 		DodgeBlock,
 		DodgeDoubleTap,
 		DodgeAfterLanding,
-		FPS
+		FPS,
+		Ping,
+		ClientCapTime,
+		ClientEngineVersion
 	);
 }
+
 simulated function Tick(float DeltaTime)
 {
 	if (Role == ROLE_Authority) return;
 
 	MeasureFPS(DeltaTime);
+
+	if (PlayerPawn.PlayerReplicationInfo.Ping > 0 && PingStats != None)
+		PingStats.AddValue(PlayerPawn.PlayerReplicationInfo.Ping, PlayerPawn.PlayerReplicationInfo.Ping);
     
 	if (HasStartedDodging())
 	{

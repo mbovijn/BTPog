@@ -24,10 +24,13 @@ static function string GetStringPart(string FullString, int PartNumber, string D
 
 static function string TimeDeltaToString(float TimeDelta, float TimeDilation)
 {
-	return FloatToString(TimeDelta / TimeDilation);
+	return FloatToString(TimeDelta / TimeDilation, 3);
 }
 
-static function string FloatToString(float Number)
+static function string FloatToString(float Number, int Decimals)
 {
-	return Left(Number, InStr(Number, ".") + 4);
+	if (Decimals == 0)
+		return Left(Number, InStr(Number, "."));
+	else
+		return Left(Number, InStr(Number, ".") + 1 + Decimals);
 }

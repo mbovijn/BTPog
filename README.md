@@ -2,7 +2,7 @@
 Fulcrum
 
 # Description
-BTPog is a UT99 ServerActor consisting of multiple modules most useful for playing the [Bunnytrack](https://github.com/mbovijn/BTPlusPlusTE_beta3) mod. See below to get to know more about the individual modules.
+BTPog is a UT99 Mutator most useful for the [Bunnytrack](https://github.com/mbovijn/BTPlusPlusTE_beta3) mod. See the section below to get to know more about the individual modules.
 
 # Modules
 
@@ -31,16 +31,18 @@ Shows the following information on-screen:
 ## BTCapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
-Timestamp,Map,PlayerName,IP,CapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC
-2022-06-11T23:10:41.669,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,7.751,0.318,0.318,0.322,0.325,0.123,0.123,0.123,0.145,0.000,0.000,0.000,0.000,36.800,52.082,115.390,119.047
-2022-06-11T23:10:50.441,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,7.601,0.325,0.325,0.325,0.325,0.122,0.122,0.137,0.162,0.000,0.000,0.000,0.000,116.279,119.047,119.047,120.481
-2022-06-11T23:11:05.598,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,14.183,0.067,0.067,0.320,0.324,0.104,0.104,0.112,0.122,0.174,0.174,0.174,0.174,116.279,117.647,119.047,120.481
-2022-06-11T23:11:24.346,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,17.758,0.323,0.323,0.324,0.325,0.070,0.070,0.105,0.113,0.133,0.133,0.133,0.133,90.090,117.647,119.047,120.481
+Timestamp,Map,PlayerName,IP,EngineVersion,CapTime,ClientCapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
+2022-06-16T21:52:59.501,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469,7.814,7.801,0.324,0.324,0.325,0.325,0.129,0.129,0.146,0.169,0.000,0.000,0.000,0.000,49,75,113,119,0,0,0,0
+2022-06-16T21:53:08.721,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469,8.280,8.286,0.325,0.325,0.325,0.325,0.062,0.062,0.137,0.161,0.133,0.133,0.133,0.133,118,119,119,119,11,11,11,108
+2022-06-16T21:53:17.126,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469,7.464,7.468,0.325,0.325,0.325,0.325,0.113,0.113,0.129,0.154,0.000,0.000,0.000,0.000,118,119,119,119,9,9,9,11
+2022-06-16T21:53:25.445,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469,7.362,7.359,0.324,0.324,0.324,0.324,0.137,0.137,0.146,0.162,0.000,0.000,0.000,0.000,107,118,119,119,9,9,9,9
 ```
+- ClientCapTime: the CapTime from the perspective of the client. This should be roughly equal to the server-side CapTime. If the client-side CapTime is significantly higher than the server-side CapTime, it could mean that the player is using a speed hack.
 - DodgeBlock: percentiles on how long a player got blocked from dodging after just having dodged.
 - DodgeDoubleTap: percentiles on the time interval between two consecutive key presses which resulted in a dodge.
 - DodgeAfterLanding: percentiles on how quick a player dodged after having landed on the ground.
 - FPS: percentiles on the FPS of a player. The FPS calculation can be tweaked with the 'TicksPerFPSCalculation' server-side setting.
+- Ping: percentiles on the ping of a player.
 
 These statistics are interesting if you want to analyze whether a player cheated.
 
