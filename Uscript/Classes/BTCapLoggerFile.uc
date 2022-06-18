@@ -17,7 +17,7 @@ function InitLogFile()
 	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$".csv";
 	LogFile.OpenLog();
 
-    LogFile.FileLog("Timestamp,Map,PlayerName,IP,EngineVersion,CapTime,ClientCapTime,"
+    LogFile.FileLog("Timestamp,Map,PlayerName,IP,EngineVersion,SpawnCount,CapTime,ClientCapTime,"
 		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,"
 		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,"
 		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,"
@@ -43,8 +43,9 @@ function LogCap(
 	StatsAnalysis DodgeAfterLanding,
 	StatsAnalysis FPS,
 	StatsAnalysis Ping,
-	float ClientCapTime,
-	String ClientEngineVersion
+	float ClientCapTimeDelta,
+	String ClientEngineVersion,
+	int SpawnCount
 )
 {
 	if (LogFile == None) InitLogFile();
@@ -55,8 +56,9 @@ function LogCap(
 		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
 		ClientEngineVersion$","$
+		SpawnCount$","$
 		class'Utils'.static.FloatToString(CapTime, 3)$","$
-		class'Utils'.static.FloatToString(ClientCapTime, 3)$","$
+		class'Utils'.static.FloatToDeltaString(ClientCapTimeDelta, 3)$","$
 		StatsAnalysisToString(DodgeBlock, 3)$","$
 		StatsAnalysisToString(DodgeDoubleTap, 3)$","$
         StatsAnalysisToString(DodgeAfterLanding, 3)$","$

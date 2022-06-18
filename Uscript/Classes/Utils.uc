@@ -34,3 +34,11 @@ static function string FloatToString(float Number, int Decimals)
 	else
 		return Left(Number, InStr(Number, ".") + 1 + Decimals);
 }
+
+static function string FloatToDeltaString(float Number, int Decimals)
+{
+	if (Number >= 0)
+		return "+"$FloatToString(Number, Decimals);
+	else
+		return FloatToString(Number, Decimals);
+}

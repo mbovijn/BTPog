@@ -24,6 +24,8 @@ var int TicksPerFPSCalculation; // See BTCapLoggerSettings
 var float FPSTimePassed; // Time passed in seconds since last FPS calculation
 var int FPSTickCounter; // Ticks since last FPS calculation
 
+var int SpawnCount;
+
 replication
 {
 	reliable if (Role == ROLE_Authority)
@@ -51,6 +53,8 @@ function Init(BTCapLoggerFile aBTCapLoggerFile, BTCapLoggerSettings aBTCapLogger
 function PlayerSpawnedEvent()
 {
 	SpawnTimestamp = Level.TimeSeconds;
+	SpawnCount++;
+	
 	PlayerSpawnedEvent_ToClient();
 }
 
@@ -88,7 +92,7 @@ simulated function PlayerCappedEvent_ToClient()
 		FPSStats.Analyze(),
 		PingStats.Analyze(),
 		CapTime, // ClientCapTime
-		Level.EngineVersion // Cannot use Level.EngineRevision here since the field is not present in UT versions lower than 469
+		Level.EngineVersion$GetEngineRevision() // e.g. 469c - May  4 2022 Preview
 	);
 }
 
@@ -110,8 +114,9 @@ function ReportInfo_ToServer(
 		DodgeAfterLanding,
 		FPS,
 		Ping,
-		ClientCapTime,
-		ClientEngineVersion
+		ClientCapTime - CapTime,
+		ClientEngineVersion,
+		SpawnCount
 	);
 }
 
@@ -126,7 +131,7 @@ simulated function Tick(float DeltaTime)
     
 	if (HasStartedDodging())
 	{
-		if (DodgeDoubleTapStats != None)
+		if (DodgeDoubleTapStats != None && (PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer) > 0)
 			DodgeDoubleTapStats.AddValue((PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer) / Level.TimeDilation);
 
 		if (DodgeAfterLandingStats != None)
@@ -189,6 +194,21 @@ simulated function bool IsAfterDodgeBlock()
 simulated function bool HasStopped(EPhysics Physics)
 {
 	return PreviousPhysics == Physics && PlayerPawn.Physics != Physics;
+}
+
+simulated function string GetEngineRevision()
+{
+    local ENetRole R;
+    local string Result;
+
+    R = Level.Role;
+    Level.Role = ROLE_Authority;
+
+    if (int(Level.EngineVersion) >= 469)
+        Result = Level.GetPropertyText("EngineRevision");
+
+    Level.Role = R;
+    return Result;
 }
 
 defaultproperties
