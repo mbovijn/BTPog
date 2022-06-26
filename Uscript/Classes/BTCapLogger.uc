@@ -92,7 +92,8 @@ simulated function PlayerCappedEvent_ToClient()
 		FPSStats.Analyze(),
 		PingStats.Analyze(),
 		CapTime, // ClientCapTime
-		Level.EngineVersion$GetEngineRevision() // e.g. 469c - May  4 2022 Preview
+		Level.EngineVersion$GetEngineRevision(), // e.g. 469c - May  4 2022 Preview,
+		GetRenderer()
 	);
 }
 
@@ -103,7 +104,8 @@ function ReportInfo_ToServer(
 	StatsAnalysis FPS,
 	StatsAnalysis Ping,
 	float ClientCapTime,
-	String ClientEngineVersion
+	String ClientEngineVersion,
+	String Renderer
 )
 {
 	BTCapLoggerFile.LogCap(
@@ -116,7 +118,8 @@ function ReportInfo_ToServer(
 		Ping,
 		ClientCapTime - CapTime,
 		ClientEngineVersion,
-		SpawnCount
+		SpawnCount,
+		Renderer
 	);
 }
 
@@ -209,6 +212,26 @@ simulated function string GetEngineRevision()
 
     Level.Role = R;
     return Result;
+}
+
+simulated function string GetRenderer()
+{
+	local string Renderer;
+	local int i;
+
+	// e.g. Class'OpenGLDrv.OpenGLRenderDevice'
+	Renderer = PlayerPawn.ConsoleCommand("get ini:Engine.Engine.GameRenderDevice Class");
+
+	i = InStr(Renderer, "'");
+	if (i != -1)
+	{
+		Renderer = Mid(Renderer, i+1);
+		i = InStr(Renderer, ".");
+		if (i != -1)
+			Renderer = Left(Renderer, i);
+	}
+	
+	return Renderer;
 }
 
 defaultproperties

@@ -31,10 +31,12 @@ Shows the following information on-screen:
 ## BTCapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
-Timestamp,Map,PlayerName,IP,EngineVersion,SpawnCount,CapTime,ClientCapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
-2022-06-18T12:33:34.283,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,1,12.131,-0.007,0.324,0.324,0.325,0.325,0.112,0.112,0.137,0.137,0.166,0.166,0.166,0.166,46,100,119,119,10,10,10,10
-2022-06-18T12:38:21.417,CTF-BT-Venom,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,5,94.093,+0.008,0.318,0.318,0.324,0.324,0.095,0.095,0.119,0.145,0.157,0.157,0.157,0.157,108,118,119,119,10,10,10,11
-2022-06-18T12:35:17.477,CTF-BT-A69A-Sh1t-FactoRy_dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,2,53.588,+0.011,0.072,0.083,0.324,0.325,0.120,0.121,0.145,0.153,0.175,0.175,0.175,0.175,102,119,119,119,8,8,9,11
+Timestamp,Map,PlayerName,IP,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
+2022-06-26T11:05:05.664,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,OpenGLDrv,1,9.481,+0.084,0.011,0.011,0.319,0.320,0.133,0.133,0.139,0.152,0.000,0.000,0.000,0.000,43,102,191,199,9,9,9,9
+2022-06-26T11:05:14.260,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,OpenGLDrv,2,7.656,+0.000,0.010,0.010,0.319,0.319,0.104,0.104,0.122,0.132,0.000,0.000,0.000,0.000,189,197,199,200,9,9,9,9
+2022-06-26T11:05:49.127,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,D3D9Drv,1,8.229,-0.092,0.010,0.010,0.016,0.320,0.114,0.114,0.137,0.153,0.000,0.000,0.000,0.000,47,98,188,199,11,11,14,14
+2022-06-26T11:05:57.410,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,D3D9Drv,2,7.327,-0.003,0.319,0.319,0.319,0.321,0.122,0.122,0.126,0.143,0.000,0.000,0.000,0.000,192,197,199,200,10,27,27,27
+2022-06-26T11:06:05.924,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,D3D9Drv,3,7.325,-0.001,0.319,0.319,0.319,0.320,0.108,0.108,0.133,0.157,0.000,0.000,0.000,0.000,194,194,199,200,10,10,10,10
 ```
 - ClientCapTime: the CapTime from the perspective of the client. This should be roughly equal to the server-side CapTime. If the client-side CapTime is significantly higher than the server-side CapTime, it could mean that the player is using a speed hack.
 - DodgeBlock: percentiles on how long a player got blocked from dodging after just having dodged.
@@ -76,14 +78,14 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v05.Main
-ServerPackages=BTPog_v05
+ServerActors=BTPog_v06.Main
+ServerPackages=BTPog_v06
 ```
 
 # Configuration
 As a server admin you can configure which modules you want to be active on your server. Here's an example of a BTPog.ini file:
 ```
-[BTPog_v05.Settings]
+[BTPog_v06.Settings]
 IsDebugging=False
 IsBTStatsEnabled=True
 IsBTStopwatchEnabled=True
@@ -91,6 +93,6 @@ IsBTSuicideEnabled=True
 IsBTZeroPingDodgeEnabled=True
 IsBTCapLoggerEnabled=True
 
-[BTPog_v05.BTCapLoggerSettings]
+[BTPog_v06.BTCapLoggerSettings]
 TicksPerFPSCalculation=10
 ```
