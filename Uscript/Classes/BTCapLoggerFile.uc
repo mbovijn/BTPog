@@ -17,7 +17,7 @@ function InitLogFile()
 	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$".csv";
 	LogFile.OpenLog();
 
-    LogFile.FileLog("Timestamp,Map,PlayerName,IP,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,"
+    LogFile.FileLog("Timestamp,Map,PlayerName,IP,HWID,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,"
 		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,"
 		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,"
 		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,"
@@ -46,7 +46,8 @@ function LogCap(
 	float ClientCapTimeDelta,
 	String ClientEngineVersion,
 	int SpawnCount,
-	String Renderer
+	String Renderer,
+	String HardwareID
 )
 {
 	if (LogFile == None) InitLogFile();
@@ -56,6 +57,7 @@ function LogCap(
         GetMap()$","$
 		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
+		HardwareID$","$
 		ClientEngineVersion$","$
 		Renderer$","$
 		SpawnCount$","$

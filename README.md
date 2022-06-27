@@ -31,20 +31,21 @@ Shows the following information on-screen:
 ## BTCapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
-Timestamp,Map,PlayerName,IP,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
-2022-06-26T11:05:05.664,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,OpenGLDrv,1,9.481,+0.084,0.011,0.011,0.319,0.320,0.133,0.133,0.139,0.152,0.000,0.000,0.000,0.000,43,102,191,199,9,9,9,9
-2022-06-26T11:05:14.260,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,OpenGLDrv,2,7.656,+0.000,0.010,0.010,0.319,0.319,0.104,0.104,0.122,0.132,0.000,0.000,0.000,0.000,189,197,199,200,9,9,9,9
-2022-06-26T11:05:49.127,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,D3D9Drv,1,8.229,-0.092,0.010,0.010,0.016,0.320,0.114,0.114,0.137,0.153,0.000,0.000,0.000,0.000,47,98,188,199,11,11,14,14
-2022-06-26T11:05:57.410,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,D3D9Drv,2,7.327,-0.003,0.319,0.319,0.319,0.321,0.122,0.122,0.126,0.143,0.000,0.000,0.000,0.000,192,197,199,200,10,27,27,27
-2022-06-26T11:06:05.924,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,469c - May  4 2022 Preview,D3D9Drv,3,7.325,-0.001,0.319,0.319,0.319,0.320,0.108,0.108,0.133,0.157,0.000,0.000,0.000,0.000,194,194,199,200,10,10,10,10
+Timestamp,Map,PlayerName,IP,HWID,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
+2022-06-26T19:54:08.029,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,6AB44D649CBBA3336F9DD0117B78FEEF,469c - May  4 2022 Preview,D3D9Drv,1,7.598,-0.011,0.318,0.318,0.319,0.320,0.105,0.105,0.138,0.154,0.000,0.000,0.000,0.000,52,103,187,200,0,0,0,0
+2022-06-26T19:54:18.357,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,6AB44D649CBBA3336F9DD0117B78FEEF,469c - May  4 2022 Preview,D3D9Drv,2,9.338,-0.003,0.318,0.318,0.319,0.319,0.126,0.126,0.137,0.162,0.000,0.000,0.000,0.000,178,197,199,200,10,10,11,11
+2022-06-26T19:54:42.149,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,6AB44D649CBBA3336F9DD0117B78FEEF,469c - May  4 2022 Preview,D3D9Drv,3,22.802,-0.000,0.070,0.070,0.319,0.320,0.073,0.073,0.137,0.149,0.135,0.135,0.161,0.165,192,197,199,200,9,9,10,10
+2022-06-26T19:54:55.119,CTF-BT-andAction-dbl,Fulcrum,127.0.0.1,6AB44D649CBBA3336F9DD0117B78FEEF,469c - May  4 2022 Preview,D3D9Drv,4,12.045,-0.000,0.045,0.045,0.320,0.320,0.097,0.097,0.132,0.162,0.000,0.000,0.000,0.000,106,197,199,200,9,9,9,9
+
 ```
-- ClientCapTime: the CapTime from the perspective of the client. This should be roughly equal to the server-side CapTime. If the client-side CapTime is significantly higher than the server-side CapTime, it could mean that the player is using a speed hack.
+- ClientCapTime: the CapTime from the perspective of the client. This should be roughly equal to the server-side CapTime. If the client-side CapTime is significantly higher than the server-side CapTime, it could mean that the player is using a speed hack. See [this diagram](https://github.com/mbovijn/BTPog/blob/master/Resources/ClientCapTime.drawio.png) for more information on how this works.
 - DodgeBlock: percentiles on how long a player got blocked from dodging after just having dodged.
 - DodgeDoubleTap: percentiles on the time interval between two consecutive key presses which resulted in a dodge.
 - DodgeAfterLanding: percentiles on how quick a player dodged after having landed on the ground.
 - FPS: percentiles on the FPS of a player. The FPS calculation can be tweaked with the 'TicksPerFPSCalculation' server-side setting.
 - Ping: percentiles on the ping of a player.
 - SpawnCount: the amount of times a player has spawned before the cap. If the count is 1, it could mean that the player used a reconnect bug to have a faster cap time.
+- HWID: ACE hardware ID. If ACE isn't installed on the server this value will be left empty. A client can retrieve its HWID using the command `!btpog hwid`.
 
 These statistics are interesting if you want to analyze whether a player cheated.
 
@@ -78,14 +79,14 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v06.Main
-ServerPackages=BTPog_v06
+ServerActors=BTPog_v07.Main
+ServerPackages=BTPog_v07
 ```
 
 # Configuration
 As a server admin you can configure which modules you want to be active on your server. Here's an example of a BTPog.ini file:
 ```
-[BTPog_v06.Settings]
+[BTPog_v07.Settings]
 IsDebugging=False
 IsBTStatsEnabled=True
 IsBTStopwatchEnabled=True
@@ -93,6 +94,6 @@ IsBTSuicideEnabled=True
 IsBTZeroPingDodgeEnabled=True
 IsBTCapLoggerEnabled=True
 
-[BTPog_v06.BTCapLoggerSettings]
+[BTPog_v07.BTCapLoggerSettings]
 TicksPerFPSCalculation=10
 ```

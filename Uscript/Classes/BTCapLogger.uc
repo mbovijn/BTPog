@@ -26,6 +26,9 @@ var int FPSTickCounter; // Ticks since last FPS calculation
 
 var int SpawnCount;
 
+var class<Actor> IACECheckClass;
+var String HardwareID;
+
 replication
 {
 	reliable if (Role == ROLE_Authority)
@@ -37,6 +40,17 @@ replication
 function PreBeginPlay()
 {
    PlayerPawn = PlayerPawn(Owner);
+}
+
+function PostBeginPlay()
+{
+	// Not doing it the traditional way in order to avoid a hard dependency on ACE
+	SetPropertyText("IACECheckClass", "class'IACECheck'");
+}
+
+function PrintHardwareID()
+{
+	PlayerPawn.ClientMessage("[BTPog] Hardware ID = "$GetCachedHardwareID());
 }
 
 simulated function ReplicateConfig_ToClient(float aTicksPerFPSCalculation)
@@ -119,7 +133,8 @@ function ReportInfo_ToServer(
 		ClientCapTime - CapTime,
 		ClientEngineVersion,
 		SpawnCount,
-		Renderer
+		Renderer,
+		GetCachedHardwareID()
 	);
 }
 
@@ -232,6 +247,39 @@ simulated function string GetRenderer()
 	}
 	
 	return Renderer;
+}
+
+function string GetCachedHardwareID()
+{
+	if (HardwareID == "")
+	{
+		HardwareID = GetHardwareID();
+	}
+	return HardwareID;
+}
+
+// Needs ACE installed on the server, otherwise an empty value is returned.
+function string GetHardwareID()
+{
+	local Actor IACECheck;
+
+	if (IACECheckClass == None)
+	{
+		// ACE isn't installed on this server.
+		return "";
+	}
+
+	foreach AllActors(IACECheckClass, IACECheck)
+	{
+		if (IACECheck.GetPropertyText("PlayerID") != ""
+				&& PlayerPawn.PlayerReplicationInfo.PlayerID == int(IACECheck.GetPropertyText("PlayerID")))
+		{
+			return IACECheck.GetPropertyText("HWHash");
+		}
+	}
+
+	Log("[BTPog/BTCapLogger] Could not get the HardwareID for player "$PlayerPawn.PlayerReplicationInfo.PlayerName);
+	return "";
 }
 
 defaultproperties

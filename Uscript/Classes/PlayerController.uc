@@ -54,6 +54,12 @@ function ExecuteCommand(string MutateString)
             else
 			    BTZeroPingDodge.ExecuteCommand(MutateString);
 			break;
+        case "hwid": // Exception in the pattern compared to other modules, for ease-of-use.
+            if (BTCapLogger == None)
+                ClientMessage("BTCapLogger module is disabled on this server");
+            else
+			    BTCapLogger.PrintHardwareID();
+			break;
 		default: ClientMessage("More info at https://github.com/mbovijn/BTPog");
 	}
 }
