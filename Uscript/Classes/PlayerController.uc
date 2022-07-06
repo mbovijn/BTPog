@@ -8,6 +8,13 @@ var BTStats BTStats;
 var BTZeroPingDodge BTZeroPingDodge;
 var BTCapLogger BTCapLogger;
 
+replication
+{
+	// Replicating these objects such that the 'CustomTick' function on each of them can be called from the client.
+    reliable if (Role == ROLE_Authority)
+		BTZeroPingDodge, BTStats, BTCapLogger;
+}
+
 function PreBeginPlay()
 {
     PlayerPawn = PlayerPawn(Owner);
@@ -54,12 +61,6 @@ function ExecuteCommand(string MutateString)
             else
 			    BTZeroPingDodge.ExecuteCommand(MutateString);
 			break;
-        case "hwid": // Exception in the pattern compared to other modules, for ease-of-use.
-            if (BTCapLogger == None)
-                ClientMessage("BTCapLogger module is disabled on this server");
-            else
-			    BTCapLogger.PrintHardwareID();
-			break;
 		default: ClientMessage("More info at https://github.com/mbovijn/BTPog");
 	}
 }
@@ -75,20 +76,36 @@ function PlayerCappedEvent()
     if (BTCapLogger != None) BTCapLogger.PlayerCappedEvent();
 }
 
-function Tick(float DeltaTime)
+simulated function Tick(float DeltaTime)
 {
-    if (Owner == None)
+    if (Role < ROLE_Authority)
     {
-        if (BTSuicide != None) BTSuicide.Destroy();
-        if (BTStopwatch != None) BTStopwatch.Destroy();
-        if (BTStats != None) BTStats.Destroy();
-        if (BTZeroPingDodge != None) BTZeroPingDodge.Destroy();
-        if (BTCapLogger != None) BTCapLogger.Destroy();
-        Destroy();
+        // Calling the 'Tick' functions here such that I have control over the order in which they're called.
+        if (BTZeroPingDodge != None) BTZeroPingDodge.CustomTick(DeltaTime);
+        if (BTStats != None) BTStats.CustomTick(DeltaTime);
+        if (BTCapLogger != None) BTCapLogger.CustomTick(DeltaTime);
+    }
+    else
+    {
+        // Cleanup
+        if (Owner == None)
+        {
+            if (BTSuicide != None) BTSuicide.Destroy();
+            if (BTStopwatch != None) BTStopwatch.Destroy();
+            if (BTStats != None) BTStats.Destroy();
+            if (BTZeroPingDodge != None) BTZeroPingDodge.Destroy();
+            if (BTCapLogger != None) BTCapLogger.Destroy();
+            Destroy();
+        }
     }
 }
 
 function ClientMessage(String Message)
 {
     PlayerPawn.ClientMessage("[BTPog] "$Message);
+}
+
+defaultproperties
+{
+	RemoteRole=ROLE_SimulatedProxy
 }

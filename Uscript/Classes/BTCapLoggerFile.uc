@@ -18,9 +18,10 @@ function InitLogFile()
 	LogFile.OpenLog();
 
     LogFile.FileLog("Timestamp,Map,PlayerName,IP,HWID,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,"
-		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,"
-		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,"
-		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,"
+		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,"
+		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,"
+		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,"
+		$"TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,"
 		$"FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,"
 		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC");
 }
@@ -29,6 +30,8 @@ function CloseLogFile()
 {
 	if (LogFile != None)
 	{
+		Log("[BTPog/BTCapLogger] Closing the BTCapLogger file "$LogFile.StatLogFinal);
+
 		LogFile.StopLog();
         LogFile.Destroy();
         LogFile = None;
@@ -41,6 +44,7 @@ function LogCap(
 	StatsAnalysis DodgeBlock,
 	StatsAnalysis DodgeDoubleTap,
 	StatsAnalysis DodgeAfterLanding,
+	StatsAnalysis TimeBetweenDodges,
 	StatsAnalysis FPS,
 	StatsAnalysis Ping,
 	float ClientCapTimeDelta,
@@ -63,9 +67,10 @@ function LogCap(
 		SpawnCount$","$
 		class'Utils'.static.FloatToString(CapTime, 3)$","$
 		class'Utils'.static.FloatToDeltaString(ClientCapTimeDelta, 3)$","$
-		StatsAnalysisToString(DodgeBlock, 3)$","$
-		StatsAnalysisToString(DodgeDoubleTap, 3)$","$
-        StatsAnalysisToString(DodgeAfterLanding, 3)$","$
+		StatsAnalysisToDetailedString(DodgeBlock, 3)$","$
+		StatsAnalysisToDetailedString(DodgeDoubleTap, 3)$","$
+        StatsAnalysisToDetailedString(DodgeAfterLanding, 3)$","$
+		StatsAnalysisToDetailedString(TimeBetweenDodges, 3)$","$
 		StatsAnalysisToString(FPS, 0)$","$
 		StatsAnalysisToString(Ping, 0)
 	);
@@ -92,6 +97,14 @@ function string StatsAnalysisToString(StatsAnalysis Analysis, int Decimals)
 		class'Utils'.static.FloatToString(Analysis.PC25, Decimals)$","$
 		class'Utils'.static.FloatToString(Analysis.PC50, Decimals);
 }
+
+function string StatsAnalysisToDetailedString(StatsAnalysis Analysis, int Decimals)
+{
+	return StatsAnalysisToString(Analysis, Decimals)$","$
+		class'Utils'.static.FloatToString(Analysis.PC100, Decimals)$","$
+		class'Utils'.static.FloatToString(Analysis.NumberOfDataPoints, 0);
+}
+
 
 function string GetMap()
 {

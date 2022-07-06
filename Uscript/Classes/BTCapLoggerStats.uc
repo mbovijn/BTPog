@@ -23,6 +23,7 @@ function StatsAnalysis Analyze()
     StatsAnalysis.PC5 = Values[int(Index*0.05)];
     StatsAnalysis.PC25 = Values[int(Index*0.25)];
     StatsAnalysis.PC50 = Values[int(Index*0.50)];
+    StatsAnalysis.PC100 = Values[Max(Index - 1, 0)];
     StatsAnalysis.NumberOfDataPoints = Index;
 
     return StatsAnalysis;

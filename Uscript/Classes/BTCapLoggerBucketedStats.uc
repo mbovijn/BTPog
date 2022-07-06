@@ -42,6 +42,9 @@ function StatsAnalysis Analyze()
             
             if (TotalCounter <= int(TotalCount*0.50) && int(TotalCount*0.50) < (TotalCounter + Buckets[BucketIndex].Count))
                 StatsAnalysis.PC50 = Buckets[BucketIndex].Value;
+            
+            if (TotalCounter <= TotalCount && TotalCount < (TotalCounter + Buckets[BucketIndex].Count))
+                StatsAnalysis.PC100 = Buckets[BucketIndex].Value;
 
             TotalCounter += Buckets[BucketIndex].Count;
         }

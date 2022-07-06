@@ -6,9 +6,11 @@ var config bool IsActive;
 var config bool IsDebugging;
 
 var EDodgeDir PreviousDodgeDir;
+var float PreviousDodgeClickTimer;
 var float StoppedDodgingTimestamp;
 var float DodgeBlockDuration;
 var float DodgeDoubleTapInterval;
+var float TimeBetweenTwoDodges;
 
 var EPhysics PreviousPhysics;
 var float StartedFallingTimestamp;
@@ -55,39 +57,45 @@ simulated function ToggleIsDebugging()
     SaveConfig();
 }
 
-simulated function Tick(float DeltaTime)
+simulated function CustomTick(float DeltaTime)
 {
     local string Messages[7];
 
-	if (Role < ROLE_Authority && IsActive)
-    {
-		UpdateStats(DeltaTime);
+	if (Role == ROLE_Authority || !IsActive) return;
 
-		Messages[0] = "Dodge Double Tap Interval = "$class'Utils'.static.TimeDeltaToString(DodgeDoubleTapInterval, Level.TimeDilation)$" seconds";
-		Messages[1] = "Dodge Block Duration = "$class'Utils'.static.TimeDeltaToString(DodgeBlockDuration, Level.TimeDilation)$" seconds";
-		Messages[2] = "Air Time = "$class'Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
-		Messages[3] = "Ground Time = "$class'Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
-		ClientProgressMessage(Messages);
+	UpdateStats(DeltaTime);
 
-		if (IsDebugging)
-		{
-			Log("[BTPog/BTStats] "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
-				$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
-		}
-    }
+	Messages[0] = "Dodge Double Tap Interval = "$class'Utils'.static.TimeDeltaToString(DodgeDoubleTapInterval, Level.TimeDilation)$" seconds";
+	Messages[1] = "Dodge Block Duration = "$class'Utils'.static.TimeDeltaToString(DodgeBlockDuration, Level.TimeDilation)$" seconds";
+	Messages[2] = "Time between two dodges = "$class'Utils'.static.TimeDeltaToString(TimeBetweenTwoDodges, Level.TimeDilation)$" seconds";
+	Messages[3] = "Air Time = "$class'Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
+	Messages[4] = "Ground Time = "$class'Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
+	ClientProgressMessage(Messages);
+
+	if (IsDebugging)
+	{
+		Log("[BTPog/BTStats] "$PlayerPawn.Health$" - "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
+			$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
+	}
 }
 
 simulated function UpdateStats(float DeltaTime)
 {
 	if (HasStartedDodging())
 	{
-		DodgeDoubleTapInterval = PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer;
+		// Using 'PreviousDodgeClickTimer - DeltaTime' here instead of 'PlayerPawn.DodgeClickTimer' since it's possible for the DodgeDir variable to go
+		// straight from e.g. DODGE_Forward to DODGE_Done. This can happen when a player dodges against the underside of a slope. For example on the
+		// map BT-1545. If DODGE_Done is set the DodgeClickTimer will be equal to 0.
+		DodgeDoubleTapInterval = PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime);
+		TimeBetweenTwoDodges = Level.TimeSeconds - StoppedDodgingTimestamp;
+		if (IsDebugging) Log("[BTPog/BTStats] Start of dodge");
 	}
-	else if (HasStoppedDodging())
+	if (HasStoppedDodging())
 	{
 		StoppedDodgingTimestamp = Level.TimeSeconds;
+		if (IsDebugging) Log("[BTPog/BTStats] End of dodge");
 	}
-	else if (IsAfterDodgeBlock())
+	if (IsAfterDodgeBlock())
 	{
 		DodgeBlockDuration = Level.TimeSeconds - StoppedDodgingTimestamp;
 		if (IsDebugging) Log("[BTPog/BTStats] Dodge Block Duration = "$DodgeBlockDuration);
@@ -97,7 +105,7 @@ simulated function UpdateStats(float DeltaTime)
 	{
 		StartedFallingTimestamp = Level.TimeSeconds;
 	}
-	else if (HasStopped(PHYS_Falling))
+	if (HasStopped(PHYS_Falling))
 	{
 		AirTime = Level.TimeSeconds - StartedFallingTimestamp;
 	}
@@ -106,7 +114,7 @@ simulated function UpdateStats(float DeltaTime)
 	{
 		StartedWalkingTimestamp = Level.TimeSeconds;
 	}
-	else if (HasStopped(PHYS_Walking))
+	if (HasStopped(PHYS_Walking))
 	{
 		GroundTime = Level.TimeSeconds - StartedWalkingTimestamp;
 	}
@@ -114,6 +122,7 @@ simulated function UpdateStats(float DeltaTime)
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
 	PreviousHealth = PlayerPawn.Health;
+	PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
 }
 
 simulated function bool HasStarted(EPhysics Physics)
@@ -128,18 +137,19 @@ simulated function bool HasStopped(EPhysics Physics)
 
 simulated function bool HasStartedDodging()
 {
-	return (PreviousDodgeDir == Dodge_Forward || PreviousDodgeDir == Dodge_Back || PreviousDodgeDir == Dodge_Left || PreviousDodgeDir == Dodge_Right)
-				&& PlayerPawn.DodgeDir == Dodge_Active;
+	return (PreviousDodgeDir == DODGE_Forward || PreviousDodgeDir == DODGE_Back || PreviousDodgeDir == DODGE_Left || PreviousDodgeDir == DODGE_Right)
+				&& (PlayerPawn.DodgeDir == DODGE_Active || PlayerPawn.DodgeDir == DODGE_Done);
 }
 
 simulated function bool HasStoppedDodging()
 {
-	return PreviousDodgeDir == DODGE_Active && PlayerPawn.DodgeDir == DODGE_Done;
+	return (PreviousDodgeDir == DODGE_Forward || PreviousDodgeDir == DODGE_Back || PreviousDodgeDir == DODGE_Left || PreviousDodgeDir == DODGE_Right || PreviousDodgeDir == DODGE_Active)
+				&& PlayerPawn.DodgeDir == DODGE_Done;
 }
 
 simulated function bool IsAfterDodgeBlock()
 {
-	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0;
+	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0 && PreviousPhysics != PHYS_None;
 }
 
 // Alternative would be to draw using:

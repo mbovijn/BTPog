@@ -12,11 +12,14 @@ var float StoppedDodgingTimestamp;
 var EPhysics PreviousPhysics; 
 var float HasLandedTimeStamp;
 
+var float PreviousDodgeClickTimer;
+
 var int PreviousHealth;
 
 var BTCapLoggerStats DodgeBlockStats;
 var BTCapLoggerStats DodgeDoubleTapStats;
 var BTCapLoggerStats DodgeAfterLandingStats;
+var BTCapLoggerStats TimeBetweenDodgesStats;
 var BTCapLoggerBucketedStats FPSStats;
 var BTCapLoggerBucketedStats PingStats;
 
@@ -48,11 +51,6 @@ function PostBeginPlay()
 	SetPropertyText("IACECheckClass", "class'IACECheck'");
 }
 
-function PrintHardwareID()
-{
-	PlayerPawn.ClientMessage("[BTPog] Hardware ID = "$GetCachedHardwareID());
-}
-
 simulated function ReplicateConfig_ToClient(float aTicksPerFPSCalculation)
 {
 	TicksPerFPSCalculation = aTicksPerFPSCalculation;
@@ -77,12 +75,14 @@ simulated function PlayerSpawnedEvent_ToClient()
 	if (DodgeBlockStats != None) DodgeBlockStats.Destroy();
 	if (DodgeDoubleTapStats != None) DodgeDoubleTapStats.Destroy();
 	if (DodgeAfterLandingStats != None) DodgeAfterLandingStats.Destroy();
+	if (TimeBetweenDodgesStats != None) TimeBetweenDodgesStats.Destroy();
 	if (FPSStats != None) FPSStats.Destroy();
 	if (PingStats != None) PingStats.Destroy();
 
 	DodgeBlockStats = Spawn(class'BTCapLoggerStats', Owner);
 	DodgeDoubleTapStats = Spawn(class'BTCapLoggerStats', Owner);
 	DodgeAfterLandingStats = Spawn(class'BTCapLoggerStats', Owner);
+	TimeBetweenDodgesStats = Spawn(class'BTCapLoggerStats', Owner);
 	FPSStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
 	PingStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
 
@@ -103,6 +103,7 @@ simulated function PlayerCappedEvent_ToClient()
 		DodgeBlockStats.Analyze(),
 		DodgeDoubleTapStats.Analyze(),
 		DodgeAfterLandingStats.Analyze(),
+		TimeBetweenDodgesStats.Analyze(),
 		FPSStats.Analyze(),
 		PingStats.Analyze(),
 		CapTime, // ClientCapTime
@@ -115,6 +116,7 @@ function ReportInfo_ToServer(
 	StatsAnalysis DodgeBlock,
 	StatsAnalysis DodgeDoubleTap,
 	StatsAnalysis DodgeAfterLanding,
+	StatsAnalysis TimeBetweenDodges,
 	StatsAnalysis FPS,
 	StatsAnalysis Ping,
 	float ClientCapTime,
@@ -128,6 +130,7 @@ function ReportInfo_ToServer(
 		DodgeBlock,
 		DodgeDoubleTap,
 		DodgeAfterLanding,
+		TimeBetweenDodges,
 		FPS,
 		Ping,
 		ClientCapTime - CapTime,
@@ -138,31 +141,40 @@ function ReportInfo_ToServer(
 	);
 }
 
-simulated function Tick(float DeltaTime)
+simulated function CustomTick(float DeltaTime)
 {
 	if (Role == ROLE_Authority) return;
 
 	MeasureFPS(DeltaTime);
 
-	if (PlayerPawn.PlayerReplicationInfo.Ping > 0 && PingStats != None)
+	if (PlayerPawn.PlayerReplicationInfo != None && PlayerPawn.PlayerReplicationInfo.Ping > 0 && PingStats != None)
 		PingStats.AddValue(PlayerPawn.PlayerReplicationInfo.Ping, PlayerPawn.PlayerReplicationInfo.Ping);
     
 	if (HasStartedDodging())
 	{
-		if (DodgeDoubleTapStats != None && (PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer) > 0)
-			DodgeDoubleTapStats.AddValue((PlayerPawn.DodgeClickTime - PlayerPawn.DodgeClickTimer) / Level.TimeDilation);
+		// Using 'PreviousDodgeClickTimer - DeltaTime' here instead of 'PlayerPawn.DodgeClickTimer' since it's possible for the DodgeDir variable to go
+		// straight from e.g. DODGE_Forward to DODGE_Done. This can happen when a player dodges against the underside of a slope. For example on the
+		// map BT-1545. If DODGE_Done is set the DodgeClickTimer will be equal to 0.
+		if (DodgeDoubleTapStats != None && (PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime)) > 0)
+			DodgeDoubleTapStats.AddValue(PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime) / Level.TimeDilation);
 
 		if (DodgeAfterLandingStats != None)
 		{
-			if (Level.TimeSeconds - HasLandedTimeStamp < 0.2) // We're only interested in a dodge that occurred within 0.2 seconds after landing.
+			if (HasLandedTimeStamp > 0 && Level.TimeSeconds - HasLandedTimeStamp < 0.2) // We're only interested in a dodge that occurred within 0.2 seconds after landing.
 				DodgeAfterLandingStats.AddValue((Level.TimeSeconds - HasLandedTimeStamp) / Level.TimeDilation);
 		}
+
+		if (TimeBetweenDodgesStats != None)
+		{
+			if (StoppedDodgingTimestamp > 0 && Level.TimeSeconds - StoppedDodgingTimestamp < 0.6) // We're only interested in dodges chained in quick succession.
+				TimeBetweenDodgesStats.AddValue((Level.TimeSeconds - StoppedDodgingTimestamp) / Level.TimeDilation);
+		}
 	}
-	else if (HasStoppedDodging())
+	if (HasStoppedDodging())
 	{
 		StoppedDodgingTimestamp = Level.TimeSeconds;
 	}
-	else if (IsAfterDodgeBlock())
+	if (IsAfterDodgeBlock())
 	{
 		if (DodgeBlockStats != None)
 			DodgeBlockStats.AddValue((Level.TimeSeconds - StoppedDodgingTimestamp) / Level.TimeDilation);
@@ -176,6 +188,7 @@ simulated function Tick(float DeltaTime)
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
 	PreviousHealth = PlayerPawn.Health;
+	PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
 }
 
 simulated function MeasureFPS(float DeltaTime)
@@ -195,18 +208,19 @@ simulated function MeasureFPS(float DeltaTime)
 
 simulated function bool HasStartedDodging()
 {
-	return (PreviousDodgeDir == Dodge_Forward || PreviousDodgeDir == Dodge_Back || PreviousDodgeDir == Dodge_Left || PreviousDodgeDir == Dodge_Right)
-				&& PlayerPawn.DodgeDir == Dodge_Active;
+	return (PreviousDodgeDir == DODGE_Forward || PreviousDodgeDir == DODGE_Back || PreviousDodgeDir == DODGE_Left || PreviousDodgeDir == DODGE_Right)
+				&& (PlayerPawn.DodgeDir == DODGE_Active || PlayerPawn.DodgeDir == DODGE_Done);
 }
 
 simulated function bool HasStoppedDodging()
 {
-	return PreviousDodgeDir == DODGE_Active && PlayerPawn.DodgeDir == DODGE_Done;
+	return (PreviousDodgeDir == DODGE_Forward || PreviousDodgeDir == DODGE_Back || PreviousDodgeDir == DODGE_Left || PreviousDodgeDir == DODGE_Right || PreviousDodgeDir == DODGE_Active)
+				&& PlayerPawn.DodgeDir == DODGE_Done;
 }
 
 simulated function bool IsAfterDodgeBlock()
 {
-	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0;
+	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0 && PreviousPhysics != PHYS_None;
 }
 
 simulated function bool HasStopped(EPhysics Physics)
@@ -244,6 +258,11 @@ simulated function string GetRenderer()
 		i = InStr(Renderer, ".");
 		if (i != -1)
 			Renderer = Left(Renderer, i);
+	}
+	else
+	{
+		Log("[BTPog/BTCapLogger] Could not retrieve renderer: "$Renderer);
+		Renderer = "Unknown";
 	}
 	
 	return Renderer;

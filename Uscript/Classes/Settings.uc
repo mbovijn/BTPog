@@ -1,3 +1,4 @@
+// TODO: make config independent of BTPog version - https://github.com/Mellesp/UTBT_MapVote/blob/main/Source/Classes/MV_Mutator.uc#L36
 class Settings extends Info config (BTPog);
 
 var config bool IsDebugging;
