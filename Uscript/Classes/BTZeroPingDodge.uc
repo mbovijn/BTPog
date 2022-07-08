@@ -7,7 +7,6 @@ var config bool IsDebugging;
 
 var float PreviousDodgeClickTimer;
 var EDodgeDir PreviousDodgeDir;
-var EDodgeDir PreviousPreviousDodgeDir;
 var EPhysics PreviousPhysics;
 var EPhysics PhysicsOfFirstDodgeDone;
 var EPhysics PhysicsOfSecondDodgeDone;
@@ -79,25 +78,14 @@ simulated function CustomTick(float DeltaTime)
         PlayerPawn.DodgeClickTimer = PlayerPawn.DodgeClickTimer - DeltaTime;
     }
 
-    if (PlayerPawn.DodgeDir == DODGE_Done && PreviousDodgeDir != DODGE_Done)
-    {
-        PhysicsOfFirstDodgeDone = PlayerPawn.Physics;
-    }
-    else if (PlayerPawn.DodgeDir == DODGE_Done && PreviousDodgeDir == DODGE_Done && PreviousPreviousDodgeDir != DODGE_Done)
-    {
-        PhysicsOfSecondDodgeDone = PlayerPawn.Physics;
-    }
-
     // https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4078 (Called by ClientUpdatePosition)
     // Undoes the DodgeDir being set to DODGE_None by a Landed replay event. This is problematic when
     // the player is in the 'dodge block' state since it means that the player will be able to dodge
     // again before the standard 0.35 sec dodge block duration. i.e. DODGE_Done -> DODGE_None
-    //
-    // We need the weird physics check such that the slope-dodge-block-reset trick still works.
-    if (!(PhysicsOfFirstDodgeDone == PHYS_Walking && PhysicsOfSecondDodgeDone == PHYS_Falling)
-        && PlayerPawn.DodgeDir == DODGE_None && PreviousDodgeDir == DODGE_Done
+    if (PlayerPawn.DodgeDir == DODGE_None && PreviousDodgeDir == DODGE_Done
         && PreviousPhysics != PHYS_None
         && PlayerPawn.DodgeClickTimer < PlayerPawn.DodgeClickTime
+        && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer // We need this such that the slope-dodge-block-reset trick still works.
         && PreviousHealth > 0)
     {
         if (IsDebugging) LogAndClientMessage("Prevented unlegit dodge block reduction");
@@ -106,7 +94,6 @@ simulated function CustomTick(float DeltaTime)
     }
 
     PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
-    PreviousPreviousDodgeDir = PreviousDodgeDir;
     PreviousDodgeDir = PlayerPawn.DodgeDir;
     PreviousPhysics = PlayerPawn.Physics;
     PreviousHealth = PlayerPawn.Health;
