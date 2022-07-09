@@ -67,6 +67,7 @@ What rushers can do is, go to the mover, and suicide when the mover is in a part
 | Command                                            | Description
 | ---                                                | ---
 | `!btpog suicide select`                            | Select which mover you want to base your suicide time on. Just aim at the mover and execute the command.
+| `!btpog suicide select Mover12`                    | Select which mover you want to base your suicide time on by providing the name of the mover.
 | `!btpog suicide time`                              | When the mover is in the correct location, execute this command to set the time.
 | `!btpog suicide time 0.35`                         | Same as the previous command, but here you can enter a timepoint yourself.
 | `!btpog suicide suicide`                           | Queue up a suicide action. The mutator will make you suicide you as soon as the mover is in the configured location.

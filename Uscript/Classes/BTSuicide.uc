@@ -28,7 +28,13 @@ function ExecuteCommand(string MutateString)
 			Fire();
 			break;
 		case "select":
-			SelectMover();
+            switch (class'Utils'.static.GetArgument(MutateString, 3))
+			{
+				case "":
+					SelectMover(GetTargettedMover());
+					break;
+				default: SelectMover(GetMoverByName(class'Utils'.static.GetArgument(MutateString, 3)));
+			}
 			break;
 		case "time":
 			switch (class'Utils'.static.GetArgument(MutateString, 3))
@@ -101,24 +107,6 @@ function Suicide()
     IsSuicide = true;
 }
 
-function SelectMover()
-{
-    MoverPeriodTime = 0;
-    AmountOfMoverLoops = 0;
-    TimeSinceKeyNumTransition0To1 = 0;
-    SelectedTimePoint = 0;
-
-    SelectedMover = GetTargettedMover(PlayerPawn);
-    if (SelectedMover == None)
-    {
-        ClientMessage("No mover selected. Aim at a mover, and try again.");
-        return;
-    }
-
-    PreviousKeyNum = SelectedMover.KeyNum;
-    ClientMessage("Selected mover with tag "$SelectedMover.Tag);
-}
-
 function SelectTimePoint(float TimePoint)
 {
     if (SelectedMover == None)
@@ -143,16 +131,46 @@ function SelectTimePoint(float TimePoint)
     ClientMessage("Selected time point "$SelectedTimePoint$" for mover with period "$MoverPeriodTime);
 }
 
+function SelectMover(Mover Mover)
+{
+    MoverPeriodTime = 0;
+    AmountOfMoverLoops = 0;
+    TimeSinceKeyNumTransition0To1 = 0;
+    SelectedTimePoint = 0;
+
+    SelectedMover = Mover;
+    if (SelectedMover == None)
+    {
+        ClientMessage("Mover not found");
+        return;
+    }
+
+    PreviousKeyNum = SelectedMover.KeyNum;
+    ClientMessage("Selected mover with name "$SelectedMover.Name);
+}
+
+function Mover GetMoverByName(String Name)
+{
+    local Mover Mover;
+
+	foreach AllActors(Class'Mover', Mover)
+    {
+		if (string(Mover.Name) == Name) return Mover;
+	}
+
+    return None;
+}
+
 // Taken from https://github.com/bunnytrack/TriggerMover
-function Mover GetTargettedMover(PlayerPawn Sender)
+function Mover GetTargettedMover()
 {
 	local Actor HitActor;
 	local vector X, Y, Z, HitLocation, HitNormal, EndTrace, StartTrace;
 	local Mover HitMover;
 
-	GetAxes(Sender.ViewRotation, X, Y, Z);
+	GetAxes(PlayerPawn.ViewRotation, X, Y, Z);
 
-	StartTrace = Sender.Location + Sender.EyeHeight * vect(0, 0, 1);
+	StartTrace = PlayerPawn.Location + PlayerPawn.EyeHeight * vect(0, 0, 1);
 	EndTrace = StartTrace + X * 10000;
 
 	HitActor = Trace(HitLocation, HitNormal, EndTrace, StartTrace, false);
