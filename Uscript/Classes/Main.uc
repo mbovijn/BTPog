@@ -11,16 +11,23 @@ var BTCapLoggerSettings BTCapLoggerSettings;
 // Called once by the engine when the map starts.
 function PreBeginPlay()
 {
+	local Object Obj;
+
 	Log("BTPog by Fulcrum (https://github.com/mbovijn/BTPog)");
 
-	Settings = Spawn(class'Settings');
+	Obj = new (none, 'BTPog') class'Object';
 	
+	Settings = new (Obj, 'Settings') class'Settings';
+	Settings.SaveConfig();
+
+	BTCapLoggerSettings = new (Obj, 'BTCapLoggerSettings') class'BTCapLoggerSettings';
+	BTCapLoggerSettings.ValidateConfig();
+	BTCapLoggerSettings.SaveConfig();
+
 	CapEventPublisher = Spawn(class'CapEventPublisher');
 	CapEventPublisher.Init(Self, Settings);
 
 	BTCapLoggerFile = Spawn(class'BTCapLoggerFile');
-
-	BTCapLoggerSettings = Spawn(class'BTCapLoggerSettings');
 
 	Level.Game.BaseMutator.AddMutator(Self);
 	Level.Game.RegisterMessageMutator(Self);

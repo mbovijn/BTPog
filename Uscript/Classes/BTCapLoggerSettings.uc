@@ -1,12 +1,6 @@
-class BTCapLoggerSettings extends Info config (BTPog);
+class BTCapLoggerSettings extends Object config (BTPog) perobjectconfig;
 
 var config int TicksPerFPSCalculation; // Amount of ticks to take into account when calculating FPS
-
-function PreBeginPlay()
-{
-    ValidateConfig();
-    SaveConfig();
-}
 
 function ValidateConfig()
 {
