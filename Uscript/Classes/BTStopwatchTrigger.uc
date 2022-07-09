@@ -42,6 +42,8 @@ function ClientProgressMessage(string Message)
     PlayerPawn.ClearProgressMessages();
     PlayerPawn.SetProgressTime(2);
     PlayerPawn.SetProgressMessage(Message, 6);
+
+	PlayerPawn.ClientMessage("[BTPog] Stopwatch time = "$Message);
 }
 
 defaultproperties
