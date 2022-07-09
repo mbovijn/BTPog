@@ -3,10 +3,10 @@ class Main expands Mutator;
 var PlayerController PlayerControllers[1024];
 var int PlayerControllersLength;
 
-var Settings Settings;
+var ServerSettings ServerSettings;
 var CapEventPublisher CapEventPublisher;
 var BTCapLoggerFile BTCapLoggerFile;
-var BTCapLoggerSettings BTCapLoggerSettings;
+var BTCapLoggerServerSettings BTCapLoggerServerSettings;
 
 // Called once by the engine when the map starts.
 function PreBeginPlay()
@@ -17,15 +17,15 @@ function PreBeginPlay()
 
 	Obj = new (none, 'BTPog') class'Object';
 	
-	Settings = new (Obj, 'Settings') class'Settings';
-	Settings.SaveConfig();
+	ServerSettings = new (Obj, 'Settings') class'ServerSettings';
+	ServerSettings.SaveConfig();
 
-	BTCapLoggerSettings = new (Obj, 'BTCapLoggerSettings') class'BTCapLoggerSettings';
-	BTCapLoggerSettings.ValidateConfig();
-	BTCapLoggerSettings.SaveConfig();
+	BTCapLoggerServerSettings = new (Obj, 'BTCapLoggerSettings') class'BTCapLoggerServerSettings';
+	BTCapLoggerServerSettings.ValidateConfig();
+	BTCapLoggerServerSettings.SaveConfig();
 
 	CapEventPublisher = Spawn(class'CapEventPublisher');
-	CapEventPublisher.Init(Self, Settings);
+	CapEventPublisher.Init(Self, ServerSettings);
 
 	BTCapLoggerFile = Spawn(class'BTCapLoggerFile');
 
@@ -91,10 +91,10 @@ function PlayerController GetPlayerControllerOrNew(PlayerPawn Other)
 	PlayerController = GetPlayerController(Other);
 	if (PlayerController == None)
 	{
-		if (Settings.IsDebugging) Log("[BTPog] New player registered = "$Other.PlayerReplicationInfo.PlayerName);
+		if (ServerSettings.IsDebugging) Log("[BTPog] New player registered = "$Other.PlayerReplicationInfo.PlayerName);
 
 		PlayerController = Spawn(class'PlayerController', Other);
-		PlayerController.Init(Settings, BTCapLoggerFile, BTCapLoggerSettings);
+		PlayerController.Init(ServerSettings, BTCapLoggerFile, BTCapLoggerServerSettings);
 
 		PlayerControllers[PlayerControllersLength] = PlayerController;
 		PlayerControllersLength++;

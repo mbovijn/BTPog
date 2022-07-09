@@ -80,14 +80,14 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v08.Main
-ServerPackages=BTPog_v08
+ServerActors=BTPog_v09.Main
+ServerPackages=BTPog_v09
 ```
 
 # Configuration
 As a server admin you can configure which modules you want to be active on your server. Here's an example of a BTPog.ini file:
 ```
-[BTPog_v08.Settings]
+[Settings]
 IsDebugging=False
 IsBTStatsEnabled=True
 IsBTStopwatchEnabled=True
@@ -95,6 +95,6 @@ IsBTSuicideEnabled=True
 IsBTZeroPingDodgeEnabled=True
 IsBTCapLoggerEnabled=True
 
-[BTPog_v08.BTCapLoggerSettings]
+[BTCapLoggerSettings]
 TicksPerFPSCalculation=10
 ```

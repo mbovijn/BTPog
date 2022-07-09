@@ -1,4 +1,4 @@
-class Settings extends Object config (BTPog) perobjectconfig;
+class ServerSettings extends Object config (BTPog) perobjectconfig;
 
 var config bool IsDebugging;
 

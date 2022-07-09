@@ -1,9 +1,8 @@
-class BTStats extends Info config (BTPog);
+class BTStats extends Info;
 
 var PlayerPawn PlayerPawn;
 
-var config bool IsActive;
-var config bool IsDebugging;
+var BTStatsClientSettings ClientSettings;
 
 var EDodgeDir PreviousDodgeDir;
 var float PreviousDodgeClickTimer;
@@ -26,9 +25,18 @@ replication
 		PlayerPawn, ToggleIsActive, ToggleIsDebugging;
 }
 
-function PreBeginPlay()
+simulated function PreBeginPlay()
 {
-   PlayerPawn = PlayerPawn(Owner);
+	local Object Obj;
+
+	PlayerPawn = PlayerPawn(Owner);
+
+	if (Role < ROLE_Authority)
+	{
+		Obj = new (none, 'BTPog') class'Object';
+		ClientSettings = new (Obj, 'BTStatsSettings') class'BTStatsClientSettings';
+		ClientSettings.SaveConfig();
+	}
 }
 
 function ExecuteCommand(string MutateString)
@@ -46,26 +54,26 @@ function ExecuteCommand(string MutateString)
 
 simulated function ToggleIsActive()
 {
-    IsActive = !IsActive;
-    SaveConfig();
+    ClientSettings.IsActive = !ClientSettings.IsActive;
+    ClientSettings.SaveConfig();
 }
 
 simulated function ToggleIsDebugging()
 {
-    IsDebugging = !IsDebugging;
-    ClientMessage("BTStats Debugging Enabled = "$IsDebugging);
-    SaveConfig();
+    ClientSettings.IsDebugging = !ClientSettings.IsDebugging;
+    ClientMessage("BTStats Debugging Enabled = "$ClientSettings.IsDebugging);
+    ClientSettings.SaveConfig();
 }
 
 simulated function CustomTick(float DeltaTime)
 {
     local string Messages[7];
 
-	if (Role == ROLE_Authority || (!IsActive && !IsDebugging)) return;
+	if (Role == ROLE_Authority || (!ClientSettings.IsActive && !ClientSettings.IsDebugging)) return;
 
 	UpdateStats(DeltaTime);
 
-	if (IsActive)
+	if (ClientSettings.IsActive)
 	{
 		Messages[0] = "Dodge Double Tap Interval = "$class'Utils'.static.TimeDeltaToString(DodgeDoubleTapInterval, Level.TimeDilation)$" seconds";
 		Messages[1] = "Dodge Block Duration = "$class'Utils'.static.TimeDeltaToString(DodgeBlockDuration, Level.TimeDilation)$" seconds";
@@ -75,7 +83,7 @@ simulated function CustomTick(float DeltaTime)
 		ClientProgressMessage(Messages);
 	}
 
-	if (IsDebugging)
+	if (ClientSettings.IsDebugging)
 	{
 		Log("[BTPog/BTStats] "$PlayerPawn.Health$" - "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
 			$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
@@ -91,17 +99,17 @@ simulated function UpdateStats(float DeltaTime)
 		// map BT-1545. If DODGE_Done is set the DodgeClickTimer will be equal to 0.
 		DodgeDoubleTapInterval = PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime);
 		TimeBetweenTwoDodges = Level.TimeSeconds - StoppedDodgingTimestamp;
-		if (IsDebugging) Log("[BTPog/BTStats] Start of dodge");
+		if (ClientSettings.IsDebugging) Log("[BTPog/BTStats] Start of dodge");
 	}
 	if (HasStoppedDodging())
 	{
 		StoppedDodgingTimestamp = Level.TimeSeconds;
-		if (IsDebugging) Log("[BTPog/BTStats] End of dodge");
+		if (ClientSettings.IsDebugging) Log("[BTPog/BTStats] End of dodge");
 	}
 	if (IsAfterDodgeBlock())
 	{
 		DodgeBlockDuration = Level.TimeSeconds - StoppedDodgingTimestamp;
-		if (IsDebugging) Log("[BTPog/BTStats] Dodge Block Duration = "$DodgeBlockDuration);
+		if (ClientSettings.IsDebugging) Log("[BTPog/BTStats] Dodge Block Duration = "$DodgeBlockDuration);
 	}
 
 	if (HasStarted(PHYS_Falling))
@@ -178,6 +186,4 @@ simulated function ClientMessage(String Message)
 defaultproperties
 {
 	RemoteRole=ROLE_SimulatedProxy
-	IsActive=False
-	IsDebugging=False
 }

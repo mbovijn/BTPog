@@ -1,11 +1,11 @@
 class CapEventPublisher extends Info;
 
 var Main Subscriber;
-var Settings Settings;
+var ServerSettings ServerSettings;
 
-function Init(Main aSubscriber, Settings aSettings)
+function Init(Main aSubscriber, ServerSettings aServerSettings)
 {
-    Settings = aSettings;
+    ServerSettings = aServerSettings;
     Subscriber = aSubscriber;
 
     SetupFlagBaseSubscriptions();
@@ -26,7 +26,7 @@ function SetEventIfNotExistsOnAllFlagBases()
     local FlagBase FlagBase;
     foreach AllActors(class'FlagBase', FlagBase)
     {
-        if (Settings.IsDebugging) Log("FlagBase Event = "$FlagBase.Event);
+        if (ServerSettings.IsDebugging) Log("FlagBase Event = "$FlagBase.Event);
         if (FlagBase.Event == '') FlagBase.Event = 'BTPog';
     }
 }
@@ -53,7 +53,7 @@ function SpawnCapEventPublisherHelpers(name Events[16]) {
     {
         if (Events[i] != '')
         {
-            if (Settings.IsDebugging) Log("Spawning CapEventPublisherHelper with Event = "$Events[i]);
+            if (ServerSettings.IsDebugging) Log("Spawning CapEventPublisherHelper with Event = "$Events[i]);
             Spawn(class'CapEventPublisherHelper', Self, Events[i]);
         }
     }

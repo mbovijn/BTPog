@@ -56,7 +56,7 @@ simulated function ReplicateConfig_ToClient(float aTicksPerFPSCalculation)
 	TicksPerFPSCalculation = aTicksPerFPSCalculation;
 }
 
-function Init(BTCapLoggerFile aBTCapLoggerFile, BTCapLoggerSettings aBTCapLoggerSettings)
+function Init(BTCapLoggerFile aBTCapLoggerFile, BTCapLoggerServerSettings aBTCapLoggerSettings)
 {
 	BTCapLoggerFile = aBTCapLoggerFile;
 	ReplicateConfig_ToClient(aBTCapLoggerSettings.TicksPerFPSCalculation);

@@ -20,16 +20,16 @@ function PreBeginPlay()
     PlayerPawn = PlayerPawn(Owner);
 }
 
-function Init(Settings Settings, BTCapLoggerFile BTCapLoggerFile, BTCapLoggerSettings BTCapLoggerSettings)
+function Init(ServerSettings ServerSettings, BTCapLoggerFile BTCapLoggerFile, BTCapLoggerServerSettings BTCapLoggerServerSettings)
 {
-    if (Settings.IsBTSuicideEnabled) BTSuicide = Spawn(class'BTSuicide', Owner);
-    if (Settings.IsBTStopwatchEnabled) BTStopwatch = Spawn(class'BTStopwatch', Owner);
-    if (Settings.IsBTStatsEnabled) BTStats = Spawn(class'BTStats', Owner);
-    if (Settings.IsBTZeroPingDodgeEnabled) BTZeroPingDodge = Spawn(class'BTZeroPingDodge', Owner);
-    if (Settings.IsBTCapLoggerEnabled)
+    if (ServerSettings.IsBTSuicideEnabled) BTSuicide = Spawn(class'BTSuicide', Owner);
+    if (ServerSettings.IsBTStopwatchEnabled) BTStopwatch = Spawn(class'BTStopwatch', Owner);
+    if (ServerSettings.IsBTStatsEnabled) BTStats = Spawn(class'BTStats', Owner);
+    if (ServerSettings.IsBTZeroPingDodgeEnabled) BTZeroPingDodge = Spawn(class'BTZeroPingDodge', Owner);
+    if (ServerSettings.IsBTCapLoggerEnabled)
     {
         BTCapLogger = Spawn(class'BTCapLogger', Owner);
-        BTCapLogger.Init(BTCapLoggerFile, BTCapLoggerSettings);
+        BTCapLogger.Init(BTCapLoggerFile, BTCapLoggerServerSettings);
     }
 }
 
