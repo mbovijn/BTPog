@@ -96,7 +96,8 @@ simulated function CustomTick(float DeltaTime)
         && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer // We need this such that the slope-dodge-block-reset trick still works.
         && PreviousHealth > 0)
     {
-        if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented unlegit dodge block reduction");
+        if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented unlegit dodge block reduction of "
+                                            $class'Utils'.static.TimeDeltaToString(0.35 + PlayerPawn.DodgeClickTimer, Level.TimeDilation)$" seconds");
         PlayerPawn.DodgeDir = DODGE_Done;
         PlayerPawn.DodgeClickTimer = PlayerPawn.DodgeClickTimer - DeltaTime;
     }
