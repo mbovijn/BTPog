@@ -10,22 +10,22 @@ var float BestTime;
 var float ReTriggerDelay;
 var float TriggerTime;
 
-function PreBeginPlay()
+simulated function PreBeginPlay()
 {
    PlayerPawn = PlayerPawn(Owner);
 }
 
-function SetPlayerSpawnTime(float SpawnTime)
+simulated function SetPlayerSpawnTime(float SpawnTime)
 {
     PlayerSpawnTime = SpawnTime;
 }
 
-function ResetBestTime()
+simulated function ResetBestTime()
 {
 	BestTime = 0;
 }
 
-function Touch(Actor Other)
+simulated function Touch(Actor Other)
 {
 	local float NewTime;
 
@@ -46,7 +46,7 @@ function Touch(Actor Other)
 	}
 }
 
-function PrintTime(float NewTime)
+simulated function PrintTime(float NewTime)
 {
 	local int TruncatedNewTime, TruncatedBestTime;
 	
@@ -60,7 +60,7 @@ function PrintTime(float NewTime)
 	);
 }
 
-function ClientProgressMessage(string StopwatchTime, string StopwatchDelta, Color Color)
+simulated function ClientProgressMessage(string StopwatchTime, string StopwatchDelta, Color Color)
 {
 	local string Message;
 
@@ -78,7 +78,7 @@ function ClientProgressMessage(string StopwatchTime, string StopwatchDelta, Colo
 	PlayerPawn.ClientMessage("[BTPog] Stopwatch "$ID$": "$Message);
 }
 
-function Color DetermineTextColor(int TruncatedNewTime, int TruncatedBestTime)
+simulated function Color DetermineTextColor(int TruncatedNewTime, int TruncatedBestTime)
 {
 	if (TruncatedNewTime <= TruncatedBestTime || TruncatedBestTime == 0)
 		return Green();
@@ -86,7 +86,7 @@ function Color DetermineTextColor(int TruncatedNewTime, int TruncatedBestTime)
 		return Red();
 }
 
-function Color Green()
+simulated function Color Green()
 {
 	local Color ColorGreen;
 	ColorGreen.R = 0;
@@ -95,7 +95,7 @@ function Color Green()
 	return ColorGreen;
 }
 
-function Color Red()
+simulated function Color Red()
 {
 	local Color ColorRed;
 	ColorRed.R = 255;
@@ -104,7 +104,7 @@ function Color Red()
 	return ColorRed;
 }
 
-function Tick(float DeltaTime)
+simulated function Tick(float DeltaTime)
 {
 	if (Owner == None)
 		Destroy();

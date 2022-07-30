@@ -1,9 +1,15 @@
 class BTStopwatch extends Info;
 
 var PlayerPawn PlayerPawn;
-var BTStopwatchTrigger Triggers[16];
+var BTStopwatchTrigger Triggers[32];
 
 var int PrecisionDecimals;
+
+replication
+{
+	reliable if (Role == ROLE_Authority)
+		PlayerPawn, PlayerSpawnedEvent_ToClient, ExecuteCommand_ToClient;
+}
 
 function PreBeginPlay()
 {
@@ -12,6 +18,11 @@ function PreBeginPlay()
 
 function PlayerSpawnedEvent()
 {
+	PlayerSpawnedEvent_ToClient();
+}
+
+simulated function PlayerSpawnedEvent_ToClient()
+{
 	local int Index;
 	for (Index = 0; Index < ArrayCount(Triggers); Index++)
 		if (Triggers[Index] != None)
@@ -19,6 +30,11 @@ function PlayerSpawnedEvent()
 }
 
 function ExecuteCommand(string MutateString)
+{
+	ExecuteCommand_ToClient(MutateString);
+}
+
+simulated function ExecuteCommand_ToClient(string MutateString)
 {
 	local string Argument;
 	Argument = class'Utils'.static.GetArgument(MutateString, 2);
@@ -41,7 +57,7 @@ function ExecuteCommand(string MutateString)
 	}
 }
 
-function ExecuteAllTriggersCommand(string MutateString)
+simulated function ExecuteAllTriggersCommand(string MutateString)
 {
 	local int Index;
 	for (Index = 0; Index < ArrayCount(Triggers); Index++)
@@ -58,7 +74,7 @@ function ExecuteAllTriggersCommand(string MutateString)
 	}
 }
 
-function ExecuteSingleTriggerCommand(string MutateString, int Index)
+simulated function ExecuteSingleTriggerCommand(string MutateString, int Index)
 {
 	if (Index < 0 || Index >= ArrayCount(Triggers))
 	{
@@ -75,7 +91,7 @@ function ExecuteSingleTriggerCommand(string MutateString, int Index)
 	}
 }
 
-function ExecutePrecisionCommand(string MutateString)
+simulated function ExecutePrecisionCommand(string MutateString)
 {
 	local int Index;
 	local string Argument;
@@ -93,7 +109,7 @@ function ExecutePrecisionCommand(string MutateString)
 			Triggers[Index].PrecisionDecimals = PrecisionDecimals;
 }
 
-function Delete(int Index)
+simulated function Delete(int Index)
 {
 	if (Triggers[Index] == None)
 	{
@@ -106,7 +122,7 @@ function Delete(int Index)
 	ClientMessage("Deleted stopwatch at slot "$Index);
 }
 
-function Reset(int Index)
+simulated function Reset(int Index)
 {
 	if (Triggers[Index] == None)
 	{
@@ -118,7 +134,7 @@ function Reset(int Index)
 	ClientMessage("Reset stopwatch at slot "$Index);
 }
 
-function Create(Vector Location, int Index)
+simulated function Create(Vector Location, int Index)
 {
 	if (Triggers[Index] != None) Triggers[Index].Destroy();
 
@@ -129,7 +145,7 @@ function Create(Vector Location, int Index)
     ClientMessage("Created stopwatch "$Index$" at location "$ToStringWithoutDecimals(Location));
 }
 
-function Vector ToVector(String VectorString)
+simulated function Vector ToVector(String VectorString)
 {
 	local Vector NewVector;
 	NewVector.X = int(class'Utils'.static.GetStringPart(VectorString, 0, ","));
@@ -138,7 +154,7 @@ function Vector ToVector(String VectorString)
 	return NewVector;
 }
 
-function Vector RemoveDecimals(Vector OldVector)
+simulated function Vector RemoveDecimals(Vector OldVector)
 {
 	local Vector NewVector;
 	NewVector.X = int(OldVector.X);
@@ -147,17 +163,18 @@ function Vector RemoveDecimals(Vector OldVector)
 	return NewVector;
 }
 
-function string ToStringWithoutDecimals(Vector Vector)
+simulated function string ToStringWithoutDecimals(Vector Vector)
 {
 	return int(Vector.X)$","$int(Vector.Y)$","$int(Vector.Z);
 }
 
-function ClientMessage(string Message)
+simulated function ClientMessage(string Message)
 {
     PlayerPawn.ClientMessage("[BTPog] "$Message);
 }
 
 defaultproperties
 {
+	RemoteRole=ROLE_SimulatedProxy
 	PrecisionDecimals=2
 }
