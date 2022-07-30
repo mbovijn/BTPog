@@ -44,6 +44,7 @@ function ExecuteCommand(string MutateString)
 			    BTSuicide.ExecuteCommand(MutateString);
             break;
 		case "stopwatch":
+        case "sw":
             if (BTStopwatch == None)
                 ClientMessage("BTStopwatch module is disabled on this server");
             else
@@ -61,7 +62,7 @@ function ExecuteCommand(string MutateString)
             else
 			    BTZeroPingDodge.ExecuteCommand(MutateString);
 			break;
-		default: ClientMessage("More info at https://github.com/mbovijn/BTPog");
+		default: ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
 	}
 }
 

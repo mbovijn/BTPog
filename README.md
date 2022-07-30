@@ -53,10 +53,17 @@ These statistics are interesting if you want to analyze whether a player cheated
 ## BTStopwatch Module
 Are you sometimes not sure which particular set of moves is faster in order to pass a certain obstacle? Just set a !cp before the obstacle, and a stopwatch after the obstacle. Once you touch the invisible stopwatch, the time it took to reach the stopwatch will appear on screen.
 
+TODO: add more documentation
+
 | Command                                           | Description
 | ---                                               | ---
-| `!btpog stopwatch`                                | Sets an invisible stopwatch at your current location, and deletes any previously set stopwatch.
-| `!btpog stopwatch 50,10,-10`                      | Sets an invisible stopwatch at location (50,10,-10), and deletes any previously set stopwatch.
+| `!btpog sw`                                       | TODO
+| `!btpog sw 0`                                     | Sets an invisible stopwatch at your current location, and deletes any previously set stopwatch.
+| `!btpog sw 0 50,10,-10`                           | Sets an invisible stopwatch at location (50,10,-10), and deletes any previously set stopwatch.
+| `!btpog sw 0 delete`                              | TODO
+| `!btpog sw 0 reset`                               | TODO
+| `!btpog sw all delete`                            | TODO
+| `!btpog sw all reset`                             | TODO
 
 ## BTSuicide Module
 Got loop movers in the map you want to rush? Use this in order to suicide at the right time, so that when you arrive at the mover, the mover is in the optimal location.
