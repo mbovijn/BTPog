@@ -3,7 +3,7 @@ class BTStopwatch extends Info;
 var PlayerPawn PlayerPawn;
 var BTStopwatchTrigger Triggers[32];
 
-var int PrecisionDecimals;
+var BTStopwatchClientSettings ClientSettings;
 
 replication
 {
@@ -11,9 +11,20 @@ replication
 		PlayerPawn, PlayerSpawnedEvent_ToClient, ExecuteCommand_ToClient;
 }
 
-function PreBeginPlay()
+simulated function PreBeginPlay()
 {
+    local Object Obj;
+
     PlayerPawn = PlayerPawn(Owner);
+
+    if (Role < ROLE_Authority)
+    {
+        Obj = new (none, 'BTPog') class'Object';
+	    ClientSettings = new (Obj, 'BTStopwatchSettings') class'BTStopwatchClientSettings';
+
+	    ClientSettings.ValidateConfig();
+		ClientSettings.SaveConfig();
+    }
 }
 
 function PlayerSpawnedEvent()
@@ -102,11 +113,15 @@ simulated function ExecutePrecisionCommand(string MutateString)
 		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
 		return;
 	}
-	PrecisionDecimals = int(Argument);
+
+	ClientSettings.PrecisionDecimals = int(Argument);
+	ClientSettings.SaveConfig();
 
 	for (Index = 0; Index < ArrayCount(Triggers); Index++)
 		if (Triggers[Index] != None)
-			Triggers[Index].PrecisionDecimals = PrecisionDecimals;
+			Triggers[Index].PrecisionDecimals = ClientSettings.PrecisionDecimals;
+	
+	ClientMessage("Configured the stopwatch precision to "$ClientSettings.PrecisionDecimals$" decimals");
 }
 
 simulated function Delete(int Index)
@@ -140,7 +155,7 @@ simulated function Create(Vector Location, int Index)
 
     Triggers[Index] = Spawn(class'BTStopwatchTrigger', Owner, , RemoveDecimals(Location));
 	Triggers[Index].ID = Index;
-	Triggers[Index].PrecisionDecimals = PrecisionDecimals;
+	Triggers[Index].PrecisionDecimals = ClientSettings.PrecisionDecimals;
 
     ClientMessage("Created stopwatch "$Index$" at location "$ToStringWithoutDecimals(Location));
 }
@@ -176,5 +191,4 @@ simulated function ClientMessage(string Message)
 defaultproperties
 {
 	RemoteRole=ROLE_SimulatedProxy
-	PrecisionDecimals=2
 }
