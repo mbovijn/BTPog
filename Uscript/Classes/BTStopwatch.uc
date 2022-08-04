@@ -2,13 +2,17 @@ class BTStopwatch extends Info;
 
 var PlayerPawn PlayerPawn;
 var BTStopwatchTrigger Triggers[32];
-
 var BTStopwatchClientSettings ClientSettings;
+
+var float SpawnTimestamp;
+var float BestCapTime; // Storing this server-side to be consistent with the actual cap times.
 
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, PlayerSpawnedEvent_ToClient, ExecuteCommand_ToClient;
+		PlayerPawn, PlayerSpawnedEvent_ToClient, PlayerCappedEvent_ToClient, ExecuteCommand_ToClient;
+	reliable if (Role < ROLE_Authority)
+		ResetBestCapTime_ToServer;
 }
 
 simulated function PreBeginPlay()
@@ -27,17 +31,46 @@ simulated function PreBeginPlay()
     }
 }
 
+function PlayerCappedEvent()
+{
+	local float NewCapTime;
+	NewCapTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
+	
+	if (NewCapTime < BestCapTime || BestCapTime == 0)
+	{
+		PlayerCappedEvent_ToClient();
+		BestCapTime = NewCapTime;
+	}
+}
+
+simulated function PlayerCappedEvent_ToClient()
+{
+	local int Index;
+	for (Index = 0; Index < ArrayCount(Triggers); Index++)
+		if (Triggers[Index] != None)
+			Triggers[Index].SetNewBestTime();
+}
+
 function PlayerSpawnedEvent()
 {
+	SpawnTimestamp = Level.TimeSeconds;
 	PlayerSpawnedEvent_ToClient();
 }
 
 simulated function PlayerSpawnedEvent_ToClient()
 {
 	local int Index;
+	
 	for (Index = 0; Index < ArrayCount(Triggers); Index++)
 		if (Triggers[Index] != None)
-			Triggers[Index].SetPlayerSpawnTime(Level.TimeSeconds);
+			Triggers[Index].SetSpawnTimestamp(Level.TimeSeconds);
+	
+	SpawnTimestamp = Level.TimeSeconds;
+}
+
+function ResetBestCapTime_ToServer()
+{
+	BestCapTime = 0;
 }
 
 function ExecuteCommand(string MutateString)
@@ -50,13 +83,17 @@ simulated function ExecuteCommand_ToClient(string MutateString)
 	local string Argument;
 	Argument = class'Utils'.static.GetArgument(MutateString, 2);
 
-	if (Argument == "all")
+	if (Argument == "" || Argument == "0" || int(Argument) != 0)
 	{
-		ExecuteAllTriggersCommand(MutateString);
+		ExecuteCreateCommand(MutateString, int(Argument));
 	}
-	else if (Argument == "" || Argument == "0" || int(Argument) != 0)
-	{ 
-		ExecuteSingleTriggerCommand(MutateString, int(Argument));
+	else if (Argument == "delete")
+	{
+		ExecuteDeleteCommand(MutateString);
+	}
+	else if (Argument == "reset")
+	{
+		ExecuteResetCommand();
 	}
 	else if (Argument == "precision")
 	{
@@ -68,38 +105,82 @@ simulated function ExecuteCommand_ToClient(string MutateString)
 	}
 }
 
-simulated function ExecuteAllTriggersCommand(string MutateString)
+simulated function ExecuteResetCommand()
 {
 	local int Index;
+
 	for (Index = 0; Index < ArrayCount(Triggers); Index++)
+			if (Triggers[Index] != None)
+				Triggers[Index].ResetBestTime();
+	
+	ResetBestCapTime_ToServer();
+
+	ClientMessage("Best times have been reset");
+}
+
+simulated function ExecuteDeleteCommand(string MutateString)
+{
+	local string Argument;
+	Argument = class'Utils'.static.GetArgument(MutateString, 3);
+
+	if (Argument == "all")
 	{
-		if (Triggers[Index] != None)
-		{
-			switch (class'Utils'.static.GetArgument(MutateString, 3))
-			{
-				case "delete": Delete(Index); break;
-				case "reset": Reset(Index); break;
-				default: ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog"); return;
-			}
-		}
+		DeleteAll();
+	}
+	else if (Argument == "0" || int(Argument) != 0)
+	{
+		Delete(int(Argument));
+	}
+	else
+	{
+		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
 	}
 }
 
-simulated function ExecuteSingleTriggerCommand(string MutateString, int Index)
+simulated function Delete(int Index)
+{
+	if (!IsValidIndex(Index))
+		return;
+	
+	DeleteInternal(Index);
+	ResetBestCapTimeIfNoTriggers();
+}
+
+simulated function DeleteAll()
+{
+	local int Index;
+	for (Index = 0; Index < ArrayCount(Triggers); Index++)
+			if (Triggers[Index] != None) DeleteInternal(Index);
+	ResetBestCapTime_ToServer();
+}
+
+simulated function bool IsValidIndex(int Index)
 {
 	if (Index < 0 || Index >= ArrayCount(Triggers))
 	{
-		ClientMessage("Only a stopwatch slot between 0 and "$(ArrayCount(Triggers) - 1)$" can be selected");
-		return;
+		ClientMessage("Please select a stopwatch index between 0 and "$(ArrayCount(Triggers) - 1));
+		return false;
 	}
+	return true;
+}
 
-	switch (class'Utils'.static.GetArgument(MutateString, 3))
-	{
-		case "delete": Delete(Index); break;
-		case "reset": Reset(Index); break;
-		case "": Create(Owner.Location, Index); break;
-		default: Create(ToVector(class'Utils'.static.GetArgument(MutateString, 3)), Index);
-	}
+simulated function ResetBestCapTimeIfNoTriggers()
+{
+	local int i;
+	for (i = 0; i < ArrayCount(Triggers); i++)
+			if (Triggers[i] != None) return;
+	ResetBestCapTime_ToServer();
+}
+
+simulated function ExecuteCreateCommand(string MutateString, int Index)
+{
+	if (!IsValidIndex(Index))
+		return;
+
+	if (class'Utils'.static.GetArgument(MutateString, 3) == "")
+		Create(Owner.Location, Index);
+	else
+		Create(ToVector(class'Utils'.static.GetArgument(MutateString, 3)), Index);
 }
 
 simulated function ExecutePrecisionCommand(string MutateString)
@@ -124,29 +205,17 @@ simulated function ExecutePrecisionCommand(string MutateString)
 	ClientMessage("Configured the stopwatch precision to "$ClientSettings.PrecisionDecimals$" decimals");
 }
 
-simulated function Delete(int Index)
+simulated function DeleteInternal(int Index)
 {
 	if (Triggers[Index] == None)
 	{
-		ClientMessage("Could not delete stopwatch since no stopwatch was found at slot "$Index);
+		ClientMessage("No stopwatch found at index "$Index);
 		return;
 	}
 
 	Triggers[Index].Destroy();
 	Triggers[Index] = None;
-	ClientMessage("Deleted stopwatch at slot "$Index);
-}
-
-simulated function Reset(int Index)
-{
-	if (Triggers[Index] == None)
-	{
-		ClientMessage("Could not reset stopwatch since no stopwatch was found at slot "$Index);
-		return;
-	}
-
-	Triggers[Index].ResetBestTime();
-	ClientMessage("Reset stopwatch at slot "$Index);
+	ClientMessage("Deleted stopwatch at index "$Index);
 }
 
 simulated function Create(Vector Location, int Index)
@@ -154,8 +223,7 @@ simulated function Create(Vector Location, int Index)
 	if (Triggers[Index] != None) Triggers[Index].Destroy();
 
     Triggers[Index] = Spawn(class'BTStopwatchTrigger', Owner, , RemoveDecimals(Location));
-	Triggers[Index].ID = Index;
-	Triggers[Index].PrecisionDecimals = ClientSettings.PrecisionDecimals;
+	Triggers[Index].Init(Index, SpawnTimestamp, ClientSettings.PrecisionDecimals);
 
     ClientMessage("Created stopwatch "$Index$" at location "$ToStringWithoutDecimals(Location));
 }

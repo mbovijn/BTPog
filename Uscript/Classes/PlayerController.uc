@@ -74,6 +74,7 @@ function PlayerSpawnedEvent()
 
 function PlayerCappedEvent()
 {
+    if (BTStopwatch != None) BTStopwatch.PlayerCappedEvent();
     if (BTCapLogger != None) BTCapLogger.PlayerCappedEvent();
 }
 

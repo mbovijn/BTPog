@@ -4,7 +4,8 @@ var PlayerPawn PlayerPawn;
 var int ID;
 var int PrecisionDecimals;
 
-var float PlayerSpawnTime;
+var float SpawnTimestamp;
+var float TempBestTime;
 var float BestTime;
 
 var float ReTriggerDelay;
@@ -15,14 +16,27 @@ simulated function PreBeginPlay()
    PlayerPawn = PlayerPawn(Owner);
 }
 
-simulated function SetPlayerSpawnTime(float SpawnTime)
+simulated function Init(int aIndex, float aSpawnTimestamp, int aPrecisionDecimals)
 {
-    PlayerSpawnTime = SpawnTime;
+	ID = aIndex;
+	SpawnTimestamp = aSpawnTimestamp;
+	PrecisionDecimals = aPrecisionDecimals;
+}
+
+simulated function SetSpawnTimestamp(float aSpawnTimestamp)
+{
+    SpawnTimestamp = aSpawnTimestamp;
+	TempBestTime = 0;
 }
 
 simulated function ResetBestTime()
 {
 	BestTime = 0;
+}
+
+simulated function SetNewBestTime()
+{
+	BestTime = TempBestTime;
 }
 
 simulated function Touch(Actor Other)
@@ -38,11 +52,11 @@ simulated function Touch(Actor Other)
 			TriggerTime = Level.TimeSeconds;
 		}
 
-		NewTime = (Level.TimeSeconds - PlayerSpawnTime) / Level.TimeDilation;
+		NewTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
 		PrintTime(NewTime);
-
-		if (NewTime < BestTime || BestTime == 0)
-			BestTime = NewTime;
+		
+		if (NewTime < TempBestTime || TempBestTime == 0)
+			TempBestTime = NewTime;
 	}
 }
 
@@ -112,5 +126,7 @@ simulated function Tick(float DeltaTime)
 
 defaultproperties
 {
-    ReTriggerDelay=0.500000
+    ReTriggerDelay=0.5
+	CollisionRadius=50
+	CollisionHeight=50
 }
