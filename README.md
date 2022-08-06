@@ -18,10 +18,11 @@ Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get 
 
 ## BTStats Module
 Shows the following information on-screen:
-- Ground Time = time in seconds you spend on the ground.
-- Air Time = time in seconds you spend in the air i.e. when jumping/falling.
+- Ground Time = time in seconds you spent on the ground.
+- Air Time = time in seconds you spent in the air i.e. when jumping/falling.
 - Dodge Double Tap Interval = time in seconds between two consecutive key presses that resulted in a dodge.
 - Dodge Block Duration = time in seconds that you're blocked from dodging again after just having dodged.
+- Time Between Dodges = time between the end of the last dodge (player landed), and the beginning of the next dodge.
 
 | Command                                           | Description
 | ---                                               | ---
@@ -53,17 +54,15 @@ These statistics are interesting if you want to analyze whether a player cheated
 ## BTStopwatch Module
 Are you sometimes not sure which particular set of moves is faster in order to pass a certain obstacle? Just set a !cp before the obstacle, and a stopwatch after the obstacle. Once you touch the invisible stopwatch, the time it took to reach the stopwatch will appear on screen.
 
-TODO: add more documentation
+You could also set stopwatches when rushing in order to get quicker feedback on how the run is going. On top of that, whenever you cap and it's a personal best, the individual stopwatch times are saved, in order to give a delta time for the next run.
 
 | Command                                           | Description
 | ---                                               | ---
-| `!btpog sw`                                       | TODO
-| `!btpog sw 0`                                     | Sets an invisible stopwatch at your current location, and deletes any previously set stopwatch.
-| `!btpog sw 0 50,10,-10`                           | Sets an invisible stopwatch at location (50,10,-10), and deletes any previously set stopwatch.
-| `!btpog sw 0 delete`                              | TODO
-| `!btpog sw 0 reset`                               | TODO
-| `!btpog sw all delete`                            | TODO
-| `!btpog sw all reset`                             | TODO
+| `!btpog sw` or `!btpog sw <id>`                   | Sets an invisible stopwatch at your current location (and deletes any previously set stopwatch). You can set up to 32 stopwatches. Valid id values: 0, 1, 2, ... 31
+| `!btpog sw <id> 50,10,-10`                        | Sets an invisible stopwatch at location 50,10,-10 (and deletes any previously set stopwatch).
+| `!btpog sw reset`                                 | Removes the best times associated with all stopwatches.
+| `!btpog sw delete <id>`                           | Delete a stopwatch. Valid id values: 0, 1, 2, ... 31, all
+| `!btpog sw precision 3`                           | Sets the amount of decimals after the dot for stopwatch times. Defaults to 2 (e.g. 8.63), but any value between 0 and 3 is valid.
 
 ## BTSuicide Module
 Got loop movers in the map you want to rush? Use this in order to suicide at the right time, so that when you arrive at the mover, the mover is in the optimal location.
@@ -78,7 +77,7 @@ What rushers can do is, go to the mover, and suicide when the mover is in a part
 | `!btpog suicide time`                              | When the mover is in the correct location, execute this command to set the time.
 | `!btpog suicide time 0.35`                         | Same as the previous command, but here you can enter a timepoint yourself.
 | `!btpog suicide suicide`                           | Queue up a suicide action. The mutator will make you suicide you as soon as the mover is in the configured location.
-| `!btpog suicide fire`                              | Queue up a fire action. The mutator will make you fire as soon as the mover is in the configured location. This was mosly used for debugging.
+| `!btpog suicide fire`                              | Queue up a fire action. The mutator will make you fire as soon as the mover is in the configured location. This was mostly used for debugging.
 
 For ease of use you could bind your suicide key to the suicide command e.g. `set input g mutate btpog suicide suicide`.
 
@@ -88,8 +87,8 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v09.Main
-ServerPackages=BTPog_v09
+ServerActors=BTPog_v10.Main
+ServerPackages=BTPog_v10
 ```
 
 # Configuration
