@@ -77,7 +77,6 @@ What rushers can do is, go to the mover, and suicide when the mover is in a part
 | `!btpog suicide time`                              | When the mover is in the correct location, execute this command to set the time.
 | `!btpog suicide time 0.35`                         | Same as the previous command, but here you can enter a timepoint yourself.
 | `!btpog suicide suicide`                           | Queue up a suicide action. The mutator will make you suicide you as soon as the mover is in the configured location.
-| `!btpog suicide fire`                              | Queue up a fire action. The mutator will make you fire as soon as the mover is in the configured location. This was mostly used for debugging.
 
 For ease of use you could bind your suicide key to the suicide command e.g. `set input g mutate btpog suicide suicide`.
 

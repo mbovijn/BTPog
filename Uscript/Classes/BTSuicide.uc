@@ -1,163 +1,111 @@
 class BTSuicide extends Info;
 
 var PlayerPawn PlayerPawn;
-
-var bool IsSuicide;
-var bool IsFire;
-var Mover SelectedMover;
-var float SelectedTimePoint;
-
-var float MoverPeriodTime;
-var byte PreviousKeyNum;
-var float TimeSinceKeyNumTransition0To1;
-var int AmountOfMoverLoops;
+var BTSuicideMoverTracker MoverTracker;
+var bool HasRequestedSuicide;
 
 function PreBeginPlay()
 {
     PlayerPawn = PlayerPawn(Owner);
 }
 
-function ExecuteCommand(string MutateString)
-{
-	switch(class'Utils'.static.GetArgument(MutateString, 2))
-	{
-		case "suicide":
-			Suicide();
-			break;
-		case "fire":
-			Fire();
-			break;
-		case "select":
-            switch (class'Utils'.static.GetArgument(MutateString, 3))
-			{
-				case "":
-					SelectMover(GetTargettedMover());
-					break;
-				default: SelectMover(GetMoverByName(class'Utils'.static.GetArgument(MutateString, 3)));
-			}
-			break;
-		case "time":
-			switch (class'Utils'.static.GetArgument(MutateString, 3))
-			{
-				case "":
-					SelectTimePoint(TimeSinceKeyNumTransition0To1);
-					break;
-				default: SelectTimePoint(float(class'Utils'.static.GetArgument(MutateString, 3)));
-			}
-			break;
-		default:
-	}
-}
-
 function Tick(float DeltaTime)
 {
-    if (SelectedMover != None)
-    {
-        // Keeping track of:
-        //   - The amount time passed since the mover transitioned from KeyNum 0 to 1.
-        //   - The total time it takes for the mover to do a full loop.
-        //   - The amount of times the mover looped.
-        TimeSinceKeyNumTransition0To1 += Deltatime;
-        if (SelectedMover.KeyNum == 1 && PreviousKeyNum == 0)
-        {
-            MoverPeriodTime = TimeSinceKeyNumTransition0To1;
-            TimeSinceKeyNumTransition0To1 = 0;
-            if (AmountOfMoverLoops < 2) AmountOfMoverLoops++;
-        }
-        PreviousKeyNum = SelectedMover.KeyNum;
+    if (MoverTracker == None)
+        return;
 
-        // Checking if this is the tick we have to suicide.
-        if ((IsFire || IsSuicide)
-            && SelectedTimePoint < TimeSinceKeyNumTransition0To1
-            && TimeSinceKeyNumTransition0To1 < (SelectedTimePoint + 2*DeltaTime) % MoverPeriodTime)
-        {
-            if (IsFire)
-            {
-                PlayerPawn.Fire();
-                IsFire = false;
-            }
-            else if (IsSuicide)
-            {
-                PlayerPawn.KilledBy(None);
-                IsSuicide = false;
-            }
-        }
+    MoverTracker.CustomTick(DeltaTime);
+
+    if (HasRequestedSuicide && MoverTracker.CanSuicide(DeltaTime))
+    {
+        PlayerPawn.KilledBy(None);
+        HasRequestedSuicide = false;
     }
 }
 
-function Fire()
+function ExecuteCommand(string MutateString)
 {
-    if (SelectedMover == None || SelectedTimePoint == 0)
-    {
-        ClientMessage("First select a mover and time point.");
-        return;
-    }
+	local string Argument;
+    Argument = class'Utils'.static.GetArgument(MutateString, 2);
 
-    IsFire = true;
+    if (Argument == "suicide")
+    {
+        ExecuteSuicideCommand();
+    }
+    else if (Argument == "select")
+    {
+        ExecuteSelectCommand(MutateString);
+    }
+    else if (Argument == "time")
+    {
+        ExecuteTimeCommand(MutateString);
+    }
+    else
+    {
+        ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
+    }
 }
 
-function Suicide()
+function ExecuteSuicideCommand()
 {
-    if (SelectedMover == None || SelectedTimePoint == 0)
+    if (MoverTracker == None)
     {
-        ClientMessage("First select a mover and time point.");
+        ClientMessage("First select a mover and configure a time point");
         return;
     }
 
-    IsSuicide = true;
+    HasRequestedSuicide = true;
 }
 
-function SelectTimePoint(float TimePoint)
+function ExecuteTimeCommand(string MutateString)
 {
-    if (SelectedMover == None)
+    local string Argument;
+    Argument = class'Utils'.static.GetArgument(MutateString, 3);
+
+    if (MoverTracker == None)
     {
-        ClientMessage("No time point selected. First select a mover.");
+        ClientMessage("First select a mover");
         return;
     }
 
-    if (AmountOfMoverLoops < 2)
-    {
-        ClientMessage("Mover period time is being determined. Try again.");
-        return;
-    }
-
-    if (TimePoint > MoverPeriodTime)
-    {
-        ClientMessage("Pick a time point smaller than the mover period time of "$MoverPeriodTime);
-        return;
-    }
-
-    SelectedTimePoint = TimePoint;
-    ClientMessage("Selected time point "$SelectedTimePoint$" for mover with period "$MoverPeriodTime);
+    MoverTracker.SetTimePoint(Argument);
 }
 
-function SelectMover(Mover Mover)
+function ExecuteSelectCommand(string MutateString)
 {
-    MoverPeriodTime = 0;
-    AmountOfMoverLoops = 0;
-    TimeSinceKeyNumTransition0To1 = 0;
-    SelectedTimePoint = 0;
+    local string Argument;
+    Argument = class'Utils'.static.GetArgument(MutateString, 3);
 
-    SelectedMover = Mover;
-    if (SelectedMover == None)
+    if (MoverTracker != None)
     {
-        ClientMessage("Mover not found");
+        MoverTracker.Destroy();
+        MoverTracker = None;
+    }
+
+    if (Argument == "")
+        CreateMoverTracker(GetTargettedMover());
+    else
+        CreateMoverTracker(GetMoverByName(Argument));
+}
+
+function CreateMoverTracker(Mover aMover)
+{
+    if (aMover == None)
+    {
+        ClientMessage("No mover found");
         return;
     }
 
-    PreviousKeyNum = SelectedMover.KeyNum;
-    ClientMessage("Selected mover with name "$SelectedMover.Name);
+    MoverTracker = Spawn(class'BTSuicideMoverTracker', Owner);
+    MoverTracker.Init(PlayerPawn, aMover);
+    ClientMessage("Selected mover with name "$aMover.Name);
 }
 
 function Mover GetMoverByName(String Name)
 {
     local Mover Mover;
-
 	foreach AllActors(Class'Mover', Mover)
-    {
 		if (string(Mover.Name) == Name) return Mover;
-	}
-
     return None;
 }
 
