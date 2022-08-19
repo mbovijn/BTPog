@@ -39,6 +39,12 @@ simulated function SetNewBestTime()
 	BestTime = TempBestTime;
 }
 
+simulated function Print()
+{
+	PlayerPawn.ClientMessage("[BTPog] Index = "$ID$", Location = ("$class'Utils'.static.ToStringWithoutDecimals(Location)
+								$"), BestTime = "$class'Utils'.static.FloatToString(BestTime, PrecisionDecimals));
+}
+
 simulated function Touch(Actor Other)
 {
 	local float NewTime;
@@ -127,6 +133,6 @@ simulated function Tick(float DeltaTime)
 defaultproperties
 {
     ReTriggerDelay=0.5
-	CollisionRadius=48
+	CollisionRadius=60
 	CollisionHeight=30
 }

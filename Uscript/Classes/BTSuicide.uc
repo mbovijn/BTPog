@@ -1,8 +1,9 @@
 class BTSuicide extends Info;
 
 var PlayerPawn PlayerPawn;
-var BTSuicideMoverTracker MoverTracker;
+var BTSuicideMoverTracker MoverTrackers[4];
 var bool HasRequestedSuicide;
+var bool HasRequestedFire;
 
 function PreBeginPlay()
 {
@@ -11,16 +12,47 @@ function PreBeginPlay()
 
 function Tick(float DeltaTime)
 {
-    if (MoverTracker == None)
-        return;
+    TickMoverTrackers(DeltaTime);
 
-    MoverTracker.CustomTick(DeltaTime);
-
-    if (HasRequestedSuicide && MoverTracker.CanSuicide(DeltaTime))
+    if ((HasRequestedSuicide || HasRequestedFire) && CanSuicide(DeltaTime))
     {
-        PlayerPawn.KilledBy(None);
-        HasRequestedSuicide = false;
+        if (HasRequestedSuicide)
+        {
+            PlayerPawn.KilledBy(None);
+            HasRequestedSuicide = false;
+        }
+        else
+        {
+            PlayerPawn.Fire();
+            HasRequestedFire = false;
+        }
     }
+}
+
+function TickMoverTrackers(float DeltaTime)
+{
+    local int Index;
+    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
+        if (MoverTrackers[Index] != None)
+            MoverTrackers[Index].CustomTick(DeltaTime);
+}
+
+function bool CanSuicide(float DeltaTime)
+{
+    local int Index;
+    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
+        if (MoverTrackers[Index] != None && !MoverTrackers[Index].CanSuicide(DeltaTime))
+            return false;
+    return HasSelectedAtLeastOneMover();
+}
+
+function bool HasSelectedAtLeastOneMover()
+{
+    local int Index;
+    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
+        if (MoverTrackers[Index] != None)
+            return true;
+    return false;
 }
 
 function ExecuteCommand(string MutateString)
@@ -28,17 +60,21 @@ function ExecuteCommand(string MutateString)
 	local string Argument;
     Argument = class'Utils'.static.GetArgument(MutateString, 2);
 
-    if (Argument == "suicide")
+    if (Argument == "0" || int(Argument) != 0)
+    {
+        ExecuteIndexCommand(int(Argument), MutateString);
+    }
+    else if (Argument == "fire")
+    {
+        ExecuteFireCommand();
+    }
+    else if (Argument == "suicide")
     {
         ExecuteSuicideCommand();
     }
-    else if (Argument == "select")
+    else if (Argument == "print")
     {
-        ExecuteSelectCommand(MutateString);
-    }
-    else if (Argument == "time")
-    {
-        ExecuteTimeCommand(MutateString);
+        ExecutePrintCommand();
     }
     else
     {
@@ -46,9 +82,60 @@ function ExecuteCommand(string MutateString)
     }
 }
 
+function ExecutePrintCommand()
+{
+    local int Index;
+    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
+        if (MoverTrackers[Index] != None)
+            MoverTrackers[Index].Print(Index);
+}
+
+function ExecuteIndexCommand(int Index, string MutateString)
+{
+    local string Argument;
+    Argument = class'Utils'.static.GetArgument(MutateString, 3);
+
+    if (Index < 0 || Index >= ArrayCount(MoverTrackers))
+    {
+        ClientMessage("Please specify an index between 0 and "$(ArrayCount(MoverTrackers) - 1));
+        return;
+    }
+
+    if (Argument == "select")
+    {
+        ExecuteSelectCommand(Index, MutateString);
+    }
+    else if (Argument == "time")
+    {
+        ExecuteTimeCommand(Index, MutateString);
+    }
+    else if (Argument == "alpha")
+    {
+        ExecuteAlphaCommand(Index, MutateString);
+    }
+    else
+    {
+        ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
+    }
+}
+
+function ExecuteAlphaCommand(int Index, string MutateString)
+{
+    local string Argument;
+    Argument = class'Utils'.static.GetArgument(MutateString, 4);
+
+    if (MoverTrackers[Index] == None)
+    {
+        ClientMessage("First select a mover");
+        return;
+    }
+
+    MoverTrackers[Index].SetAlpha(float(Argument));
+}
+
 function ExecuteSuicideCommand()
 {
-    if (MoverTracker == None)
+    if (!HasSelectedAtLeastOneMover())
     {
         ClientMessage("First select a mover and configure a time point");
         return;
@@ -57,47 +144,58 @@ function ExecuteSuicideCommand()
     HasRequestedSuicide = true;
 }
 
-function ExecuteTimeCommand(string MutateString)
+function ExecuteFireCommand()
+{
+    if (!HasSelectedAtLeastOneMover())
+    {
+        ClientMessage("First select a mover and configure a time point");
+        return;
+    }
+
+    HasRequestedFire = true;
+}
+
+function ExecuteTimeCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'Utils'.static.GetArgument(MutateString, 3);
+    Argument = class'Utils'.static.GetArgument(MutateString, 4);
 
-    if (MoverTracker == None)
+    if (MoverTrackers[Index] == None)
     {
         ClientMessage("First select a mover");
         return;
     }
 
-    MoverTracker.SetTimePoint(Argument);
+    MoverTrackers[Index].SetTimePoint(Argument);
 }
 
-function ExecuteSelectCommand(string MutateString)
+function ExecuteSelectCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'Utils'.static.GetArgument(MutateString, 3);
-
-    if (MoverTracker != None)
-    {
-        MoverTracker.Destroy();
-        MoverTracker = None;
-    }
+    Argument = class'Utils'.static.GetArgument(MutateString, 4);
 
     if (Argument == "")
-        CreateMoverTracker(GetTargettedMover());
+        CreateMoverTracker(Index, GetTargettedMover());
     else
-        CreateMoverTracker(GetMoverByName(Argument));
+        CreateMoverTracker(Index, GetMoverByName(Argument));
 }
 
-function CreateMoverTracker(Mover aMover)
+function CreateMoverTracker(int Index, Mover aMover)
 {
+    if (MoverTrackers[Index] != None)
+    {
+        MoverTrackers[Index].Destroy();
+        MoverTrackers[Index] = None;
+    }
+
     if (aMover == None)
     {
         ClientMessage("No mover found");
         return;
     }
 
-    MoverTracker = Spawn(class'BTSuicideMoverTracker', Owner);
-    MoverTracker.Init(PlayerPawn, aMover);
+    MoverTrackers[Index] = Spawn(class'BTSuicideMoverTracker', Owner);
+    MoverTrackers[Index].Init(PlayerPawn, aMover);
     ClientMessage("Selected mover with name "$aMover.Name);
 }
 

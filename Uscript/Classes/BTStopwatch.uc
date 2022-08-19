@@ -99,10 +99,21 @@ simulated function ExecuteCommand_ToClient(string MutateString)
 	{
 		ExecutePrecisionCommand(MutateString);
 	}
+	else if (Argument == "print")
+	{
+		ExecutePrintCommand();
+	}
 	else
 	{
 		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
 	}
+}
+
+simulated function ExecutePrintCommand()
+{
+	local int Index;
+	for (Index = 0; Index < ArrayCount(Triggers); Index++)
+			if (Triggers[Index] != None) Triggers[Index].Print();
 }
 
 simulated function ExecuteResetCommand()
@@ -176,6 +187,8 @@ simulated function ExecuteCreateCommand(string MutateString, int Index)
 {
 	if (!IsValidIndex(Index))
 		return;
+	
+	ResetBestCapTimeIfNoTriggers();
 
 	if (class'Utils'.static.GetArgument(MutateString, 3) == "")
 		Create(Owner.Location, Index);
@@ -225,7 +238,7 @@ simulated function Create(Vector Location, int Index)
     Triggers[Index] = Spawn(class'BTStopwatchTrigger', Owner, , RemoveDecimals(Location));
 	Triggers[Index].Init(Index, SpawnTimestamp, ClientSettings.PrecisionDecimals);
 
-    ClientMessage("Created stopwatch "$Index$" at location "$ToStringWithoutDecimals(Location));
+    ClientMessage("Created stopwatch "$Index$" at location "$class'Utils'.static.ToStringWithoutDecimals(Location));
 }
 
 simulated function Vector ToVector(String VectorString)
@@ -244,11 +257,6 @@ simulated function Vector RemoveDecimals(Vector OldVector)
 	NewVector.Y = int(OldVector.Y);
 	NewVector.Z = int(OldVector.Z);
 	return NewVector;
-}
-
-simulated function string ToStringWithoutDecimals(Vector Vector)
-{
-	return int(Vector.X)$","$int(Vector.Y)$","$int(Vector.Z);
 }
 
 simulated function ClientMessage(string Message)

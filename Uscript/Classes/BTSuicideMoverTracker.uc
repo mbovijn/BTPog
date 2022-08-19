@@ -3,6 +3,7 @@ class BTSuicideMoverTracker extends Info;
 var PlayerPawn PlayerPawn;
 var Mover Mover;
 var float TimePoint;
+var float Alpha;
 var float Period;
 
 var byte PreviousKeyNum;
@@ -15,6 +16,12 @@ function Init(PlayerPawn aPlayerPawn, Mover aMover)
     PlayerPawn = aPlayerPawn;
     Mover = aMover;
     PreviousKeyNum = aMover.KeyNum;
+}
+
+function Print(int Index)
+{
+    ClientMessage("Index = "$Index$", Name = "$Mover.Name$", Time = "$class'Utils'.static.FloatToString(TimePoint, 3)
+                    $", Alpha = "$class'Utils'.static.FloatToString(Alpha, 3));
 }
 
 function CustomTick(float DeltaTime)
@@ -31,13 +38,31 @@ function CustomTick(float DeltaTime)
 
 function bool CanSuicide(float DeltaTime)
 {
-    return TimePoint < TimeSinceKeyNumTransition0To1
-            && TimeSinceKeyNumTransition0To1 < (TimePoint + 2*DeltaTime) % Period;
+    return (TimePoint - Alpha) % Period < TimeSinceKeyNumTransition0To1
+            && TimeSinceKeyNumTransition0To1 < (TimePoint + 2*DeltaTime + Alpha) % Period;
 }
 
-function SetTimePoint(string optionalTimePoint)
+function SetAlpha(float NewAlpha)
 {
-    local float tempTimePoint;
+    if (AmountOfLoops < 2)
+    {
+        ClientMessage("Please wait until the period of the mover has been determined, and try again");
+        return;
+    }
+
+    if (NewAlpha < 0 || NewAlpha > Period/2)
+    {
+        ClientMessage("Specify an alpha value between 0 and "$class'Utils'.static.FloatToString(Period/2, 3));
+        return;
+    }
+
+    Alpha = NewAlpha;
+    ClientMessage("Configured alpha value "$class'Utils'.static.FloatToString(Alpha, 3)$" for mover "$Mover.Name);
+}
+
+function SetTimePoint(string OptionalTimePoint)
+{
+    local float TempTimePoint;
 
     if (AmountOfLoops < 2)
     {
@@ -45,20 +70,20 @@ function SetTimePoint(string optionalTimePoint)
         return;
     }
 
-    if (optionalTimePoint == "")
-        tempTimePoint = TimeSinceKeyNumTransition0To1;
+    if (OptionalTimePoint == "")
+        TempTimePoint = TimeSinceKeyNumTransition0To1;
     else
-        tempTimePoint = float(optionalTimePoint);
+        TempTimePoint = float(OptionalTimePoint);
 
-    if (tempTimePoint < 0 || tempTimePoint > Period)
+    if (TempTimePoint < 0 || TempTimePoint > Period)
     {
         ClientMessage("Time point has to be between 0 and the mover period (="$class'Utils'.static.FloatToString(Period, 3)$")");
         return;
     }
 
-    TimePoint = tempTimePoint;
+    TimePoint = TempTimePoint;
     ClientMessage("Configured time point "$class'Utils'.static.FloatToString(TimePoint, 3)
-                    $" for mover with period "$class'Utils'.static.FloatToString(Period, 3));
+                    $" for mover "$Mover.Name$" with period "$class'Utils'.static.FloatToString(Period, 3));
 }
 
 function ClientMessage(string Message)

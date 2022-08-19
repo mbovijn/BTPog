@@ -42,3 +42,8 @@ static function string FloatToDeltaString(float Number, int Decimals)
 	else
 		return FloatToString(Number, Decimals);
 }
+
+static function string ToStringWithoutDecimals(Vector Vector)
+{
+	return int(Vector.X)$","$int(Vector.Y)$","$int(Vector.Z);
+}

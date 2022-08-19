@@ -63,6 +63,7 @@ You could also set stopwatches when rushing in order to get quicker feedback on 
 | `!btpog sw reset`                                 | Removes the best times associated with all stopwatches.
 | `!btpog sw delete <id>`                           | Delete a stopwatch. Valid id values: 0, 1, 2, ... 31, all
 | `!btpog sw precision 3`                           | Sets the amount of decimals after the dot for stopwatch times. Defaults to 2 (e.g. 8.63), but any value between 0 and 3 is valid.
+| `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the screen.
 
 ## BTSuicide Module
 Got loop movers in the map you want to rush? Use this in order to suicide at the right time, so that when you arrive at the mover, the mover is in the optimal location.
@@ -70,13 +71,17 @@ Got loop movers in the map you want to rush? Use this in order to suicide at the
 >Not all BT maps are deterministic. Some of them have movers that are looping continuously. So when you try to rush such a map, it usually comes down to a matter of luck when you arrive at such a mover. The mover could be in an optimal position, or not. If not, you're losing valuable time.
 What rushers can do is, go to the mover, and suicide when the mover is in a particular position, such that when you respawn and rush the map, the mover is in the optimal location. This works, but it's annoying, since you repeat the whole process over and over again. This mutator is trying to address that by allowing you to queue up a suicide action, and only actually executing the suicide when the mover is in the configured location.
 
+Up to 4 movers can be selected. As such, when executing some commands, a slot/id needs to be specified. Values values are 0, 1, 2 and 3.
+
 | Command                                            | Description
 | ---                                                | ---
-| `!btpog suicide select`                            | Select which mover you want to base your suicide time on. Just aim at the mover and execute the command.
-| `!btpog suicide select Mover12`                    | Select which mover you want to base your suicide time on by providing the name of the mover.
-| `!btpog suicide time`                              | When the mover is in the correct location, execute this command to set the time.
-| `!btpog suicide time 0.35`                         | Same as the previous command, but here you can enter a timepoint yourself.
-| `!btpog suicide suicide`                           | Queue up a suicide action. The mutator will make you suicide you as soon as the mover is in the configured location.
+| `!btpog suicide <id> select`                       | Select which mover you want to base your suicide time on. Just aim at the mover and execute the command.
+| `!btpog suicide <id> select Mover12`               | Select which mover you want to base your suicide time on by providing the name of the mover.
+| `!btpog suicide <id> time`                         | When the mover is in the correct location, execute this command to set the time.
+| `!btpog suicide <id> time 0.35`                    | Same as the previous command, but here you can enter a timepoint yourself.
+| `!btpog suicide <id> alpha 0.1`                    | How much time the suicide can deviate from the configured time value. This is needed when tracking multiple movers.
+| `!btpog suicide suicide`                           | Queue up a suicide action. The mutator will make you suicide you as soon as the movers are in the configured location.
+| `!btpog suicide print`                             | Prints all selected movers with parameters to the screen.
 
 For ease of use you could bind your suicide key to the suicide command e.g. `set input g mutate btpog suicide suicide`.
 
@@ -86,8 +91,8 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v10.Main
-ServerPackages=BTPog_v10
+ServerActors=BTPog_v11.Main
+ServerPackages=BTPog_v11
 ```
 
 # Configuration
