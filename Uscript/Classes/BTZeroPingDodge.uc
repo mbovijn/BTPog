@@ -9,12 +9,12 @@ var EDodgeDir PreviousDodgeDir;
 var EPhysics PreviousPhysics;
 var EPhysics PhysicsOfFirstDodgeDone;
 var EPhysics PhysicsOfSecondDodgeDone;
-var int PreviousHealth;
+var bool PlayerJustSpawned;
 
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, ToggleIsDebugging, ToggleIsActive;
+		PlayerPawn, ToggleIsDebugging, ToggleIsActive, PlayerSpawnedEvent;
 }
 
 simulated function PreBeginPlay()
@@ -42,6 +42,11 @@ function ExecuteCommand(string MutateString)
             ToggleIsActive();
             break;
 	}
+}
+
+simulated function PlayerSpawnedEvent()
+{
+    PlayerJustSpawned = True;
 }
 
 simulated function ToggleIsActive()
@@ -79,7 +84,7 @@ simulated function CustomTick(float DeltaTime)
     if (PlayerPawn.Physics == PHYS_Walking && PreviousPhysics == PHYS_Walking
         && PlayerPawn.DodgeDir == DODGE_None && PreviousDodgeDir != DODGE_None
         && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer && PlayerPawn.DodgeClickTimer > 0
-        && PreviousHealth > 0)
+        && !PlayerJustSpawned)
     {
         if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented dodge from being cancelled after landing a jump");
         PlayerPawn.DodgeDir = PreviousDodgeDir;
@@ -94,7 +99,7 @@ simulated function CustomTick(float DeltaTime)
         && PreviousPhysics != PHYS_None
         && PlayerPawn.DodgeClickTimer < PlayerPawn.DodgeClickTime
         && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer // We need this such that the slope-dodge-block-reset trick still works.
-        && PreviousHealth > 0)
+        && !PlayerJustSpawned)
     {
         if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented unlegit dodge block reduction of "
                                             $class'Utils'.static.TimeDeltaToString(0.35 + PlayerPawn.DodgeClickTimer, Level.TimeDilation)$" seconds");
@@ -105,7 +110,7 @@ simulated function CustomTick(float DeltaTime)
     PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
     PreviousDodgeDir = PlayerPawn.DodgeDir;
     PreviousPhysics = PlayerPawn.Physics;
-    PreviousHealth = PlayerPawn.Health;
+    PlayerJustSpawned = False;
 }
 
 simulated function ClientMessage(string Message)
