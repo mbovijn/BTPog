@@ -17,12 +17,12 @@ var float AirTime;
 var float StartedWalkingTimestamp;
 var float GroundTime;
 
-var int PreviousHealth;
+var bool PlayerJustSpawned;
 
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, ToggleIsActive, ToggleIsDebugging;
+		PlayerPawn, ToggleIsActive, ToggleIsDebugging, PlayerSpawnedEvent;
 }
 
 simulated function PreBeginPlay()
@@ -50,6 +50,11 @@ function ExecuteCommand(string MutateString)
             ToggleIsActive();
             break;
 	}
+}
+
+simulated function PlayerSpawnedEvent()
+{
+	PlayerJustSpawned = True;
 }
 
 simulated function ToggleIsActive()
@@ -132,7 +137,7 @@ simulated function UpdateStats(float DeltaTime)
 
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
-	PreviousHealth = PlayerPawn.Health;
+	PlayerJustSpawned = False;
 	PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
 }
 
@@ -160,7 +165,7 @@ simulated function bool HasStoppedDodging()
 
 simulated function bool IsAfterDodgeBlock()
 {
-	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0 && PreviousPhysics != PHYS_None;
+	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && !PlayerJustSpawned && PreviousPhysics != PHYS_None;
 }
 
 // Alternative would be to draw using:

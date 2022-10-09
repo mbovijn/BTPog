@@ -71,6 +71,7 @@ function PlayerSpawnedEvent()
     if (BTStopwatch != None) BTStopwatch.PlayerSpawnedEvent();
     if (BTCapLogger != None) BTCapLogger.PlayerSpawnedEvent();
     if (BTZeroPingDodge != None) BTZeroPingDodge.PlayerSpawnedEvent();
+    if (BTStats != None) BTStats.PlayerSpawnedEvent();
 }
 
 function PlayerCappedEvent()

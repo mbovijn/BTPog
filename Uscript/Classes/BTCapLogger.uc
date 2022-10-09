@@ -14,7 +14,7 @@ var float HasLandedTimeStamp;
 
 var float PreviousDodgeClickTimer;
 
-var int PreviousHealth;
+var bool PlayerJustSpawned;
 
 var BTCapLoggerStats DodgeBlockStats;
 var BTCapLoggerStats DodgeDoubleTapStats;
@@ -87,6 +87,7 @@ simulated function PlayerSpawnedEvent_ToClient()
 	PingStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
 
 	SpawnTimestamp = Level.TimeSeconds;
+	PlayerJustSpawned = True;
 }
 
 function PlayerCappedEvent()
@@ -187,7 +188,7 @@ simulated function CustomTick(float DeltaTime)
 
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
-	PreviousHealth = PlayerPawn.Health;
+	PlayerJustSpawned = False;
 	PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
 }
 
@@ -220,7 +221,7 @@ simulated function bool HasStoppedDodging()
 
 simulated function bool IsAfterDodgeBlock()
 {
-	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && PreviousHealth > 0 && PreviousPhysics != PHYS_None;
+	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && !PlayerJustSpawned && PreviousPhysics != PHYS_None;
 }
 
 simulated function bool HasStopped(EPhysics Physics)
