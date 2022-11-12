@@ -29,7 +29,7 @@ function Init(ServerSettings ServerSettings, BTCapLoggerFile BTCapLoggerFile, BT
     if (ServerSettings.IsBTCapLoggerEnabled)
     {
         BTCapLogger = Spawn(class'BTCapLogger', Owner);
-        BTCapLogger.Init(BTCapLoggerFile, BTCapLoggerServerSettings);
+        BTCapLogger.Init(PlayerPawn(Owner), BTCapLoggerFile, BTCapLoggerServerSettings);
     }
 }
 

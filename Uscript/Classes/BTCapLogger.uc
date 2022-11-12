@@ -29,8 +29,7 @@ var int FPSTickCounter; // Ticks since last FPS calculation
 
 var int SpawnCount;
 
-var class<Actor> IACECheckClass;
-var String HardwareID;
+var PropertyRetriever HardwareIdPropertyRetriever;
 
 replication
 {
@@ -40,25 +39,19 @@ replication
 		ReportInfo_ToServer;
 }
 
-function PreBeginPlay()
-{
-   PlayerPawn = PlayerPawn(Owner);
-}
-
-function PostBeginPlay()
-{
-	// Not doing it the traditional way in order to avoid a hard dependency on ACE
-	SetPropertyText("IACECheckClass", "class'IACECheck'");
-}
-
 simulated function ReplicateConfig_ToClient(float aTicksPerFPSCalculation)
 {
 	TicksPerFPSCalculation = aTicksPerFPSCalculation;
 }
 
-function Init(BTCapLoggerFile aBTCapLoggerFile, BTCapLoggerServerSettings aBTCapLoggerSettings)
+function Init(PlayerPawn aPlayerPawn, BTCapLoggerFile aBTCapLoggerFile, BTCapLoggerServerSettings aBTCapLoggerSettings)
 {
 	BTCapLoggerFile = aBTCapLoggerFile;
+	PlayerPawn = aPlayerPawn;
+
+	HardwareIdPropertyRetriever = Spawn(class'PropertyRetriever', PlayerPawn);
+	HardwareIdPropertyRetriever.Init(PlayerPawn, "ACEReplicationInfo.hwHash");
+
 	ReplicateConfig_ToClient(aBTCapLoggerSettings.TicksPerFPSCalculation);
 }
 
@@ -138,7 +131,8 @@ function ReportInfo_ToServer(
 		ClientEngineVersion,
 		SpawnCount,
 		Renderer,
-		GetCachedHardwareID()
+		HardwareIdPropertyRetriever.GetProperty()
+		// TODO - pass in other property if defined, otherwise empty
 	);
 }
 
@@ -267,39 +261,6 @@ simulated function string GetRenderer()
 	}
 	
 	return Renderer;
-}
-
-function string GetCachedHardwareID()
-{
-	if (HardwareID == "")
-	{
-		HardwareID = GetHardwareID();
-	}
-	return HardwareID;
-}
-
-// Needs ACE installed on the server, otherwise an empty value is returned.
-function string GetHardwareID()
-{
-	local Actor IACECheck;
-
-	if (IACECheckClass == None)
-	{
-		// ACE isn't installed on this server.
-		return "";
-	}
-
-	foreach AllActors(IACECheckClass, IACECheck)
-	{
-		if (IACECheck.GetPropertyText("PlayerID") != ""
-				&& PlayerPawn.PlayerReplicationInfo.PlayerID == int(IACECheck.GetPropertyText("PlayerID")))
-		{
-			return IACECheck.GetPropertyText("HWHash");
-		}
-	}
-
-	Log("[BTPog/BTCapLogger] Could not get the HardwareID for player "$PlayerPawn.PlayerReplicationInfo.PlayerName);
-	return "";
 }
 
 defaultproperties
