@@ -30,6 +30,7 @@ var int FPSTickCounter; // Ticks since last FPS calculation
 var int SpawnCount;
 
 var PropertyRetriever HardwareIdPropertyRetriever;
+var PropertyRetriever IdPropertyRetriever;
 
 replication
 {
@@ -51,6 +52,9 @@ function Init(PlayerPawn aPlayerPawn, BTCapLoggerFile aBTCapLoggerFile, BTCapLog
 
 	HardwareIdPropertyRetriever = Spawn(class'PropertyRetriever', PlayerPawn);
 	HardwareIdPropertyRetriever.Init(PlayerPawn, "ACEReplicationInfo.hwHash");
+
+	IdPropertyRetriever = Spawn(class'PropertyRetriever', PlayerPawn);
+	IdPropertyRetriever.Init(PlayerPawn, aBTCapLoggerSettings.IdPropertyToLog);
 
 	ReplicateConfig_ToClient(aBTCapLoggerSettings.TicksPerFPSCalculation);
 }
@@ -131,8 +135,8 @@ function ReportInfo_ToServer(
 		ClientEngineVersion,
 		SpawnCount,
 		Renderer,
-		HardwareIdPropertyRetriever.GetProperty()
-		// TODO - pass in other property if defined, otherwise empty
+		HardwareIdPropertyRetriever.GetProperty(),
+		IdPropertyRetriever.GetProperty()
 	);
 }
 

@@ -1,6 +1,7 @@
 class BTCapLoggerServerSettings extends Object config (BTPog) perobjectconfig;
 
 var config int TicksPerFPSCalculation; // Amount of ticks to take into account when calculating FPS
+var config String IdPropertyToLog;
 
 function ValidateConfig()
 {
@@ -13,4 +14,5 @@ function ValidateConfig()
 defaultproperties
 {
 	TicksPerFPSCalculation=10
+	IdPropertyToLog=""
 }

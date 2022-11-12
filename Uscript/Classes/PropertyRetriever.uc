@@ -16,7 +16,7 @@ function Init(PlayerPawn aPlayerPawn, String FullPropertyName)
 
 function String GetProperty()
 {
-    if (Actor == None)
+	if (Actor == None)
         Actor = GetActor();
 
     if (Actor != None && Property == "")
@@ -28,6 +28,9 @@ function String GetProperty()
 function Actor GetActor()
 {
 	local Actor TempActor;
+
+	if (ActorName == "")
+		return None;
 
 	foreach AllActors(class'Actor', TempActor)
     {
