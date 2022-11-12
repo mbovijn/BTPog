@@ -104,17 +104,17 @@ simulated function UpdateStats(float DeltaTime)
 		// map BT-1545. If DODGE_Done is set the DodgeClickTimer will be equal to 0.
 		DodgeDoubleTapInterval = PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime);
 		TimeBetweenTwoDodges = Level.TimeSeconds - StoppedDodgingTimestamp;
-		if (ClientSettings.IsDebugging) Log("[BTPog/BTStats] Start of dodge");
+		if (ClientSettings.IsDebugging) LogAndClientMessage("Start of dodge");
 	}
 	if (HasStoppedDodging())
 	{
 		StoppedDodgingTimestamp = Level.TimeSeconds;
-		if (ClientSettings.IsDebugging) Log("[BTPog/BTStats] End of dodge");
+		if (ClientSettings.IsDebugging) LogAndClientMessage("End of dodge");
 	}
 	if (IsAfterDodgeBlock())
 	{
 		DodgeBlockDuration = Level.TimeSeconds - StoppedDodgingTimestamp;
-		if (ClientSettings.IsDebugging) Log("[BTPog/BTStats] Dodge Block Duration = "$DodgeBlockDuration);
+		if (ClientSettings.IsDebugging) LogAndClientMessage("Dodge Block Duration = "$DodgeBlockDuration);
 	}
 
 	if (HasStarted(PHYS_Falling))
@@ -181,6 +181,12 @@ simulated function ClientProgressMessage(string Messages[7])
 
 	for (i = 0; i < ArrayCount(Messages); i++)
     	if (Messages[i] != "") PlayerPawn.SetProgressMessage(Messages[i], ArrayCount(Messages) - i);
+}
+
+simulated function LogAndClientMessage(string Message)
+{
+    PlayerPawn.ClientMessage("[BTPog] "$Message);
+    Log("[BTPog/BTStats] "$Message);
 }
 
 simulated function ClientMessage(String Message)

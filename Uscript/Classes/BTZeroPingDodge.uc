@@ -88,7 +88,7 @@ simulated function CustomTick(float DeltaTime)
     {
         if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented dodge from being cancelled after landing a jump");
         PlayerPawn.DodgeDir = PreviousDodgeDir;
-        PlayerPawn.DodgeClickTimer = PlayerPawn.DodgeClickTimer - DeltaTime;
+        PlayerPawn.DodgeClickTimer = PreviousDodgeClickTimer - DeltaTime;
     }
 
     // https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4078 (Called by ClientUpdatePosition)
@@ -104,8 +104,10 @@ simulated function CustomTick(float DeltaTime)
         if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented unlegit dodge block reduction of "
                                             $class'Utils'.static.TimeDeltaToString(0.35 + PlayerPawn.DodgeClickTimer, Level.TimeDilation)$" seconds");
         PlayerPawn.DodgeDir = DODGE_Done;
-        PlayerPawn.DodgeClickTimer = PlayerPawn.DodgeClickTimer - DeltaTime;
+        PlayerPawn.DodgeClickTimer = PreviousDodgeClickTimer - DeltaTime;
     }
+
+    // TODO - improve dodging on movers / landing on movers after dodging (BT-Bonket, BT-CarnageCorp-v2, ...)
 
     PreviousDodgeClickTimer = PlayerPawn.DodgeClickTimer;
     PreviousDodgeDir = PlayerPawn.DodgeDir;
