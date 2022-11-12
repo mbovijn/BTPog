@@ -13,7 +13,7 @@ function AddValue(int Index, float Value)
 {
     if (Index < 0 || Index >= ArrayCount(Buckets))
     {
-        Log("[BTPog/BTCapLogger] Index "$Index$" is invalid");
+        // When a player joins a server, his/her FPS/Ping could have invalid values
         return;
     }
 
