@@ -28,6 +28,7 @@ function PreBeginPlay()
 	CapEventPublisher.Init(Self, ServerSettings);
 
 	BTCapLoggerFile = Spawn(class'BTCapLoggerFile');
+	BTCapLoggerFile.Init(BTCapLoggerServerSettings);
 
 	Level.Game.BaseMutator.AddMutator(Self);
 	Level.Game.RegisterMessageMutator(Self);

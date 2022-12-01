@@ -1,6 +1,13 @@
 class BTCapLoggerFile extends BTCapLoggerAbstract;
 
 var StatLogFile LogFile;
+var BTCapLoggerServerSettings ServerSettings;
+var int FileCounter;
+
+function Init(BTCapLoggerServerSettings aServerSettings)
+{
+	ServerSettings = aServerSettings;
+}
 
 function Tick(float DeltaTime)
 {
@@ -13,9 +20,11 @@ function InitLogFile()
 	LogFile = Spawn(class'StatLogFile');
     LogFile.SetTimer(0.0, False);
 
-	LogFile.StatLogFile = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$".tmp.csv";
-	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$".csv";
+	LogFile.StatLogFile = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$"."$FileCounter$".tmp.csv";
+	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$"."$FileCounter$".csv";
 	LogFile.OpenLog();
+
+	FileCounter++;
 
     LogFile.FileLog("Timestamp,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,"
 		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,"
@@ -78,6 +87,8 @@ function LogCap(
 	);
 
     LogFile.FileFlush();
+	
+	if (ServerSettings.FilePerCap) CloseLogFile();
 }
 
 function string Replace(string Source, string Search, string Replace)

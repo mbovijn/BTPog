@@ -89,8 +89,8 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v14.Main
-ServerPackages=BTPog_v14
+ServerActors=BTPog_v15.Main
+ServerPackages=BTPog_v15
 ```
 
 # Configuration
@@ -107,4 +107,5 @@ IsBTCapLoggerEnabled=True
 [BTCapLoggerSettings]
 TicksPerFPSCalculation=10
 IdPropertyToLog=
+FilePerCap=False
 ```
