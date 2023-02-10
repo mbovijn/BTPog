@@ -6,7 +6,7 @@ docker volume create --opt type=none --opt device=${UT99_DEV_PATH} --opt o=bind 
 
 cp -r ${BTPOG_USCRIPT_PATH}/. ${UT99_DEV_PATH}
 
-docker run -it --rm --platform linux/amd64 \
+docker run -it --rm --platform linux/i386 \
     -v ut99-dev:/root/.utpg:rw \
     fulcrum/ut99-build-tools \
-    "rm -f ./System/BTPog.u && ./System64/ucc-bin-amd64 make INI=../BTPog/make.ini"
+    "rm -f ./System/BTPog.u && ./System/ucc-bin make INI=../BTPog/make.ini"

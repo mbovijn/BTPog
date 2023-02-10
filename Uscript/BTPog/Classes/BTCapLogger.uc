@@ -1,19 +1,35 @@
 class BTCapLogger extends BTCapLoggerAbstract;
 
+// SERVER & CLIENT VARS
 var PlayerPawn PlayerPawn;
-var BTCapLoggerFile BTCapLoggerFile;
 
 var float SpawnTimestamp;
 var float CapTime;
 
+// SERVER VARS
+var BTCapLoggerFile BTCapLoggerFile;
+
+var PropertyRetriever HardwareIdPropertyRetriever;
+var PropertyRetriever IdPropertyRetriever;
+
+var int SpawnCount;
+
+var string ZoneCheckpoints;
+var byte PreviousZoneNumber;
+var int AmountOfZoneCheckpoints;
+
+var BTCapLoggerServerSettings BTCapLoggerServerSettings;
+
+// CLIENT VARS
+var int TicksPerFPSCalculation; // See BTCapLoggerSettings
+var float FPSTimePassed; // Time passed in seconds since last FPS calculation
+var int FPSTickCounter; // Ticks since last FPS calculation
+
 var EDodgeDir PreviousDodgeDir;
-var float StoppedDodgingTimestamp;
-
 var EPhysics PreviousPhysics; 
+var float StoppedDodgingTimestamp;
 var float HasLandedTimeStamp;
-
 var float PreviousDodgeClickTimer;
-
 var bool PlayerJustSpawned;
 
 var BTCapLoggerStats DodgeBlockStats;
@@ -22,15 +38,6 @@ var BTCapLoggerStats DodgeAfterLandingStats;
 var BTCapLoggerStats TimeBetweenDodgesStats;
 var BTCapLoggerBucketedStats FPSStats;
 var BTCapLoggerBucketedStats PingStats;
-
-var int TicksPerFPSCalculation; // See BTCapLoggerSettings
-var float FPSTimePassed; // Time passed in seconds since last FPS calculation
-var int FPSTickCounter; // Ticks since last FPS calculation
-
-var int SpawnCount;
-
-var PropertyRetriever HardwareIdPropertyRetriever;
-var PropertyRetriever IdPropertyRetriever;
 
 replication
 {
@@ -49,6 +56,7 @@ function Init(PlayerPawn aPlayerPawn, BTCapLoggerFile aBTCapLoggerFile, BTCapLog
 {
 	BTCapLoggerFile = aBTCapLoggerFile;
 	PlayerPawn = aPlayerPawn;
+	BTCapLoggerServerSettings = aBTCapLoggerSettings;
 
 	HardwareIdPropertyRetriever = Spawn(class'PropertyRetriever', PlayerPawn);
 	HardwareIdPropertyRetriever.Init(PlayerPawn, "ACEReplicationInfo.hwHash");
@@ -63,6 +71,10 @@ function PlayerSpawnedEvent()
 {
 	SpawnTimestamp = Level.TimeSeconds;
 	SpawnCount++;
+
+	AmountOfZoneCheckpoints = 0;
+	ZoneCheckpoints = "";
+	PreviousZoneNumber = PlayerPawn.FootRegion.ZoneNumber;
 	
 	PlayerSpawnedEvent_ToClient();
 }
@@ -136,8 +148,45 @@ function ReportInfo_ToServer(
 		SpawnCount,
 		Renderer,
 		HardwareIdPropertyRetriever.GetProperty(),
-		IdPropertyRetriever.GetProperty()
+		IdPropertyRetriever.GetProperty(),
+		ZoneCheckpoints
 	);
+}
+
+// The CustomTick function only gets called on the client. So, to execute something on each tick on the server,
+// we use the standard Tick function. That's OK since we don't care about the order of execution of this Tick
+// function between different modules.
+function Tick(float DeltaTime)
+{
+	if (Role < ROLE_Authority) return;
+
+	if (PreviousZoneNumber != PlayerPawn.FootRegion.ZoneNumber)
+	{
+		AddZoneCheckpoint(PlayerPawn.FootRegion.ZoneNumber);
+	}
+
+	PreviousZoneNumber = PlayerPawn.FootRegion.ZoneNumber;
+}
+
+function AddZoneCheckpoint(byte NewZoneNumber)
+{
+	local String Time;
+
+	if (AmountOfZoneCheckpoints >= BTCapLoggerServerSettings.MaxZoneCheckpoints)
+	{
+		if (BTCapLoggerServerSettings.IsDebugging)
+		{
+			Log("[BTPog/BTCapLogger] Could not track anymore zone checkpoints for player "
+				$ PlayerPawn.PlayerReplicationInfo.PlayerName $ " since the limit of "
+				$ BTCapLoggerServerSettings.MaxZoneCheckpoints $ " was reached");
+		}
+		return;
+	}
+
+	Time = class'Utils'.static.TimeDeltaToString(Level.TimeSeconds - SpawnTimestamp, Level.TimeDilation);
+	ZoneCheckpoints = ZoneCheckpoints $ NewZoneNumber $ "-" $ Time $ ";";
+	
+	AmountOfZoneCheckpoints++;
 }
 
 simulated function CustomTick(float DeltaTime)

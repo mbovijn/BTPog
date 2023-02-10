@@ -6,12 +6,21 @@ var config String IdPropertyToLog;
 // If all caps are bundled into a single file, the file will only get closed when the match is over, so the
 // data can't be read until the match is over.
 var config bool FilePerCap;
+var config bool IsDebugging;
+var config int MaxZoneCheckpoints;
 
 function ValidateConfig()
 {
-	if (TicksPerFPSCalculation < 1 || TicksPerFPSCalculation > 200) {
+	if (TicksPerFPSCalculation < 1 || TicksPerFPSCalculation > 200)
+	{
 		Log("[BTPog/BTCapLogger] TicksPerFPSCalculation is set to an invalid value. Resetting..");
 		TicksPerFPSCalculation = 10;
+	}
+
+	if (MaxZoneCheckpoints < 0 || MaxZoneCheckpoints > 1000)
+	{
+		Log("[BTPog/BTCapLogger] MaxZoneCheckpoints is set to an invalid value. Resetting..");
+		MaxZoneCheckpoints = 100;
 	}
 }
 
@@ -20,4 +29,6 @@ defaultproperties
 	TicksPerFPSCalculation=10
 	IdPropertyToLog=""
 	FilePerCap=False
+	IsDebugging=False
+	MaxZoneCheckpoints=100
 }

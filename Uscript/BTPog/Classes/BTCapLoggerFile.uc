@@ -22,11 +22,12 @@ function InitLogFile()
 
 	LogFile.StatLogFile = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$"."$FileCounter$".tmp.csv";
 	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$"."$FileCounter$".csv";
+	SetEncoding();
 	LogFile.OpenLog();
 
 	FileCounter++;
 
-    LogFile.FileLog("Timestamp,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,"
+    LogFile.FileLog("Timestamp,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,"
 		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,"
 		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,"
 		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,"
@@ -39,7 +40,8 @@ function CloseLogFile()
 {
 	if (LogFile != None)
 	{
-		Log("[BTPog/BTCapLogger] Closing the BTCapLogger file "$LogFile.StatLogFinal);
+		if (ServerSettings.IsDebugging)
+			Log("[BTPog/BTCapLogger] Closing the BTCapLogger file "$LogFile.StatLogFinal);
 
 		LogFile.StopLog();
         LogFile.Destroy();
@@ -61,7 +63,8 @@ function LogCap(
 	int SpawnCount,
 	String Renderer,
 	String HardwareID,
-	String CustomID
+	String CustomID,
+	String ZoneCheckpoints
 )
 {
 	if (LogFile == None) InitLogFile();
@@ -76,8 +79,10 @@ function LogCap(
 		ClientEngineVersion$","$
 		Renderer$","$
 		SpawnCount$","$
+		PlayerPawn.PlayerReplicationInfo.Team$","$
 		class'Utils'.static.FloatToString(CapTime, 3)$","$
 		class'Utils'.static.FloatToDeltaString(ClientCapTimeDelta, 3)$","$
+		ZoneCheckpoints$","$
 		StatsAnalysisToDetailedString(DodgeBlock, 3)$","$
 		StatsAnalysisToDetailedString(DodgeDoubleTap, 3)$","$
         StatsAnalysisToDetailedString(DodgeAfterLanding, 3)$","$
@@ -209,4 +214,22 @@ function string GetPlayerIP(PlayerPawn PlayerPawn)
 	local string Address;
 	Address = PlayerPawn.GetPlayerNetworkAddress();
 	return Left(Address, Instr(Address, ":"));
+}
+
+function SetEncoding()
+{
+    local int EngineVersion;
+    local string EngineRevision;
+
+    EngineVersion = int(Level.EngineVersion);
+    if (EngineVersion >= 469)
+    {
+        EngineRevision = Level.GetPropertyText("EngineRevision");
+        EngineRevision = Left(EngineRevision, InStr(EngineRevision, " "));
+
+        if (Len(EngineRevision) > 0 && EngineRevision != "a" && EngineRevision != "b")
+        {
+            LogFile.SetPropertyText("Encoding", "FILE_ENCODING_UTF8");
+        }
+    }
 }

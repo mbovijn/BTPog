@@ -32,9 +32,8 @@ Shows the following information on-screen:
 ## BTCapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
-Timestamp,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,CapTime,ClientCapTime,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
-2022-11-12T14:52:32.645,CTF-bt-andAction-dbl,Fulcrum,127.0.0.1,2270085666983884416,555SDWD688892F0BAE56,469c - Release,D3D9Drv,1,8.207,-0.033,0.318,0.318,0.319,0.321,0.322,5,0.173,0.173,0.182,0.188,0.202,6,0.000,0.000,0.000,0.000,0.000,0,0.515,0.515,0.521,0.523,0.544,4,38,132,138,140,0,0,0,0
-2022-11-12T14:52:41.252,CTF-bt-andAction-dbl,Fulcrum,127.0.0.1,2270085666983884416,555SDWD688892F0BAE56,469c - Release,D3D9Drv,2,7.665,+0.000,0.321,0.321,0.321,0.321,0.322,7,0.175,0.175,0.181,0.187,0.208,8,0.000,0.000,0.000,0.000,0.000,0,0.486,0.486,0.494,0.508,0.545,7,136,138,138,140,8,8,8,9
+Timestamp,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
+2023-02-10T19:00:20.239,CTF-BT-CommonMap-vF,Fulcrum,172.17.0.1,,,469d - Feb  7 2023 Preview,OpenGLDrv,1,0,42.269,+0.048,4-7.381;2-7.989;5-42.218;,0.319,0.319,0.321,0.321,0.322,8,0.162,0.162,0.178,0.187,0.213,8,0.000,0.000,0.000,0.000,0.000,0,0.000,0.000,0.000,0.000,0.000,0,180,191,194,195,23,23,23,24
 ```
 - ClientCapTime: the CapTime from the perspective of the client. This should be roughly equal to the server-side CapTime. If the client-side CapTime is significantly higher than the server-side CapTime, it could mean that the player is using a speed hack. See [this diagram](https://github.com/mbovijn/BTPog/blob/master/Resources/ClientCapTime.drawio.png) for more information on how this works.
 - DodgeBlock: percentiles on how long a player got blocked from dodging after just having dodged.
@@ -46,6 +45,7 @@ Timestamp,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,CapT
 - SpawnCount: the amount of times a player has spawned before the cap. If the count is 1, it could mean that the player used a reconnect bug to have a faster cap time.
 - HWID: ACE hardware ID. If ACE isn't installed on the server this value will be left empty.
 - CustomID: if the `IdPropertyToLog` field is configured in BTPog.ini, then the value associated with the propery will be logged. For example, if you wish to log the ACE HWID, then `ACEReplicationInfo.hwHash` would have to be provided. `ACEReplicationInfo` is the class name, and `hwHash` is a property in that class. All that's required is that the actor instance has the Owner field set to the PlayerPawn in question.
+- ZoneCheckpoints: when a player runs through a map and caps, he/she will usually transition through different zones. Each time the player changes zone, the current time and zone identifiers are stored.
 
 These statistics are interesting if you want to analyze whether a player cheated. You could also use this data to keep track of player caps.
 
@@ -89,8 +89,8 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v15.Main
-ServerPackages=BTPog_v15
+ServerActors=BTPog_v16.Main
+ServerPackages=BTPog_v16
 ```
 
 # Configuration
@@ -108,4 +108,5 @@ IsBTCapLoggerEnabled=True
 TicksPerFPSCalculation=10
 IdPropertyToLog=
 FilePerCap=False
+IsDebugging=False
 ```
