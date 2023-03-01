@@ -3,6 +3,7 @@ class BTCapLoggerFile extends BTCapLoggerAbstract;
 var StatLogFile LogFile;
 var BTCapLoggerServerSettings ServerSettings;
 var int FileCounter;
+var bool GameEnded;
 
 function Init(BTCapLoggerServerSettings aServerSettings)
 {
@@ -11,8 +12,13 @@ function Init(BTCapLoggerServerSettings aServerSettings)
 
 function Tick(float DeltaTime)
 {
-	if (Level.Game.bGameEnded || (Level.NextURL != "" && Level.NextSwitchCountdown < 0.5))
+	if (GameEnded || (Level.NextURL != "" && Level.NextSwitchCountdown < 0.5))
 		CloseLogFile();
+	
+	// We only want to close one tick after the game has ended, since in this tick the player
+	// might have capped, and we still need to log that.
+	if (Level.Game.bGameEnded)
+		GameEnded = True;
 }
 
 function InitLogFile()
@@ -34,6 +40,9 @@ function InitLogFile()
 		$"TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,"
 		$"FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,"
 		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC");
+	
+	if (ServerSettings.IsDebugging)
+		Log("[BTPog/BTCapLogger] Opened BTCapLogger file "$LogFile.StatLogFinal);
 }
 
 function CloseLogFile()
@@ -41,7 +50,7 @@ function CloseLogFile()
 	if (LogFile != None)
 	{
 		if (ServerSettings.IsDebugging)
-			Log("[BTPog/BTCapLogger] Closing the BTCapLogger file "$LogFile.StatLogFinal);
+			Log("[BTPog/BTCapLogger] Closing BTCapLogger file "$LogFile.StatLogFinal);
 
 		LogFile.StopLog();
         LogFile.Destroy();

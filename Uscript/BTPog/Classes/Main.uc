@@ -59,13 +59,6 @@ function PawnCappedEvent(Pawn Pawn)
 		GetPlayerController(PlayerPawn(Pawn)).PlayerCappedEvent();
 }
 
-// Called by the engine whenever the game ends.
-function bool HandleEndGame()
-{
-	BTCapLoggerFile.CloseLogFile();
-	return Super.HandleEndGame();
-}
-
 // Called by the engine whenever a player spawns.
 function ModifyPlayer(Pawn Other)
 {
