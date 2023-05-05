@@ -31,6 +31,7 @@ var float StoppedDodgingTimestamp;
 var float HasLandedTimeStamp;
 var float PreviousDodgeClickTimer;
 var bool PlayerJustSpawned;
+var string UniqueCapId;
 
 var BTCapLoggerStats DodgeBlockStats;
 var BTCapLoggerStats DodgeDoubleTapStats;
@@ -42,7 +43,7 @@ var BTCapLoggerBucketedStats PingStats;
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, PlayerSpawnedEvent_ToClient, PlayerCappedEvent_ToClient, ReplicateConfig_ToClient;
+		PlayerPawn, PlayerSpawnedEvent_ToClient, PlayerCappedEvent_ToClient, ReplicateConfig_ToClient, DemoMarker_ToClient;
 	reliable if (Role < ROLE_Authority)
 		ReportInfo_ToServer;
 }
@@ -67,6 +68,15 @@ function Init(PlayerPawn aPlayerPawn, BTCapLoggerFile aBTCapLoggerFile, BTCapLog
 	ReplicateConfig_ToClient(aBTCapLoggerSettings.TicksPerFPSCalculation);
 }
 
+function Timer()
+{
+	DemoMarker_ToClient("BTPOG_1S_AFTER_SPAWN_MARKER:" $ UniqueCapId);
+}
+
+simulated function DemoMarker_ToClient(String DemoSpawnMarker)
+{
+}
+
 function PlayerSpawnedEvent()
 {
 	SpawnTimestamp = Level.TimeSeconds;
@@ -75,11 +85,14 @@ function PlayerSpawnedEvent()
 	AmountOfZoneCheckpoints = 0;
 	ZoneCheckpoints = "";
 	PreviousZoneNumber = PlayerPawn.FootRegion.ZoneNumber;
+
+	UniqueCapId = class'Utils'.static.GenerateUniqueId();
 	
-	PlayerSpawnedEvent_ToClient();
+	PlayerSpawnedEvent_ToClient("BTPOG_SPAWN_MARKER:" $ UniqueCapId);
+	SetTimer(1.0, False);
 }
 
-simulated function PlayerSpawnedEvent_ToClient()
+simulated function PlayerSpawnedEvent_ToClient(String DemoSpawnMarker)
 {
 	if (DodgeBlockStats != None) DodgeBlockStats.Destroy();
 	if (DodgeDoubleTapStats != None) DodgeDoubleTapStats.Destroy();
@@ -102,10 +115,10 @@ simulated function PlayerSpawnedEvent_ToClient()
 function PlayerCappedEvent()
 {
 	CapTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
-	PlayerCappedEvent_ToClient();
+	PlayerCappedEvent_ToClient("BTPOG_CAP_MARKER:" $ UniqueCapId);
 }
 
-simulated function PlayerCappedEvent_ToClient()
+simulated function PlayerCappedEvent_ToClient(String DemoCapMarker)
 {
 	CapTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
 
@@ -135,6 +148,7 @@ function ReportInfo_ToServer(
 )
 {
 	BTCapLoggerFile.LogCap(
+		UniqueCapId,
 		PlayerPawn,
 		CapTime,
 		DodgeBlock,

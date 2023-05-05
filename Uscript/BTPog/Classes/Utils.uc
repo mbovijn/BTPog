@@ -47,3 +47,19 @@ static function string ToStringWithoutDecimals(Vector Vector)
 {
 	return int(Vector.X)$","$int(Vector.Y)$","$int(Vector.Z);
 }
+
+static function String GenerateUniqueId()
+{
+	const KeyChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	const IdLength = 24;
+
+	local string Id;
+	local int Index;
+
+	for (Index = 0; Index < IdLength; Index++)
+	{
+		Id = Id $ mid(KeyChars, rand(len(KeyChars)), 1);
+	}
+
+	return Id;
+}
