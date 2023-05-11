@@ -32,10 +32,10 @@ Shows the following information on-screen:
 ## BTCapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
-Id,Timestamp,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
-LIJG4CWPVRUF7PDFBDJGO5YR,2023-05-05T17:53:55.725,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.734,+0.007,,0.318,0.318,0.318,0.321,0.322,6,0.137,0.137,0.141,0.147,0.197,7,0.000,0.000,0.000,0.000,0.000,0,0.484,0.484,0.484,0.536,0.536,2,184,193,193,194,26,26,26,26
-HXRACVS5L98NFN6YHWB1E9GO,2023-05-05T17:55:11.109,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.625,+0.005,,0.320,0.320,0.320,0.321,0.321,6,0.147,0.147,0.156,0.183,0.235,7,0.000,0.000,0.000,0.000,0.000,0,0.521,0.521,0.521,0.544,0.544,2,179,192,193,194,25,40,40,40
-W4P30OY64MXQKKBN5AME6VT0,2023-05-05T17:57:05.516,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.567,+0.001,,0.318,0.318,0.318,0.319,0.322,6,0.157,0.157,0.158,0.162,0.219,7,0.000,0.000,0.000,0.000,0.000,0,0.498,0.498,0.498,0.514,0.514,2,181,192,193,194,26,26,26,26
+Id,Timestamp,ServerName,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC
+LIJG4CWPVRUF7PDFBDJGO5YR,2023-05-05T17:53:55.725,UT Server,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.734,+0.007,,0.318,0.318,0.318,0.321,0.322,6,0.137,0.137,0.141,0.147,0.197,7,0.000,0.000,0.000,0.000,0.000,0,0.484,0.484,0.484,0.536,0.536,2,184,193,193,194,26,26,26,26
+HXRACVS5L98NFN6YHWB1E9GO,2023-05-05T17:55:11.109,UT Server,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.625,+0.005,,0.320,0.320,0.320,0.321,0.321,6,0.147,0.147,0.156,0.183,0.235,7,0.000,0.000,0.000,0.000,0.000,0,0.521,0.521,0.521,0.544,0.544,2,179,192,193,194,25,40,40,40
+W4P30OY64MXQKKBN5AME6VT0,2023-05-05T17:57:05.516,UT Server,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.567,+0.001,,0.318,0.318,0.318,0.319,0.322,6,0.157,0.157,0.158,0.162,0.219,7,0.000,0.000,0.000,0.000,0.000,0,0.498,0.498,0.498,0.514,0.514,2,181,192,193,194,26,26,26,26
 ```
 - ClientCapTime: the CapTime from the perspective of the client. This should be roughly equal to the server-side CapTime. If the client-side CapTime is significantly higher than the server-side CapTime, it could mean that the player is using a speed hack. See [this diagram](https://github.com/mbovijn/BTPog/blob/master/Resources/ClientCapTime.drawio.png) for more information on how this works.
 - DodgeBlock: percentiles on how long a player got blocked from dodging after just having dodged.
@@ -49,6 +49,7 @@ W4P30OY64MXQKKBN5AME6VT0,2023-05-05T17:57:05.516,CTF-BT-andACTION-dbl,Fulcrum,12
 - CustomID: if the `IdPropertyToLog` field is configured in BTPog.ini, then the value associated with the propery will be logged. For example, if you wish to log the ACE HWID, then `ACEReplicationInfo.hwHash` would have to be provided. `ACEReplicationInfo` is the class name, and `hwHash` is a property in that class. All that's required is that the actor instance has the Owner field set to the PlayerPawn in question.
 - ZoneCheckpoints: when a player runs through a map and caps, he/she will usually transition through different zones. Each time the player changes zone, the current time and zone identifiers are stored.
 - Id: unique identifier for the cap.
+- ServerName: identifies which server a cap was made on. This value is taken from the server INI from the `ShortName` key under `[Engine.GameReplicationInfo]`.
 
 These statistics are interesting if you want to analyze whether a player cheated. You could also use this data to keep track of player caps.
 
@@ -92,8 +93,8 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v18.Main
-ServerPackages=BTPog_v18
+ServerActors=BTPog_v19.Main
+ServerPackages=BTPog_v19
 ```
 
 # Configuration
