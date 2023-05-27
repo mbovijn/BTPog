@@ -58,49 +58,32 @@ function CloseLogFile()
 	}
 }
 
-function LogCap(
-	String UniqueId,
-	PlayerPawn PlayerPawn,
-	float CapTime,
-	StatsAnalysis DodgeBlock,
-	StatsAnalysis DodgeDoubleTap,
-	StatsAnalysis DodgeAfterLanding,
-	StatsAnalysis TimeBetweenDodges,
-	StatsAnalysis FPS,
-	StatsAnalysis Ping,
-	float ClientCapTimeDelta,
-	String ClientEngineVersion,
-	int SpawnCount,
-	String Renderer,
-	String HardwareID,
-	String CustomID,
-	String ZoneCheckpoints
-)
+function LogCap(PlayerPawn PlayerPawn, LogData LogData)
 {
 	if (LogFile == None) InitLogFile();
 
 	LogFile.FileLog(
-		UniqueId$","$
+		LogData.UniqueId$","$
 		GetAbsoluteTimeISO8601()$","$
 		Replace(Level.Game.GameReplicationInfo.ShortName, ",", "")$","$
         GetMap()$","$
 		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
-		CustomID$","$
-		HardwareID$","$
-		ClientEngineVersion$","$
-		Renderer$","$
-		SpawnCount$","$
+		LogData.CustomID$","$
+		LogData.HardwareID$","$
+		LogData.ClientEngineVersion$","$
+		LogData.Renderer$","$
+		LogData.SpawnCount$","$
 		PlayerPawn.PlayerReplicationInfo.Team$","$
-		class'Utils'.static.FloatToString(CapTime, 3)$","$
-		class'Utils'.static.FloatToDeltaString(ClientCapTimeDelta, 3)$","$
-		ZoneCheckpoints$","$
-		StatsAnalysisToDetailedString(DodgeBlock, 3)$","$
-		StatsAnalysisToDetailedString(DodgeDoubleTap, 3)$","$
-        StatsAnalysisToDetailedString(DodgeAfterLanding, 3)$","$
-		StatsAnalysisToDetailedString(TimeBetweenDodges, 3)$","$
-		StatsAnalysisToString(FPS, 0)$","$
-		StatsAnalysisToString(Ping, 0)
+		class'Utils'.static.FloatToString(LogData.CapTime, 3)$","$
+		class'Utils'.static.FloatToDeltaString(LogData.ClientCapTimeDelta, 3)$","$
+		LogData.ZoneCheckpoints$","$
+		StatsAnalysisToDetailedString(LogData.DodgeBlock, 3)$","$
+		StatsAnalysisToDetailedString(LogData.DodgeDoubleTap, 3)$","$
+        StatsAnalysisToDetailedString(LogData.DodgeAfterLanding, 3)$","$
+		StatsAnalysisToDetailedString(LogData.TimeBetweenDodges, 3)$","$
+		StatsAnalysisToString(LogData.FPS, 0)$","$
+		StatsAnalysisToString(LogData.Ping, 0)
 	);
 
     LogFile.FileFlush();

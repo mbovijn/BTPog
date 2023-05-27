@@ -147,24 +147,24 @@ function ReportInfo_ToServer(
 	String Renderer
 )
 {
-	BTCapLoggerFile.LogCap(
-		UniqueCapId,
-		PlayerPawn,
-		CapTime,
-		DodgeBlock,
-		DodgeDoubleTap,
-		DodgeAfterLanding,
-		TimeBetweenDodges,
-		FPS,
-		Ping,
-		ClientCapTime - CapTime,
-		ClientEngineVersion,
-		SpawnCount,
-		Renderer,
-		HardwareIdPropertyRetriever.GetProperty(),
-		IdPropertyRetriever.GetProperty(),
-		ZoneCheckpoints
-	);
+	local LogData LogData;
+	LogData.UniqueId = UniqueCapId;
+	LogData.CapTime = CapTime;
+	LogData.DodgeBlock = DodgeBlock;
+	LogData.DodgeDoubleTap = DodgeDoubleTap;
+	LogData.DodgeAfterLanding = DodgeAfterLanding;
+	LogData.TimeBetweenDodges = TimeBetweenDodges;
+	LogData.FPS = FPS;
+	LogData.Ping = Ping;
+	LogData.ClientCapTimeDelta = ClientCapTime - CapTime;
+	LogData.ClientEngineVersion = ClientEngineVersion;
+	LogData.SpawnCount = SpawnCount;
+	LogData.Renderer = Renderer;
+	LogData.HardwareID = HardwareIdPropertyRetriever.GetProperty();
+	LogData.CustomID = IdPropertyRetriever.GetProperty();
+	LogData.ZoneCheckpoints = ZoneCheckpoints;
+
+	BTCapLoggerFile.LogCap(PlayerPawn, LogData);
 }
 
 // The CustomTick function only gets called on the client. So, to execute something on each tick on the server,
