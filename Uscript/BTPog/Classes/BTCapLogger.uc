@@ -39,6 +39,7 @@ var BTCapLoggerStats DodgeAfterLandingStats;
 var BTCapLoggerStats TimeBetweenDodgesStats;
 var BTCapLoggerBucketedStats FPSStats;
 var BTCapLoggerBucketedStats PingStats;
+var BTCapLoggerMinMaxStats NetspeedStats;
 
 replication
 {
@@ -100,6 +101,7 @@ simulated function PlayerSpawnedEvent_ToClient(String DemoSpawnMarker)
 	if (TimeBetweenDodgesStats != None) TimeBetweenDodgesStats.Destroy();
 	if (FPSStats != None) FPSStats.Destroy();
 	if (PingStats != None) PingStats.Destroy();
+	if (NetspeedStats != None) NetspeedStats.Destroy();
 
 	DodgeBlockStats = Spawn(class'BTCapLoggerStats', Owner);
 	DodgeDoubleTapStats = Spawn(class'BTCapLoggerStats', Owner);
@@ -107,6 +109,7 @@ simulated function PlayerSpawnedEvent_ToClient(String DemoSpawnMarker)
 	TimeBetweenDodgesStats = Spawn(class'BTCapLoggerStats', Owner);
 	FPSStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
 	PingStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
+	NetspeedStats = Spawn(class'BTCapLoggerMinMaxStats', Owner);
 
 	SpawnTimestamp = Level.TimeSeconds;
 	PlayerJustSpawned = True;
@@ -129,6 +132,7 @@ simulated function PlayerCappedEvent_ToClient(String DemoCapMarker)
 		TimeBetweenDodgesStats.Analyze(),
 		FPSStats.Analyze(),
 		PingStats.Analyze(),
+		NetspeedStats.Analyze(),
 		CapTime, // ClientCapTime
 		Level.EngineVersion$GetEngineRevision(), // e.g. 469c - May  4 2022 Preview,
 		GetRenderer()
@@ -142,6 +146,7 @@ function ReportInfo_ToServer(
 	StatsAnalysis TimeBetweenDodges,
 	StatsAnalysis FPS,
 	StatsAnalysis Ping,
+	StatsMinMaxAnalysis Netspeed,
 	float ClientCapTime,
 	String ClientEngineVersion,
 	String Renderer
@@ -156,6 +161,7 @@ function ReportInfo_ToServer(
 	LogData.TimeBetweenDodges = TimeBetweenDodges;
 	LogData.FPS = FPS;
 	LogData.Ping = Ping;
+	LogData.Netspeed = Netspeed;
 	LogData.ClientCapTimeDelta = ClientCapTime - CapTime;
 	LogData.ClientEngineVersion = ClientEngineVersion;
 	LogData.SpawnCount = SpawnCount;
@@ -211,6 +217,9 @@ simulated function CustomTick(float DeltaTime)
 
 	if (PlayerPawn.PlayerReplicationInfo != None && PlayerPawn.PlayerReplicationInfo.Ping > 0 && PingStats != None)
 		PingStats.AddValue(PlayerPawn.PlayerReplicationInfo.Ping, PlayerPawn.PlayerReplicationInfo.Ping);
+	
+	if (PlayerPawn.Player != None && PlayerPawn.Player.CurrentNetSpeed > 0 && NetspeedStats != None)
+		NetspeedStats.AddValue(PlayerPawn.Player.CurrentNetSpeed);
     
 	if (HasStartedDodging())
 	{

@@ -10,6 +10,12 @@ struct StatsAnalysis
     var int NumberOfDataPoints;
 };
 
+struct StatsMinMaxAnalysis
+{
+	var int Min;
+	var int Max;
+};
+
 struct LogData
 {
 	var String UniqueId;
@@ -20,6 +26,7 @@ struct LogData
 	var StatsAnalysis TimeBetweenDodges;
 	var StatsAnalysis FPS;
 	var StatsAnalysis Ping;
+	var StatsMinMaxAnalysis Netspeed;
 	var float ClientCapTimeDelta;
 	var String ClientEngineVersion;
 	var int SpawnCount;

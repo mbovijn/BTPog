@@ -39,7 +39,8 @@ function InitLogFile()
 		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,"
 		$"TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,"
 		$"FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,"
-		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC");
+		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,"
+		$"Netspeed_Min,Netspeed_Max");
 	
 	if (ServerSettings.IsDebugging)
 		Log("[BTPog/BTCapLogger] Opened BTCapLogger file "$LogFile.StatLogFinal);
@@ -83,7 +84,8 @@ function LogCap(PlayerPawn PlayerPawn, LogData LogData)
         StatsAnalysisToDetailedString(LogData.DodgeAfterLanding, 3)$","$
 		StatsAnalysisToDetailedString(LogData.TimeBetweenDodges, 3)$","$
 		StatsAnalysisToString(LogData.FPS, 0)$","$
-		StatsAnalysisToString(LogData.Ping, 0)
+		StatsAnalysisToString(LogData.Ping, 0)$","$
+		LogData.Netspeed.Min$","$LogData.Netspeed.Max
 	);
 
     LogFile.FileFlush();
