@@ -132,7 +132,7 @@ simulated function Tick(float DeltaTime)
 
 defaultproperties
 {
-    ReTriggerDelay=1.0
+    ReTriggerDelay=2.0
 	CollisionRadius=60
 	CollisionHeight=30
 }
