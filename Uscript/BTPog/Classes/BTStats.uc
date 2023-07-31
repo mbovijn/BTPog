@@ -3,6 +3,7 @@ class BTStats extends Info;
 var PlayerPawn PlayerPawn;
 
 var BTStatsClientSettings ClientSettings;
+var BTStatsInventory BTStatsInventory;
 
 var EDodgeDir PreviousDodgeDir;
 var float PreviousDodgeClickTimer;
@@ -19,10 +20,13 @@ var float GroundTime;
 
 var bool PlayerJustSpawned;
 
+var int InputTestTicks;
+var int InputTestTicksWithInput;
+
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, ToggleIsActive, ToggleIsDebugging, PlayerSpawnedEvent;
+		PlayerPawn, ToggleIsActive, ToggleIsDebugging, PlayerSpawnedEventToClient;
 }
 
 simulated function PreBeginPlay()
@@ -39,6 +43,14 @@ simulated function PreBeginPlay()
 	}
 }
 
+function InitBTStatsInventory()
+{
+	BTStatsInventory = Spawn(class'BTStatsInventory', Owner);
+	BTStatsInventory.BTStats = Self;
+
+	PlayerPawn.AddInventory(BTStatsInventory);
+}
+
 function ExecuteCommand(string MutateString)
 {
 	switch(class'Utils'.static.GetArgument(MutateString, 2))
@@ -52,7 +64,14 @@ function ExecuteCommand(string MutateString)
 	}
 }
 
-simulated function PlayerSpawnedEvent()
+function PlayerSpawnedEvent()
+{
+	InitBTStatsInventory(); // Because it gets destroyed on death.
+
+	PlayerSpawnedEventToClient();
+}
+
+simulated function PlayerSpawnedEventToClient()
 {
 	PlayerJustSpawned = True;
 }
@@ -85,6 +104,7 @@ simulated function CustomTick(float DeltaTime)
 		Messages[2] = "Time Between Dodges = "$class'Utils'.static.TimeDeltaToString(TimeBetweenTwoDodges, Level.TimeDilation)$" seconds";
 		Messages[3] = "Air Time = "$class'Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
 		Messages[4] = "Ground Time = "$class'Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
+		Messages[5] = "Tick Input Hit Rate = "$class'Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
 		ClientProgressMessage(Messages);
 	}
 

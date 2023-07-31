@@ -18,16 +18,32 @@ Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get 
 
 ## BTStats Module
 Shows the following information on-screen:
-- Ground Time = time in seconds you spent on the ground.
-- Air Time = time in seconds you spent in the air i.e. when jumping/falling.
-- Dodge Double Tap Interval = time in seconds between two consecutive key presses that resulted in a dodge.
-- Dodge Block Duration = time in seconds that you're blocked from dodging again after just having dodged.
-- Time Between Dodges = time between the end of the last dodge (player landed), and the beginning of the next dodge.
+#### Ground Time
+Time in seconds you spent on the ground.
+#### Air Time
+Time in seconds you spent in the air i.e. when jumping/falling.
+#### Dodge Double Tap Interval
+Time in seconds between two consecutive key presses that resulted in a dodge.
+#### Dodge Block Duration
+Time in seconds that you're blocked from dodging again after just having dodged.
+#### Time Between Dodges
+Time between the end of the last dodge (player landed), and the beginning of the next dodge.
+#### Tick Input Hit Rate
+This can be used to measure how effective you're able to bounce. In order to bounce, you need to jump on the exact tick that your character landed on the ground. So generally people do this by binding jump to the scroll wheel, as you're able to input jumps way faster like that.
+
+To use this, first change your scoll wheel bind as follows: `set input mousewheeldown jump | btpoginputtest`. Now, each time you jump with the scroll wheel, you'll see a stat such as for example `0.068 (5/73)`. This means that for a duration of 73 ticks, UT99 registered 5 jump inputs, with the first and last ticks (of those 73 ticks) being ticks with jump inputs.
+
+You'll want to strive to get this value to `1.000`. This can be done by:
+- Lowering your FPS with the command `fps <number>`.
+- Buying a mouse which allows you to "unlock" the scroll wheel.
+- Buying a mouse with a high polling rate. Generally bluetooth mice have a very low polling rate. Test this [here](https://www.clickspeedtester.com/mouse-polling-rate-checker/).
+
+Though, from my experience, even with a value `1.000`, bouncing would sometimes still not work. I don't know why.. But lowering my FPS helped.
 
 | Command                                           | Description
 | ---                                               | ---
 | `!btpog stats`                                    | Toggles the on-screen stats on/off.
-| `!btpog stats debug`                              | Toggles debug logging of dodges on/off. These can be found in your `UnrealTournament.log` file.
+| `!btpog stats debug`                              | Toggles debug logging for stats on/off. These can be found in your `UnrealTournament.log` file.
 
 ## BTCapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
@@ -93,8 +109,8 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v20.Main
-ServerPackages=BTPog_v20
+ServerActors=BTPog_v21.Main
+ServerPackages=BTPog_v21
 ```
 
 # Configuration
