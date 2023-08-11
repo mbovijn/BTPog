@@ -117,4 +117,4 @@ ScriptLog: DODGE_Done, -0.010775, 0.010775, 0.117724
 ```
 Here you can see that a call to the function 'Engine.PlayerPawn.ClientUpdatePosition' was made. This happens when the position of the player on the server is out-of-sync with the position of the player on the client. The server then corrects the position on the client, and the 'Engine.PlayerPawn.ClientUpdatePosition' function is called. As far as I know, this means that the last N movements get replayed again (albeit with some different parameters). One of those movements is the one of the player landing on the ground, after having dodged, hence the call to the function '[Engine.PlayerPawn.PlayerWalking.Landed](https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4074)'. That function sets *DodgeClickTimer* to 0, which as far as I'm concerned shouldn't happen when replaying a movement. Perhaps this can be fixed in a future patch of UT99.
 
-In the meantime I've fixed this myself in the [BTPog](https://github.com/mbovijn/BTPog/#btzeropingdodge-module) ServerActor.
+In the meantime I've fixed this myself in the [BTPog](https://github.com/mbovijn/BTPog/#ZeroPing-module) ServerActor.

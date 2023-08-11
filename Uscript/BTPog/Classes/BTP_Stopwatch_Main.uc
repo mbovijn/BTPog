@@ -1,8 +1,8 @@
-class BTStopwatch extends Info;
+class BTP_Stopwatch_Main extends Info;
 
 var PlayerPawn PlayerPawn;
-var BTStopwatchTrigger Triggers[32];
-var BTStopwatchClientSettings ClientSettings;
+var BTP_Stopwatch_Trigger Triggers[32];
+var BTP_Stopwatch_ClientConfig ClientConfig;
 
 var float SpawnTimestamp;
 var float BestCapTime; // Storing this server-side to be consistent with the actual cap times.
@@ -24,10 +24,10 @@ simulated function PreBeginPlay()
     if (Role < ROLE_Authority)
     {
         Obj = new (none, 'BTPog') class'Object';
-	    ClientSettings = new (Obj, 'BTStopwatchSettings') class'BTStopwatchClientSettings';
+	    ClientConfig = new (Obj, 'Stopwatch_ClientConfig') class'BTP_Stopwatch_ClientConfig';
 
-	    ClientSettings.ValidateConfig();
-		ClientSettings.SaveConfig();
+	    ClientConfig.ValidateConfig();
+		ClientConfig.SaveConfig();
     }
 }
 
@@ -81,7 +81,7 @@ function ExecuteCommand(string MutateString)
 simulated function ExecuteCommand_ToClient(string MutateString)
 {
 	local string Argument;
-	Argument = class'Utils'.static.GetArgument(MutateString, 2);
+	Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2);
 
 	if (Argument == "" || Argument == "0" || int(Argument) != 0)
 	{
@@ -132,7 +132,7 @@ simulated function ExecuteResetCommand()
 simulated function ExecuteDeleteCommand(string MutateString)
 {
 	local string Argument;
-	Argument = class'Utils'.static.GetArgument(MutateString, 3);
+	Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3);
 
 	if (Argument == "all")
 	{
@@ -190,10 +190,10 @@ simulated function ExecuteCreateCommand(string MutateString, int Index)
 	
 	ResetBestCapTimeIfNoTriggers();
 
-	if (class'Utils'.static.GetArgument(MutateString, 3) == "")
+	if (class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3) == "")
 		Create(Owner.Location, Index);
 	else
-		Create(ToVector(class'Utils'.static.GetArgument(MutateString, 3)), Index);
+		Create(ToVector(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3)), Index);
 }
 
 simulated function ExecutePrecisionCommand(string MutateString)
@@ -201,21 +201,21 @@ simulated function ExecutePrecisionCommand(string MutateString)
 	local int Index;
 	local string Argument;
 	
-	Argument = class'Utils'.static.GetArgument(MutateString, 3);
+	Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3);
 	if (!(Argument == "0" || (int(Argument) > 0 && int(Argument) <= 3)))
 	{
 		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
 		return;
 	}
 
-	ClientSettings.PrecisionDecimals = int(Argument);
-	ClientSettings.SaveConfig();
+	ClientConfig.PrecisionDecimals = int(Argument);
+	ClientConfig.SaveConfig();
 
 	for (Index = 0; Index < ArrayCount(Triggers); Index++)
 		if (Triggers[Index] != None)
-			Triggers[Index].PrecisionDecimals = ClientSettings.PrecisionDecimals;
+			Triggers[Index].PrecisionDecimals = ClientConfig.PrecisionDecimals;
 	
-	ClientMessage("Configured the stopwatch precision to "$ClientSettings.PrecisionDecimals$" decimals");
+	ClientMessage("Configured the stopwatch precision to "$ClientConfig.PrecisionDecimals$" decimals");
 }
 
 simulated function DeleteInternal(int Index)
@@ -235,18 +235,18 @@ simulated function Create(Vector Location, int Index)
 {
 	if (Triggers[Index] != None) Triggers[Index].Destroy();
 
-    Triggers[Index] = Spawn(class'BTStopwatchTrigger', Owner, , RemoveDecimals(Location));
-	Triggers[Index].Init(Index, SpawnTimestamp, ClientSettings.PrecisionDecimals);
+    Triggers[Index] = Spawn(class'BTP_Stopwatch_Trigger', Owner, , RemoveDecimals(Location));
+	Triggers[Index].Init(Index, SpawnTimestamp, ClientConfig.PrecisionDecimals);
 
-    ClientMessage("Created stopwatch "$Index$" at location "$class'Utils'.static.ToStringWithoutDecimals(Location));
+    ClientMessage("Created stopwatch "$Index$" at location "$class'BTP_Misc_Utils'.static.ToStringWithoutDecimals(Location));
 }
 
 simulated function Vector ToVector(String VectorString)
 {
 	local Vector NewVector;
-	NewVector.X = int(class'Utils'.static.GetStringPart(VectorString, 0, ","));
-	NewVector.Y = int(class'Utils'.static.GetStringPart(VectorString, 1, ","));
-	NewVector.Z = int(class'Utils'.static.GetStringPart(VectorString, 2, ","));
+	NewVector.X = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 0, ","));
+	NewVector.Y = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 1, ","));
+	NewVector.Z = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 2, ","));
 	return NewVector;
 }
 

@@ -1,4 +1,4 @@
-class BTCapLoggerBucketedStats extends BTCapLoggerAbstract;
+class BTP_CapLogger_BucketedStats extends BTP_CapLogger_Abstract;
 
 struct Bucket
 {

@@ -1,4 +1,4 @@
-class BTCapLoggerStats extends BTCapLoggerAbstract;
+class BTP_CapLogger_Stats extends BTP_CapLogger_Abstract;
 
 var float Values[1024];
 var int Index;
@@ -7,7 +7,7 @@ function AddValue(float Value)
 {
     if (Index == ArrayCount(Values))
     {
-        Log("[BTPog/BTCapLogger] Not recording anymore stats. Too many entries.");
+        Log("[BTPog/CapLogger] Not recording anymore stats. Too many entries.");
         return;
     }
     Values[Index++] = Value;

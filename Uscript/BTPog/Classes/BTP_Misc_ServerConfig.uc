@@ -1,4 +1,4 @@
-class ServerSettings extends Object config (BTPog) perobjectconfig;
+class BTP_Misc_ServerConfig extends Object config (BTPog) perobjectconfig;
 
 var config bool IsDebugging;
 

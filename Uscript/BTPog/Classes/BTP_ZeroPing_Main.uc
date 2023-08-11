@@ -1,8 +1,8 @@
-class BTZeroPingDodge extends Info;
+class BTP_ZeroPing_Main extends Info;
 
 var PlayerPawn PlayerPawn;
 
-var BTZeroPingDodgeClientSettings ClientSettings;
+var BTP_ZeroPing_ClientConfig ClientConfig;
 
 var float PreviousDodgeClickTimer;
 var EDodgeDir PreviousDodgeDir;
@@ -26,14 +26,14 @@ simulated function PreBeginPlay()
     if (Role < ROLE_Authority)
     {
         Obj = new (none, 'BTPog') class'Object';
-	    ClientSettings = new (Obj, 'BTZeroPingDodgeSettings') class'BTZeroPingDodgeClientSettings';
-	    ClientSettings.SaveConfig();
+	    ClientConfig = new (Obj, 'ZeroPing_ClientConfig') class'BTP_ZeroPing_ClientConfig';
+	    ClientConfig.SaveConfig();
     }
 }
 
 function ExecuteCommand(string MutateString)
 {
-    switch(class'Utils'.static.GetArgument(MutateString, 2))
+    switch(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2))
 	{
 		case "debug":
 			ToggleIsDebugging();
@@ -51,29 +51,29 @@ simulated function PlayerSpawnedEvent()
 
 simulated function ToggleIsActive()
 {
-    ClientSettings.IsActive = !ClientSettings.IsActive;
-    ClientMessage("ZPDodge Enabled = "$ClientSettings.IsActive);
-    ClientSettings.SaveConfig();
+    ClientConfig.IsActive = !ClientConfig.IsActive;
+    ClientMessage("ZPDodge Enabled = "$ClientConfig.IsActive);
+    ClientConfig.SaveConfig();
 }
 
 simulated function ToggleIsDebugging()
 {
-    ClientSettings.IsDebugging = !ClientSettings.IsDebugging;
-    ClientMessage("ZPDodge Debugging Enabled = "$ClientSettings.IsDebugging);
-    ClientSettings.SaveConfig();
+    ClientConfig.IsDebugging = !ClientConfig.IsDebugging;
+    ClientMessage("ZPDodge Debugging Enabled = "$ClientConfig.IsDebugging);
+    ClientConfig.SaveConfig();
 }
 
 simulated function CustomTick(float DeltaTime)
 {
-    if (Role == ROLE_Authority || !ClientSettings.IsActive) return;
+    if (Role == ROLE_Authority || !ClientConfig.IsActive) return;
     
     // https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4074 (Called by ClientUpdatePosition)
     // Undoes the DodgeClickTimer being set to 0 by a Landed replay event.
     if (PlayerPawn.DodgeDir == DODGE_Done && PreviousDodgeDir == DODGE_Done
         && PlayerPawn.DodgeClickTimer > PreviousDodgeClickTimer)
     {
-        if (ClientSettings.IsDebugging) LogAndClientMessage("Reduced dodge block by "
-                            $class'Utils'.static.TimeDeltaToString(Abs(PreviousDodgeClickTimer), Level.TimeDilation)$" seconds");
+        if (ClientConfig.IsDebugging) LogAndClientMessage("Reduced dodge block by "
+                            $class'BTP_Misc_Utils'.static.TimeDeltaToString(Abs(PreviousDodgeClickTimer), Level.TimeDilation)$" seconds");
         PlayerPawn.DodgeClickTimer = PreviousDodgeClickTimer - DeltaTime;
     }
 
@@ -86,7 +86,7 @@ simulated function CustomTick(float DeltaTime)
         && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer && PlayerPawn.DodgeClickTimer > 0
         && !PlayerJustSpawned)
     {
-        if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented dodge from being cancelled after landing a jump");
+        if (ClientConfig.IsDebugging) LogAndClientMessage("Prevented dodge from being cancelled after landing a jump");
         PlayerPawn.DodgeDir = PreviousDodgeDir;
         PlayerPawn.DodgeClickTimer = PreviousDodgeClickTimer - DeltaTime;
     }
@@ -101,8 +101,8 @@ simulated function CustomTick(float DeltaTime)
         && PlayerPawn.DodgeClickTimer == PreviousDodgeClickTimer // We need this such that the slope-dodge-block-reset trick still works.
         && !PlayerJustSpawned)
     {
-        if (ClientSettings.IsDebugging) LogAndClientMessage("Prevented unlegit dodge block reduction of "
-                                            $class'Utils'.static.TimeDeltaToString(0.35 + PlayerPawn.DodgeClickTimer, Level.TimeDilation)$" seconds");
+        if (ClientConfig.IsDebugging) LogAndClientMessage("Prevented unlegit dodge block reduction of "
+                                            $class'BTP_Misc_Utils'.static.TimeDeltaToString(0.35 + PlayerPawn.DodgeClickTimer, Level.TimeDilation)$" seconds");
         PlayerPawn.DodgeDir = DODGE_Done;
         PlayerPawn.DodgeClickTimer = PreviousDodgeClickTimer - DeltaTime;
     }
@@ -123,7 +123,7 @@ simulated function ClientMessage(string Message)
 simulated function LogAndClientMessage(string Message)
 {
     PlayerPawn.ClientMessage("[BTPog] "$Message);
-    Log("[BTPog/BTZeroPingDodge] "$Message);
+    Log("[BTPog/ZeroPing] "$Message);
 }
 
 defaultproperties

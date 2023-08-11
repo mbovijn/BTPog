@@ -1,4 +1,4 @@
-class BTCapLoggerServerSettings extends Object config (BTPog) perobjectconfig;
+class BTP_CapLogger_ServerConfig extends Object config (BTPog) perobjectconfig;
 
 var config int TicksPerFPSCalculation; // Amount of ticks to take into account when calculating FPS
 var config String IdPropertyToLog;
@@ -13,13 +13,13 @@ function ValidateConfig()
 {
 	if (TicksPerFPSCalculation < 1 || TicksPerFPSCalculation > 200)
 	{
-		Log("[BTPog/BTCapLogger] TicksPerFPSCalculation is set to an invalid value. Resetting..");
+		Log("[BTPog/CapLogger] TicksPerFPSCalculation is set to an invalid value. Resetting..");
 		TicksPerFPSCalculation = 10;
 	}
 
 	if (MaxZoneCheckpoints < 0 || MaxZoneCheckpoints > 1000)
 	{
-		Log("[BTPog/BTCapLogger] MaxZoneCheckpoints is set to an invalid value. Resetting..");
+		Log("[BTPog/CapLogger] MaxZoneCheckpoints is set to an invalid value. Resetting..");
 		MaxZoneCheckpoints = 100;
 	}
 }

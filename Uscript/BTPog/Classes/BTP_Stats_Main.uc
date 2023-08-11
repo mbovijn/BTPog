@@ -1,9 +1,9 @@
-class BTStats extends Info;
+class BTP_Stats_Main extends Info;
 
 var PlayerPawn PlayerPawn;
 
-var BTStatsClientSettings ClientSettings;
-var BTStatsInventory BTStatsInventory;
+var BTP_Stats_ClientConfig ClientConfig;
+var BTP_Stats_Inventory BTP_Stats_Inventory;
 
 var EDodgeDir PreviousDodgeDir;
 var float PreviousDodgeClickTimer;
@@ -38,22 +38,22 @@ simulated function PreBeginPlay()
 	if (Role < ROLE_Authority)
 	{
 		Obj = new (none, 'BTPog') class'Object';
-		ClientSettings = new (Obj, 'BTStatsSettings') class'BTStatsClientSettings';
-		ClientSettings.SaveConfig();
+		ClientConfig = new (Obj, 'Stats_ClientConfig') class'BTP_Stats_ClientConfig';
+		ClientConfig.SaveConfig();
 	}
 }
 
-function InitBTStatsInventory()
+function InitBTP_Stats_Inventory()
 {
-	BTStatsInventory = Spawn(class'BTStatsInventory', Owner);
-	BTStatsInventory.BTStats = Self;
+	BTP_Stats_Inventory = Spawn(class'BTP_Stats_Inventory', Owner);
+	BTP_Stats_Inventory.BTP_Stats_Main = Self;
 
-	PlayerPawn.AddInventory(BTStatsInventory);
+	PlayerPawn.AddInventory(BTP_Stats_Inventory);
 }
 
 function ExecuteCommand(string MutateString)
 {
-	switch(class'Utils'.static.GetArgument(MutateString, 2))
+	switch(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2))
 	{
 		case "debug":
 			ToggleIsDebugging();
@@ -66,7 +66,7 @@ function ExecuteCommand(string MutateString)
 
 function PlayerSpawnedEvent()
 {
-	InitBTStatsInventory(); // Because it gets destroyed on death.
+	InitBTP_Stats_Inventory(); // Because it gets destroyed on death.
 
 	PlayerSpawnedEventToClient();
 }
@@ -78,39 +78,39 @@ simulated function PlayerSpawnedEventToClient()
 
 simulated function ToggleIsActive()
 {
-    ClientSettings.IsActive = !ClientSettings.IsActive;
-    ClientSettings.SaveConfig();
+    ClientConfig.IsActive = !ClientConfig.IsActive;
+    ClientConfig.SaveConfig();
 }
 
 simulated function ToggleIsDebugging()
 {
-    ClientSettings.IsDebugging = !ClientSettings.IsDebugging;
-    ClientMessage("BTStats Debugging Enabled = "$ClientSettings.IsDebugging);
-    ClientSettings.SaveConfig();
+    ClientConfig.IsDebugging = !ClientConfig.IsDebugging;
+    ClientMessage("BTP_Stats_Main Debugging Enabled = "$ClientConfig.IsDebugging);
+    ClientConfig.SaveConfig();
 }
 
 simulated function CustomTick(float DeltaTime)
 {
     local string Messages[7];
 
-	if (Role == ROLE_Authority || (!ClientSettings.IsActive && !ClientSettings.IsDebugging)) return;
+	if (Role == ROLE_Authority || (!ClientConfig.IsActive && !ClientConfig.IsDebugging)) return;
 
 	UpdateStats(DeltaTime);
 
-	if (ClientSettings.IsActive)
+	if (ClientConfig.IsActive)
 	{
-		Messages[0] = "Dodge Double Tap Interval = "$class'Utils'.static.TimeDeltaToString(DodgeDoubleTapInterval, Level.TimeDilation)$" seconds";
-		Messages[1] = "Dodge Block Duration = "$class'Utils'.static.TimeDeltaToString(DodgeBlockDuration, Level.TimeDilation)$" seconds";
-		Messages[2] = "Time Between Dodges = "$class'Utils'.static.TimeDeltaToString(TimeBetweenTwoDodges, Level.TimeDilation)$" seconds";
-		Messages[3] = "Air Time = "$class'Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
-		Messages[4] = "Ground Time = "$class'Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
-		Messages[5] = "Tick Input Hit Rate = "$class'Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
+		Messages[0] = "Dodge Double Tap Interval = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(DodgeDoubleTapInterval, Level.TimeDilation)$" seconds";
+		Messages[1] = "Dodge Block Duration = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(DodgeBlockDuration, Level.TimeDilation)$" seconds";
+		Messages[2] = "Time Between Dodges = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(TimeBetweenTwoDodges, Level.TimeDilation)$" seconds";
+		Messages[3] = "Air Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
+		Messages[4] = "Ground Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
+		Messages[5] = "Tick Input Hit Rate = "$class'BTP_Misc_Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
 		ClientProgressMessage(Messages);
 	}
 
-	if (ClientSettings.IsDebugging)
+	if (ClientConfig.IsDebugging)
 	{
-		Log("[BTPog/BTStats] "$PlayerPawn.Health$" - "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
+		Log("[BTPog/Stats] "$PlayerPawn.Health$" - "$GetEnum(enum'EPhysics', PlayerPawn.Physics)$" - "$GetEnum(enum'EDodgeDir', PlayerPawn.DodgeDir)
 			$" - "$PlayerPawn.DodgeClickTimer$" - "$DeltaTime$" - "$Level.TimeSeconds);
 	}
 }
@@ -124,17 +124,17 @@ simulated function UpdateStats(float DeltaTime)
 		// map BT-1545. If DODGE_Done is set the DodgeClickTimer will be equal to 0.
 		DodgeDoubleTapInterval = PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime);
 		TimeBetweenTwoDodges = Level.TimeSeconds - StoppedDodgingTimestamp;
-		if (ClientSettings.IsDebugging) LogAndClientMessage("Start of dodge");
+		if (ClientConfig.IsDebugging) LogAndClientMessage("Start of dodge");
 	}
 	if (HasStoppedDodging())
 	{
 		StoppedDodgingTimestamp = Level.TimeSeconds;
-		if (ClientSettings.IsDebugging) LogAndClientMessage("End of dodge");
+		if (ClientConfig.IsDebugging) LogAndClientMessage("End of dodge");
 	}
 	if (IsAfterDodgeBlock())
 	{
 		DodgeBlockDuration = Level.TimeSeconds - StoppedDodgingTimestamp;
-		if (ClientSettings.IsDebugging) LogAndClientMessage("Dodge Block Duration = "$DodgeBlockDuration);
+		if (ClientConfig.IsDebugging) LogAndClientMessage("Dodge Block Duration = "$DodgeBlockDuration);
 	}
 
 	if (HasStarted(PHYS_Falling))
@@ -206,7 +206,7 @@ simulated function ClientProgressMessage(string Messages[7])
 simulated function LogAndClientMessage(string Message)
 {
     PlayerPawn.ClientMessage("[BTPog] "$Message);
-    Log("[BTPog/BTStats] "$Message);
+    Log("[BTPog/Stats] "$Message);
 }
 
 simulated function ClientMessage(String Message)

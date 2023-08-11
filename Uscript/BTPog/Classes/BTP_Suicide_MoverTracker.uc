@@ -1,4 +1,4 @@
-class BTSuicideMoverTracker extends Info;
+class BTP_Suicide_MoverTracker extends Info;
 
 var PlayerPawn PlayerPawn;
 var Mover Mover;
@@ -20,8 +20,8 @@ function Init(PlayerPawn aPlayerPawn, Mover aMover)
 
 function Print(int Index)
 {
-    ClientMessage("Index = "$Index$", Name = "$Mover.Name$", Time = "$class'Utils'.static.FloatToString(TimePoint, 3)
-                    $", Alpha = "$class'Utils'.static.FloatToString(Alpha, 3));
+    ClientMessage("Index = "$Index$", Name = "$Mover.Name$", Time = "$class'BTP_Misc_Utils'.static.FloatToString(TimePoint, 3)
+                    $", Alpha = "$class'BTP_Misc_Utils'.static.FloatToString(Alpha, 3));
 }
 
 function CustomTick(float DeltaTime)
@@ -52,12 +52,12 @@ function SetAlpha(float NewAlpha)
 
     if (NewAlpha < 0 || NewAlpha > Period/2)
     {
-        ClientMessage("Specify an alpha value between 0 and "$class'Utils'.static.FloatToString(Period/2, 3));
+        ClientMessage("Specify an alpha value between 0 and "$class'BTP_Misc_Utils'.static.FloatToString(Period/2, 3));
         return;
     }
 
     Alpha = NewAlpha;
-    ClientMessage("Configured alpha value "$class'Utils'.static.FloatToString(Alpha, 3)$" for mover "$Mover.Name);
+    ClientMessage("Configured alpha value "$class'BTP_Misc_Utils'.static.FloatToString(Alpha, 3)$" for mover "$Mover.Name);
 }
 
 function SetTimePoint(string OptionalTimePoint)
@@ -77,13 +77,13 @@ function SetTimePoint(string OptionalTimePoint)
 
     if (TempTimePoint < 0 || TempTimePoint > Period)
     {
-        ClientMessage("Time point has to be between 0 and the mover period (="$class'Utils'.static.FloatToString(Period, 3)$")");
+        ClientMessage("Time point has to be between 0 and the mover period (="$class'BTP_Misc_Utils'.static.FloatToString(Period, 3)$")");
         return;
     }
 
     TimePoint = TempTimePoint;
-    ClientMessage("Configured time point "$class'Utils'.static.FloatToString(TimePoint, 3)
-                    $" for mover "$Mover.Name$" with period "$class'Utils'.static.FloatToString(Period, 3));
+    ClientMessage("Configured time point "$class'BTP_Misc_Utils'.static.FloatToString(TimePoint, 3)
+                    $" for mover "$Mover.Name$" with period "$class'BTP_Misc_Utils'.static.FloatToString(Period, 3));
 }
 
 function ClientMessage(string Message)

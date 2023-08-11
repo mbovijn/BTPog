@@ -1,4 +1,4 @@
-class Utils extends Object;
+class BTP_Misc_Utils extends Object;
 
 static function string GetArgument(string FullString, int ArgumentNumber)
 {

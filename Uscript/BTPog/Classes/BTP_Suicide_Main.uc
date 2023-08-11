@@ -1,7 +1,7 @@
-class BTSuicide extends Info;
+class BTP_Suicide_Main extends Info;
 
 var PlayerPawn PlayerPawn;
-var BTSuicideMoverTracker MoverTrackers[4];
+var BTP_Suicide_MoverTracker MoverTrackers[4];
 var bool HasRequestedSuicide;
 var bool HasRequestedFire;
 
@@ -58,7 +58,7 @@ function bool HasSelectedAtLeastOneMover()
 function ExecuteCommand(string MutateString)
 {
 	local string Argument;
-    Argument = class'Utils'.static.GetArgument(MutateString, 2);
+    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2);
 
     if (Argument == "0" || int(Argument) != 0)
     {
@@ -93,7 +93,7 @@ function ExecutePrintCommand()
 function ExecuteIndexCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'Utils'.static.GetArgument(MutateString, 3);
+    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3);
 
     if (Index < 0 || Index >= ArrayCount(MoverTrackers))
     {
@@ -122,7 +122,7 @@ function ExecuteIndexCommand(int Index, string MutateString)
 function ExecuteAlphaCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'Utils'.static.GetArgument(MutateString, 4);
+    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 4);
 
     if (MoverTrackers[Index] == None)
     {
@@ -158,7 +158,7 @@ function ExecuteFireCommand()
 function ExecuteTimeCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'Utils'.static.GetArgument(MutateString, 4);
+    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 4);
 
     if (MoverTrackers[Index] == None)
     {
@@ -172,7 +172,7 @@ function ExecuteTimeCommand(int Index, string MutateString)
 function ExecuteSelectCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'Utils'.static.GetArgument(MutateString, 4);
+    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 4);
 
     if (Argument == "")
         CreateMoverTracker(Index, GetTargettedMover());
@@ -194,7 +194,7 @@ function CreateMoverTracker(int Index, Mover aMover)
         return;
     }
 
-    MoverTrackers[Index] = Spawn(class'BTSuicideMoverTracker', Owner);
+    MoverTrackers[Index] = Spawn(class'BTP_Suicide_MoverTracker', Owner);
     MoverTrackers[Index].Init(PlayerPawn, aMover);
     ClientMessage("Selected mover with name "$aMover.Name);
 }

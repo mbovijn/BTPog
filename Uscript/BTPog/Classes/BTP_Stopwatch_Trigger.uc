@@ -1,4 +1,4 @@
-class BTStopwatchTrigger extends Triggers;
+class BTP_Stopwatch_Trigger extends Triggers;
 
 var PlayerPawn PlayerPawn;
 var int ID;
@@ -41,8 +41,8 @@ simulated function SetNewBestTime()
 
 simulated function Print()
 {
-	PlayerPawn.ClientMessage("[BTPog] Index = "$ID$", Location = ("$class'Utils'.static.ToStringWithoutDecimals(Location)
-								$"), BestTime = "$class'Utils'.static.FloatToString(BestTime, PrecisionDecimals));
+	PlayerPawn.ClientMessage("[BTPog] Index = "$ID$", Location = ("$class'BTP_Misc_Utils'.static.ToStringWithoutDecimals(Location)
+								$"), BestTime = "$class'BTP_Misc_Utils'.static.FloatToString(BestTime, PrecisionDecimals));
 }
 
 simulated function Touch(Actor Other)
@@ -74,8 +74,8 @@ simulated function PrintTime(float NewTime)
 	TruncatedBestTime = int(BestTime * (10**PrecisionDecimals));
 
 	ClientProgressMessage(
-		class'Utils'.static.FloatToString(NewTime, PrecisionDecimals),
-		class'Utils'.static.FloatToDeltaString((TruncatedNewTime - TruncatedBestTime) / (10**PrecisionDecimals), PrecisionDecimals),
+		class'BTP_Misc_Utils'.static.FloatToString(NewTime, PrecisionDecimals),
+		class'BTP_Misc_Utils'.static.FloatToDeltaString((TruncatedNewTime - TruncatedBestTime) / (10**PrecisionDecimals), PrecisionDecimals),
 		DetermineTextColor(TruncatedNewTime, TruncatedBestTime)
 	);
 }

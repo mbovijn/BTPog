@@ -1,4 +1,4 @@
-class BTCapLoggerMinMaxStats extends BTCapLoggerAbstract;
+class BTP_CapLogger_MinMaxStats extends BTP_CapLogger_Abstract;
 
 var StatsMinMaxAnalysis Analysis;
 

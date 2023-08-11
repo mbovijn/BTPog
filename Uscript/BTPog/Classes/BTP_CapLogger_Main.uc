@@ -1,4 +1,4 @@
-class BTCapLogger extends BTCapLoggerAbstract;
+class BTP_CapLogger_Main extends BTP_CapLogger_Abstract;
 
 // SERVER & CLIENT VARS
 var PlayerPawn PlayerPawn;
@@ -7,10 +7,10 @@ var float SpawnTimestamp;
 var float CapTime;
 
 // SERVER VARS
-var BTCapLoggerFile BTCapLoggerFile;
+var BTP_CapLogger_File BTP_CapLogger_File;
 
-var PropertyRetriever HardwareIdPropertyRetriever;
-var PropertyRetriever IdPropertyRetriever;
+var BTP_Misc_PropertyRetriever HardwareIdBTP_Misc_PropertyRetriever;
+var BTP_Misc_PropertyRetriever IdBTP_Misc_PropertyRetriever;
 
 var int SpawnCount;
 
@@ -18,10 +18,10 @@ var string ZoneCheckpoints;
 var byte PreviousZoneNumber;
 var int AmountOfZoneCheckpoints;
 
-var BTCapLoggerServerSettings BTCapLoggerServerSettings;
+var BTP_CapLogger_ServerConfig BTP_CapLogger_ServerConfig;
 
 // CLIENT VARS
-var int TicksPerFPSCalculation; // See BTCapLoggerSettings
+var int TicksPerFPSCalculation; // See BTP_CapLogger_ServerConfig
 var float FPSTimePassed; // Time passed in seconds since last FPS calculation
 var int FPSTickCounter; // Ticks since last FPS calculation
 
@@ -33,13 +33,13 @@ var float PreviousDodgeClickTimer;
 var bool PlayerJustSpawned;
 var string UniqueCapId;
 
-var BTCapLoggerStats DodgeBlockStats;
-var BTCapLoggerStats DodgeDoubleTapStats;
-var BTCapLoggerStats DodgeAfterLandingStats;
-var BTCapLoggerStats TimeBetweenDodgesStats;
-var BTCapLoggerBucketedStats FPSStats;
-var BTCapLoggerBucketedStats PingStats;
-var BTCapLoggerMinMaxStats NetspeedStats;
+var BTP_CapLogger_Stats DodgeBlockStats;
+var BTP_CapLogger_Stats DodgeDoubleTapStats;
+var BTP_CapLogger_Stats DodgeAfterLandingStats;
+var BTP_CapLogger_Stats TimeBetweenDodgesStats;
+var BTP_CapLogger_BucketedStats FPSStats;
+var BTP_CapLogger_BucketedStats PingStats;
+var BTP_CapLogger_MinMaxStats NetspeedStats;
 
 replication
 {
@@ -54,19 +54,19 @@ simulated function ReplicateConfig_ToClient(float aTicksPerFPSCalculation)
 	TicksPerFPSCalculation = aTicksPerFPSCalculation;
 }
 
-function Init(PlayerPawn aPlayerPawn, BTCapLoggerFile aBTCapLoggerFile, BTCapLoggerServerSettings aBTCapLoggerSettings)
+function Init(PlayerPawn aPlayerPawn, BTP_CapLogger_File aBTP_CapLogger_File, BTP_CapLogger_ServerConfig aBTP_CapLogger_ServerConfig)
 {
-	BTCapLoggerFile = aBTCapLoggerFile;
+	BTP_CapLogger_File = aBTP_CapLogger_File;
 	PlayerPawn = aPlayerPawn;
-	BTCapLoggerServerSettings = aBTCapLoggerSettings;
+	BTP_CapLogger_ServerConfig = aBTP_CapLogger_ServerConfig;
 
-	HardwareIdPropertyRetriever = Spawn(class'PropertyRetriever', PlayerPawn);
-	HardwareIdPropertyRetriever.Init(PlayerPawn, "ACEReplicationInfo.hwHash");
+	HardwareIdBTP_Misc_PropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', PlayerPawn);
+	HardwareIdBTP_Misc_PropertyRetriever.Init(PlayerPawn, "ACEReplicationInfo.hwHash");
 
-	IdPropertyRetriever = Spawn(class'PropertyRetriever', PlayerPawn);
-	IdPropertyRetriever.Init(PlayerPawn, aBTCapLoggerSettings.IdPropertyToLog);
+	IdBTP_Misc_PropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', PlayerPawn);
+	IdBTP_Misc_PropertyRetriever.Init(PlayerPawn, aBTP_CapLogger_ServerConfig.IdPropertyToLog);
 
-	ReplicateConfig_ToClient(aBTCapLoggerSettings.TicksPerFPSCalculation);
+	ReplicateConfig_ToClient(aBTP_CapLogger_ServerConfig.TicksPerFPSCalculation);
 }
 
 function Timer()
@@ -87,7 +87,7 @@ function PlayerSpawnedEvent()
 	ZoneCheckpoints = "";
 	PreviousZoneNumber = PlayerPawn.FootRegion.ZoneNumber;
 
-	UniqueCapId = class'Utils'.static.GenerateUniqueId();
+	UniqueCapId = class'BTP_Misc_Utils'.static.GenerateUniqueId();
 	
 	PlayerSpawnedEvent_ToClient("BTPOG_SPAWN_MARKER:" $ UniqueCapId);
 	SetTimer(1.0, False);
@@ -103,13 +103,13 @@ simulated function PlayerSpawnedEvent_ToClient(String DemoSpawnMarker)
 	if (PingStats != None) PingStats.Destroy();
 	if (NetspeedStats != None) NetspeedStats.Destroy();
 
-	DodgeBlockStats = Spawn(class'BTCapLoggerStats', Owner);
-	DodgeDoubleTapStats = Spawn(class'BTCapLoggerStats', Owner);
-	DodgeAfterLandingStats = Spawn(class'BTCapLoggerStats', Owner);
-	TimeBetweenDodgesStats = Spawn(class'BTCapLoggerStats', Owner);
-	FPSStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
-	PingStats = Spawn(class'BTCapLoggerBucketedStats', Owner);
-	NetspeedStats = Spawn(class'BTCapLoggerMinMaxStats', Owner);
+	DodgeBlockStats = Spawn(class'BTP_CapLogger_Stats', Owner);
+	DodgeDoubleTapStats = Spawn(class'BTP_CapLogger_Stats', Owner);
+	DodgeAfterLandingStats = Spawn(class'BTP_CapLogger_Stats', Owner);
+	TimeBetweenDodgesStats = Spawn(class'BTP_CapLogger_Stats', Owner);
+	FPSStats = Spawn(class'BTP_CapLogger_BucketedStats', Owner);
+	PingStats = Spawn(class'BTP_CapLogger_BucketedStats', Owner);
+	NetspeedStats = Spawn(class'BTP_CapLogger_MinMaxStats', Owner);
 
 	SpawnTimestamp = Level.TimeSeconds;
 	PlayerJustSpawned = True;
@@ -166,11 +166,11 @@ function ReportInfo_ToServer(
 	LogData.ClientEngineVersion = ClientEngineVersion;
 	LogData.SpawnCount = SpawnCount;
 	LogData.Renderer = Renderer;
-	LogData.HardwareID = HardwareIdPropertyRetriever.GetProperty();
-	LogData.CustomID = IdPropertyRetriever.GetProperty();
+	LogData.HardwareID = HardwareIdBTP_Misc_PropertyRetriever.GetProperty();
+	LogData.CustomID = IdBTP_Misc_PropertyRetriever.GetProperty();
 	LogData.ZoneCheckpoints = ZoneCheckpoints;
 
-	BTCapLoggerFile.LogCap(PlayerPawn, LogData);
+	BTP_CapLogger_File.LogCap(PlayerPawn, LogData);
 }
 
 // The CustomTick function only gets called on the client. So, to execute something on each tick on the server,
@@ -192,18 +192,18 @@ function AddZoneCheckpoint(byte NewZoneNumber)
 {
 	local String Time;
 
-	if (AmountOfZoneCheckpoints >= BTCapLoggerServerSettings.MaxZoneCheckpoints)
+	if (AmountOfZoneCheckpoints >= BTP_CapLogger_ServerConfig.MaxZoneCheckpoints)
 	{
-		if (BTCapLoggerServerSettings.IsDebugging)
+		if (BTP_CapLogger_ServerConfig.IsDebugging)
 		{
-			Log("[BTPog/BTCapLogger] Could not track anymore zone checkpoints for player "
+			Log("[BTPog/CapLogger] Could not track anymore zone checkpoints for player "
 				$ PlayerPawn.PlayerReplicationInfo.PlayerName $ " since the limit of "
-				$ BTCapLoggerServerSettings.MaxZoneCheckpoints $ " was reached");
+				$ BTP_CapLogger_ServerConfig.MaxZoneCheckpoints $ " was reached");
 		}
 		return;
 	}
 
-	Time = class'Utils'.static.TimeDeltaToString(Level.TimeSeconds - SpawnTimestamp, Level.TimeDilation);
+	Time = class'BTP_Misc_Utils'.static.TimeDeltaToString(Level.TimeSeconds - SpawnTimestamp, Level.TimeDilation);
 	ZoneCheckpoints = ZoneCheckpoints $ NewZoneNumber $ "-" $ Time $ ";";
 	
 	AmountOfZoneCheckpoints++;
@@ -332,7 +332,7 @@ simulated function string GetRenderer()
 	}
 	else
 	{
-		Log("[BTPog/BTCapLogger] Could not retrieve renderer: "$Renderer);
+		Log("[BTPog/CapLogger] Could not retrieve renderer: "$Renderer);
 		Renderer = "Unknown";
 	}
 	

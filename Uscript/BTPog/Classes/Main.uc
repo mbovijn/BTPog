@@ -1,12 +1,12 @@
 class Main expands Mutator;
 
-var PlayerController PlayerControllers[1024];
-var int PlayerControllersLength;
+var BTP_Controller BTP_Controllers[1024];
+var int BTP_ControllersLength;
 
-var ServerSettings ServerSettings;
-var CapEventPublisher CapEventPublisher;
-var BTCapLoggerFile BTCapLoggerFile;
-var BTCapLoggerServerSettings BTCapLoggerServerSettings;
+var BTP_Misc_ServerConfig BTP_Misc_ServerConfig;
+var BTP_Misc_CapEventPublisher BTP_Misc_CapEventPublisher;
+var BTP_CapLogger_File BTP_CapLogger_File;
+var BTP_CapLogger_ServerConfig BTP_CapLogger_ServerConfig;
 
 // Called once by the engine when the map starts.
 function PreBeginPlay()
@@ -17,18 +17,18 @@ function PreBeginPlay()
 
 	Obj = new (none, 'BTPog') class'Object';
 	
-	ServerSettings = new (Obj, 'Settings') class'ServerSettings';
-	ServerSettings.SaveConfig();
+	BTP_Misc_ServerConfig = new (Obj, 'Settings') class'BTP_Misc_ServerConfig';
+	BTP_Misc_ServerConfig.SaveConfig();
 
-	BTCapLoggerServerSettings = new (Obj, 'BTCapLoggerSettings') class'BTCapLoggerServerSettings';
-	BTCapLoggerServerSettings.ValidateConfig();
-	BTCapLoggerServerSettings.SaveConfig();
+	BTP_CapLogger_ServerConfig = new (Obj, 'BTCapLoggerSettings') class'BTP_CapLogger_ServerConfig';
+	BTP_CapLogger_ServerConfig.ValidateConfig();
+	BTP_CapLogger_ServerConfig.SaveConfig();
 
-	CapEventPublisher = Spawn(class'CapEventPublisher');
-	CapEventPublisher.Init(Self, ServerSettings);
+	BTP_Misc_CapEventPublisher = Spawn(class'BTP_Misc_CapEventPublisher');
+	BTP_Misc_CapEventPublisher.Init(Self, BTP_Misc_ServerConfig);
 
-	BTCapLoggerFile = Spawn(class'BTCapLoggerFile');
-	BTCapLoggerFile.Init(BTCapLoggerServerSettings);
+	BTP_CapLogger_File = Spawn(class'BTP_CapLogger_File');
+	BTP_CapLogger_File.Init(BTP_CapLogger_ServerConfig);
 
 	Level.Game.BaseMutator.AddMutator(Self);
 	Level.Game.RegisterMessageMutator(Self);
@@ -37,7 +37,7 @@ function PreBeginPlay()
 // Called by the engine whenever a player execute a mutate command.
 function Mutate(string MutateString, PlayerPawn Sender)
 {
-	if (class'Utils'.static.GetArgument(MutateString, 0) ~= "btpog")
+	if (class'BTP_Misc_Utils'.static.GetArgument(MutateString, 0) ~= "btpog")
 		ExecuteCommand(Sender, MutateString);
 
 	Super.Mutate(MutateString, Sender);
@@ -46,28 +46,28 @@ function Mutate(string MutateString, PlayerPawn Sender)
 // Called by the engine whenever a player types in chat.
 function bool MutatorTeamMessage(Actor Sender, Pawn Receiver, PlayerReplicationInfo PRI, coerce string S, name Type, optional bool bBeep)
 {
-	if (Sender == Receiver && PlayerPawn(Sender) != None && class'Utils'.static.GetArgument(S, 0) ~= "!btpog")
+	if (Sender == Receiver && PlayerPawn(Sender) != None && class'BTP_Misc_Utils'.static.GetArgument(S, 0) ~= "!btpog")
 		ExecuteCommand(PlayerPawn(Sender), S);
 
 	return Super.MutatorTeamMessage(Sender, Receiver, PRI, S, Type, bBeep);
 }
 
-// Called by the CapEventPublisher whenever a pawn caps. 
+// Called by the BTP_Misc_CapEventPublisher whenever a pawn caps. 
 function PawnCappedEvent(Pawn Pawn)
 {
 	if (PlayerPawn(Pawn) != None)
-		GetPlayerController(PlayerPawn(Pawn)).PlayerCappedEvent();
+		GetController(PlayerPawn(Pawn)).PlayerCappedEvent();
 }
 
 // Called by the engine whenever a player spawns.
 function ModifyPlayer(Pawn Other)
 {
-	local PlayerController PlayerController;
+	local BTP_Controller BTP_Controller;
 
 	if (PlayerPawn(Other) != None && Other.bIsPlayer && !Other.PlayerReplicationInfo.bIsSpectator)
 	{
-		PlayerController = GetPlayerControllerOrNew(PlayerPawn(Other));
-		PlayerController.PlayerSpawnedEvent();
+		BTP_Controller = GetBTP_ControllerOrNew(PlayerPawn(Other));
+		BTP_Controller.PlayerSpawnedEvent();
 	}
 	
 	Super.ModifyPlayer(Other);
@@ -75,33 +75,33 @@ function ModifyPlayer(Pawn Other)
 
 function ExecuteCommand(PlayerPawn Sender, string MutateString)
 {
-	GetPlayerController(Sender).ExecuteCommand(MutateString);
+	GetController(Sender).ExecuteCommand(MutateString);
 }
 
-function PlayerController GetPlayerControllerOrNew(PlayerPawn Other)
+function BTP_Controller GetBTP_ControllerOrNew(PlayerPawn Other)
 {
-	local PlayerController PlayerController;
+	local BTP_Controller BTP_Controller;
 
-	PlayerController = GetPlayerController(Other);
-	if (PlayerController == None)
+	BTP_Controller = GetController(Other);
+	if (BTP_Controller == None)
 	{
-		if (ServerSettings.IsDebugging) Log("[BTPog] New player registered = "$Other.PlayerReplicationInfo.PlayerName);
+		if (BTP_Misc_ServerConfig.IsDebugging) Log("[BTPog] New player registered = "$Other.PlayerReplicationInfo.PlayerName);
 
-		PlayerController = Spawn(class'PlayerController', Other);
-		PlayerController.Init(ServerSettings, BTCapLoggerFile, BTCapLoggerServerSettings);
+		BTP_Controller = Spawn(class'BTP_Controller', Other);
+		BTP_Controller.Init(BTP_Misc_ServerConfig, BTP_CapLogger_File, BTP_CapLogger_ServerConfig);
 
-		PlayerControllers[PlayerControllersLength] = PlayerController;
-		PlayerControllersLength++;
+		BTP_Controllers[BTP_ControllersLength] = BTP_Controller;
+		BTP_ControllersLength++;
 	}
 
-	return PlayerController;
+	return BTP_Controller;
 }
 
-function PlayerController GetPlayerController(PlayerPawn Other)
+function BTP_Controller GetController(PlayerPawn Other)
 {
 	local int i;
-	for (i = 0; i < PlayerControllersLength; i++)
-		if (PlayerControllers[i] != None && PlayerControllers[i].PlayerPawn.PlayerReplicationInfo.PlayerID == Other.PlayerReplicationInfo.PlayerID)
-			return PlayerControllers[i];
+	for (i = 0; i < BTP_ControllersLength; i++)
+		if (BTP_Controllers[i] != None && BTP_Controllers[i].PlayerPawn.PlayerReplicationInfo.PlayerID == Other.PlayerReplicationInfo.PlayerID)
+			return BTP_Controllers[i];
 	return None;
 }

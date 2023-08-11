@@ -1,4 +1,4 @@
-class PropertyRetriever extends Info;
+class BTP_Misc_PropertyRetriever extends Info;
 
 var PlayerPawn PlayerPawn;
 var String ActorName;
@@ -10,8 +10,8 @@ var String Property;
 function Init(PlayerPawn aPlayerPawn, String FullPropertyName)
 {
     PlayerPawn = aPlayerPawn;
-    ActorName = class'Utils'.static.GetStringPart(FullPropertyName, 0, ".");
-    PropertyName = class'Utils'.static.GetStringPart(FullPropertyName, 1, ".");
+    ActorName = class'BTP_Misc_Utils'.static.GetStringPart(FullPropertyName, 0, ".");
+    PropertyName = class'BTP_Misc_Utils'.static.GetStringPart(FullPropertyName, 1, ".");
 }
 
 function String GetProperty()

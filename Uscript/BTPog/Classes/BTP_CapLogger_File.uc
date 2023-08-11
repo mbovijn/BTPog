@@ -1,13 +1,13 @@
-class BTCapLoggerFile extends BTCapLoggerAbstract;
+class BTP_CapLogger_File extends BTP_CapLogger_Abstract;
 
 var StatLogFile LogFile;
-var BTCapLoggerServerSettings ServerSettings;
+var BTP_CapLogger_ServerConfig BTP_Misc_ServerConfig;
 var int FileCounter;
 var bool GameEnded;
 
-function Init(BTCapLoggerServerSettings aServerSettings)
+function Init(BTP_CapLogger_ServerConfig aBTP_Misc_ServerConfig)
 {
-	ServerSettings = aServerSettings;
+	BTP_Misc_ServerConfig = aBTP_Misc_ServerConfig;
 }
 
 function Tick(float DeltaTime)
@@ -42,16 +42,16 @@ function InitLogFile()
 		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,"
 		$"Netspeed_Min,Netspeed_Max");
 	
-	if (ServerSettings.IsDebugging)
-		Log("[BTPog/BTCapLogger] Opened BTCapLogger file "$LogFile.StatLogFinal);
+	if (BTP_Misc_ServerConfig.IsDebugging)
+		Log("[BTPog/CapLogger] Opened BTP_CapLogger_Main file "$LogFile.StatLogFinal);
 }
 
 function CloseLogFile()
 {
 	if (LogFile != None)
 	{
-		if (ServerSettings.IsDebugging)
-			Log("[BTPog/BTCapLogger] Closing BTCapLogger file "$LogFile.StatLogFinal);
+		if (BTP_Misc_ServerConfig.IsDebugging)
+			Log("[BTPog/CapLogger] Closing BTP_CapLogger_Main file "$LogFile.StatLogFinal);
 
 		LogFile.StopLog();
         LogFile.Destroy();
@@ -76,8 +76,8 @@ function LogCap(PlayerPawn PlayerPawn, LogData LogData)
 		LogData.Renderer$","$
 		LogData.SpawnCount$","$
 		PlayerPawn.PlayerReplicationInfo.Team$","$
-		class'Utils'.static.FloatToString(LogData.CapTime, 3)$","$
-		class'Utils'.static.FloatToDeltaString(LogData.ClientCapTimeDelta, 3)$","$
+		class'BTP_Misc_Utils'.static.FloatToString(LogData.CapTime, 3)$","$
+		class'BTP_Misc_Utils'.static.FloatToDeltaString(LogData.ClientCapTimeDelta, 3)$","$
 		LogData.ZoneCheckpoints$","$
 		StatsAnalysisToDetailedString(LogData.DodgeBlock, 3)$","$
 		StatsAnalysisToDetailedString(LogData.DodgeDoubleTap, 3)$","$
@@ -90,7 +90,7 @@ function LogCap(PlayerPawn PlayerPawn, LogData LogData)
 
     LogFile.FileFlush();
 	
-	if (ServerSettings.FilePerCap) CloseLogFile();
+	if (BTP_Misc_ServerConfig.FilePerCap) CloseLogFile();
 }
 
 function string Replace(string Source, string Search, string Replace)
@@ -107,17 +107,17 @@ function string Replace(string Source, string Search, string Replace)
 
 function string StatsAnalysisToString(StatsAnalysis Analysis, int Decimals)
 {
-	return class'Utils'.static.FloatToString(Analysis.PC1, Decimals)$","$
-		class'Utils'.static.FloatToString(Analysis.PC5, Decimals)$","$
-		class'Utils'.static.FloatToString(Analysis.PC25, Decimals)$","$
-		class'Utils'.static.FloatToString(Analysis.PC50, Decimals);
+	return class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC1, Decimals)$","$
+		class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC5, Decimals)$","$
+		class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC25, Decimals)$","$
+		class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC50, Decimals);
 }
 
 function string StatsAnalysisToDetailedString(StatsAnalysis Analysis, int Decimals)
 {
 	return StatsAnalysisToString(Analysis, Decimals)$","$
-		class'Utils'.static.FloatToString(Analysis.PC100, Decimals)$","$
-		class'Utils'.static.FloatToString(Analysis.NumberOfDataPoints, 0);
+		class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC100, Decimals)$","$
+		class'BTP_Misc_Utils'.static.FloatToString(Analysis.NumberOfDataPoints, 0);
 }
 
 

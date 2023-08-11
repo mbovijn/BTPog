@@ -6,8 +6,8 @@ BTPog is a UT99 Mutator most useful for the [Bunnytrack](https://github.com/mbov
 
 # Modules
 
-## BTZeroPingDodge Module
-After having dodged the game blocks you from dodging again for [0.35](https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4254) seconds (0.32 for BT whichs runs on [hardcore](https://github.com/mbovijn/UT99/blob/master/Botpack/DeathMatchPlus.uc#L139) mode). Unfortunately, players with a higher ping experience a large dodge block duration. BTZeroPingDodge's aim is to level the playing field, and provide an equal dodge block duration for all players, regardless of ping.
+## ZeroPing Module
+After having dodged the game blocks you from dodging again for [0.35](https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4254) seconds (0.32 for BT whichs runs on [hardcore](https://github.com/mbovijn/UT99/blob/master/Botpack/DeathMatchPlus.uc#L139) mode). Unfortunately, players with a higher ping experience a large dodge block duration. BTP_ZeroPing_Main's aim is to level the playing field, and provide an equal dodge block duration for all players, regardless of ping.
 
 Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get to know more about why this is happening.
 
@@ -16,7 +16,7 @@ Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get 
 | `!btpog zpdodge`                                  | Toggles the functionality on/off. Enabled by default.
 | `!btpog zpdodge debug`                            | Toggles the display of a message on/off each time ZeroPingDodge kicks in.
 
-## BTStats Module
+## Stats Module
 Shows the following information on-screen:
 #### Ground Time
 Time in seconds you spent on the ground.
@@ -45,7 +45,7 @@ Though, from my experience, even with a value `1.000`, bouncing would sometimes 
 | `!btpog stats`                                    | Toggles the on-screen stats on/off.
 | `!btpog stats debug`                              | Toggles debug logging for stats on/off. These can be found in your `UnrealTournament.log` file.
 
-## BTCapLogger Module
+## CapLogger Module
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
 Id,Timestamp,ServerName,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,Netspeed_Min,Netspeed_Max
@@ -69,7 +69,7 @@ W4P30OY64MXQKKBN5AME6VT0,2023-05-05T17:57:05.516,UT Server,CTF-BT-andACTION-dbl,
 
 These statistics are interesting if you want to analyze whether a player cheated. You could also use this data to keep track of player caps.
 
-## BTStopwatch Module
+## Stopwatch Module
 Are you sometimes not sure which particular set of moves is faster in order to pass a certain obstacle? Just set a !cp before the obstacle, and a stopwatch after the obstacle. Once you touch the invisible stopwatch, the time it took to reach the stopwatch will appear on screen.
 
 You could also set stopwatches when rushing in order to get quicker feedback on how the run is going. On top of that, whenever you cap and it's a personal best, the individual stopwatch times are saved, in order to give a delta time for the next run.
@@ -83,7 +83,7 @@ You could also set stopwatches when rushing in order to get quicker feedback on 
 | `!btpog sw precision 3`                           | Sets the amount of decimals after the dot for stopwatch times. Defaults to 2 (e.g. 8.63), but any value between 0 and 3 is valid.
 | `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the screen.
 
-## BTSuicide Module
+## Suicide Module
 Got loop movers in the map you want to rush? Use this in order to suicide at the right time, so that when you arrive at the mover, the mover is in the optimal location.
 
 >Not all BT maps are deterministic. Some of them have movers that are looping continuously. So when you try to rush such a map, it usually comes down to a matter of luck when you arrive at such a mover. The mover could be in an optimal position, or not. If not, you're losing valuable time.
