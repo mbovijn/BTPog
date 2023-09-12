@@ -1,4 +1,4 @@
-class BTP_CapLogger_BucketedStats extends BTP_CapLogger_Abstract;
+class BTP_CapLogger_BucketedStats extends Info dependson(BTP_CapLogger_Structs);
 
 struct Bucket
 {
@@ -22,9 +22,9 @@ function AddValue(int Index, float Value)
     TotalCount++;
 }
 
-function StatsAnalysis Analyze()
+function BTP_CapLogger_Structs.StatsAnalysis Analyze()
 {
-    local StatsAnalysis StatsAnalysis;
+    local BTP_CapLogger_Structs.StatsAnalysis StatsAnalysis;
     local int BucketIndex, TotalCounter;
 
     for (BucketIndex = 0; BucketIndex < ArrayCount(Buckets); BucketIndex++)

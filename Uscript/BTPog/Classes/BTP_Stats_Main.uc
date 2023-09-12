@@ -3,7 +3,7 @@ class BTP_Stats_Main extends Info;
 var PlayerPawn PlayerPawn;
 
 var BTP_Stats_ClientConfig ClientConfig;
-var BTP_Stats_Inventory BTP_Stats_Inventory;
+var BTP_Stats_Inventory StatsInventory;
 
 var EDodgeDir PreviousDodgeDir;
 var float PreviousDodgeClickTimer;
@@ -43,17 +43,17 @@ simulated function PreBeginPlay()
 	}
 }
 
-function InitBTP_Stats_Inventory()
+function InitStatsInventory()
 {
-	BTP_Stats_Inventory = Spawn(class'BTP_Stats_Inventory', Owner);
-	BTP_Stats_Inventory.BTP_Stats_Main = Self;
+	StatsInventory = Spawn(class'BTP_Stats_Inventory', Owner);
+	StatsInventory.BTP_Stats_Main = Self;
 
-	PlayerPawn.AddInventory(BTP_Stats_Inventory);
+	PlayerPawn.AddInventory(StatsInventory);
 }
 
 function ExecuteCommand(string MutateString)
 {
-	switch(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2))
+	switch(class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString))
 	{
 		case "debug":
 			ToggleIsDebugging();
@@ -66,8 +66,7 @@ function ExecuteCommand(string MutateString)
 
 function PlayerSpawnedEvent()
 {
-	InitBTP_Stats_Inventory(); // Because it gets destroyed on death.
-
+	InitStatsInventory(); // The engine destroys this on death.
 	PlayerSpawnedEventToClient();
 }
 
@@ -85,7 +84,7 @@ simulated function ToggleIsActive()
 simulated function ToggleIsDebugging()
 {
     ClientConfig.IsDebugging = !ClientConfig.IsDebugging;
-    ClientMessage("BTP_Stats_Main Debugging Enabled = "$ClientConfig.IsDebugging);
+    ClientMessage("Stats Debugging Enabled = "$ClientConfig.IsDebugging);
     ClientConfig.SaveConfig();
 }
 
@@ -104,7 +103,7 @@ simulated function CustomTick(float DeltaTime)
 		Messages[2] = "Time Between Dodges = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(TimeBetweenTwoDodges, Level.TimeDilation)$" seconds";
 		Messages[3] = "Air Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
 		Messages[4] = "Ground Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
-		Messages[5] = "Tick Input Hit Rate = "$class'BTP_Misc_Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
+		Messages[5] = "Tick Hit Rate = "$class'BTP_Misc_Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
 		ClientProgressMessage(Messages);
 	}
 

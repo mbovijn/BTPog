@@ -1,5 +1,22 @@
 class BTP_Misc_Utils extends Object;
 
+static function string GetRemainingArguments(string FullString)
+{
+	if (InStr(FullString, " ") == -1)
+	{
+		return "";
+	}
+	else
+	{
+		return Right(FullString, Len(FullString) - InStr(FullString, " ") - 1);
+	}
+}
+
+static function string GetFirstArgument(string FullString)
+{
+	return GetArgument(FullString, 0);
+}
+
 static function string GetArgument(string FullString, int ArgumentNumber)
 {
 	return GetStringPart(FullString, ArgumentNumber, " ");
@@ -48,6 +65,24 @@ static function string ToStringWithoutDecimals(Vector Vector)
 	return int(Vector.X)$","$int(Vector.Y)$","$int(Vector.Z);
 }
 
+static function Vector ToVector(String VectorString)
+{
+	local Vector NewVector;
+	NewVector.X = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 0, ","));
+	NewVector.Y = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 1, ","));
+	NewVector.Z = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 2, ","));
+	return NewVector;
+}
+
+static function Vector RemoveDecimalsFromVector(Vector OldVector)
+{
+	local Vector NewVector;
+	NewVector.X = int(OldVector.X);
+	NewVector.Y = int(OldVector.Y);
+	NewVector.Z = int(OldVector.Z);
+	return NewVector;
+}
+
 static function String GenerateUniqueId()
 {
 	const KeyChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -62,4 +97,9 @@ static function String GenerateUniqueId()
 	}
 
 	return Id;
+}
+
+static function string GetMapName(LevelInfo LevelInfo)
+{
+    return Left(string(LevelInfo), InStr(string(LevelInfo), "."));
 }

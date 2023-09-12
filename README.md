@@ -1,12 +1,12 @@
-# Author
-Fulcrum
-
 # Description
-BTPog is a UT99 Mutator most useful for the [Bunnytrack](https://github.com/mbovijn/BTPlusPlusTE_beta3) mod. See the section below to get to know more about the individual modules.
+BTPog is a Unreal Tournament (UT99) ServerActor to enhance the [Bunnytrack](https://github.com/mbovijn/BTPlusPlusTE_beta3) experience. See the section below to get to know more about the individual modules.
 
 # Modules
 
 ## ZeroPing Module
+<details>
+<summary>Click for more info</summary><p>
+
 After having dodged the game blocks you from dodging again for [0.35](https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4254) seconds (0.32 for BT whichs runs on [hardcore](https://github.com/mbovijn/UT99/blob/master/Botpack/DeathMatchPlus.uc#L139) mode). Unfortunately, players with a higher ping experience a large dodge block duration. BTP_ZeroPing_Main's aim is to level the playing field, and provide an equal dodge block duration for all players, regardless of ping.
 
 Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get to know more about why this is happening.
@@ -15,8 +15,12 @@ Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get 
 | ---                                               | ---
 | `!btpog zpdodge`                                  | Toggles the functionality on/off. Enabled by default.
 | `!btpog zpdodge debug`                            | Toggles the display of a message on/off each time ZeroPingDodge kicks in.
+</details>
 
 ## Stats Module
+<details>
+<summary>Click for more info</summary><p>
+
 Shows the following information on-screen:
 #### Ground Time
 Time in seconds you spent on the ground.
@@ -28,7 +32,7 @@ Time in seconds between two consecutive key presses that resulted in a dodge.
 Time in seconds that you're blocked from dodging again after just having dodged.
 #### Time Between Dodges
 Time between the end of the last dodge (player landed), and the beginning of the next dodge.
-#### Tick Input Hit Rate
+#### Tick Hit Rate
 This can be used to measure how effective you're able to bounce. In order to bounce, you need to jump on the exact tick that your character landed on the ground. So generally people do this by binding jump to the scroll wheel, as you're able to input jumps way faster like that.
 
 To use this, first change your scoll wheel bind as follows: `set input mousewheeldown jump | btpoginputtest`. Now, each time you jump with the scroll wheel, you'll see a stat such as for example `0.068 (5/73)`. This means that for a duration of 73 ticks, UT99 registered 5 jump inputs, with the first and last ticks (of those 73 ticks) being ticks with jump inputs.
@@ -44,8 +48,12 @@ Though, from my experience, even with a value `1.000`, bouncing would sometimes 
 | ---                                               | ---
 | `!btpog stats`                                    | Toggles the on-screen stats on/off.
 | `!btpog stats debug`                              | Toggles debug logging for stats on/off. These can be found in your `UnrealTournament.log` file.
+</details>
 
 ## CapLogger Module
+<details>
+<summary>Click for more info</summary><p>
+
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
 Id,Timestamp,ServerName,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,Netspeed_Min,Netspeed_Max
@@ -68,8 +76,12 @@ W4P30OY64MXQKKBN5AME6VT0,2023-05-05T17:57:05.516,UT Server,CTF-BT-andACTION-dbl,
 - ServerName: identifies which server a cap was made on. This value is taken from the server INI from the `ShortName` key under `[Engine.GameReplicationInfo]`.
 
 These statistics are interesting if you want to analyze whether a player cheated. You could also use this data to keep track of player caps.
+</details>
 
 ## Stopwatch Module
+<details>
+<summary>Click for more info</summary><p>
+
 Are you sometimes not sure which particular set of moves is faster in order to pass a certain obstacle? Just set a !cp before the obstacle, and a stopwatch after the obstacle. Once you touch the invisible stopwatch, the time it took to reach the stopwatch will appear on screen.
 
 You could also set stopwatches when rushing in order to get quicker feedback on how the run is going. On top of that, whenever you cap and it's a personal best, the individual stopwatch times are saved, in order to give a delta time for the next run.
@@ -79,11 +91,15 @@ You could also set stopwatches when rushing in order to get quicker feedback on 
 | `!btpog sw` or `!btpog sw <id>`                   | Sets an invisible stopwatch at your current location (and deletes any previously set stopwatch). You can set up to 32 stopwatches. Valid id values: 0, 1, 2, ... 31
 | `!btpog sw <id> 50,10,-10`                        | Sets an invisible stopwatch at location 50,10,-10 (and deletes any previously set stopwatch).
 | `!btpog sw reset`                                 | Removes the best times associated with all stopwatches.
-| `!btpog sw delete <id>`                           | Delete a stopwatch. Valid id values: 0, 1, 2, ... 31, all
+| `!btpog sw delete <id>/all`                       | Delete a stopwatch. Valid id values: 0, 1, 2, ... 31, all
 | `!btpog sw precision 3`                           | Sets the amount of decimals after the dot for stopwatch times. Defaults to 2 (e.g. 8.63), but any value between 0 and 3 is valid.
 | `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the screen.
+</details>
 
 ## Suicide Module
+<details>
+<summary>Click for more info</summary><p>
+
 Got loop movers in the map you want to rush? Use this in order to suicide at the right time, so that when you arrive at the mover, the mover is in the optimal location.
 
 >Not all BT maps are deterministic. Some of them have movers that are looping continuously. So when you try to rush such a map, it usually comes down to a matter of luck when you arrive at such a mover. The mover could be in an optimal position, or not. If not, you're losing valuable time.
@@ -109,9 +125,10 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v21.Main
+ServerActors=BTPog_v21.BTP_Main
 ServerPackages=BTPog_v21
 ```
+</details><p>
 
 # Configuration
 As a server admin you can configure which modules you want to be active on your server. Here's an example of a BTPog.ini file:

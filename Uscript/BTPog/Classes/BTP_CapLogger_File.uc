@@ -1,13 +1,13 @@
-class BTP_CapLogger_File extends BTP_CapLogger_Abstract;
+class BTP_CapLogger_File extends Info dependson(BTP_CapLogger_Structs);
 
 var StatLogFile LogFile;
-var BTP_CapLogger_ServerConfig BTP_Misc_ServerConfig;
+var BTP_CapLogger_ServerConfig ServerConfig;
 var int FileCounter;
 var bool GameEnded;
 
-function Init(BTP_CapLogger_ServerConfig aBTP_Misc_ServerConfig)
+function Init(BTP_CapLogger_ServerConfig aServerConfig)
 {
-	BTP_Misc_ServerConfig = aBTP_Misc_ServerConfig;
+	ServerConfig = aServerConfig;
 }
 
 function Tick(float DeltaTime)
@@ -26,8 +26,8 @@ function InitLogFile()
 	LogFile = Spawn(class'StatLogFile');
     LogFile.SetTimer(0.0, False);
 
-	LogFile.StatLogFile = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$"."$FileCounter$".tmp.csv";
-	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$GetMap()$"."$FileCounter$".csv";
+	LogFile.StatLogFile = "../Logs/BTPog."$GetAbsoluteTime()$"."$class'BTP_Misc_Utils'.static.GetMapName(Level)$"."$FileCounter$".tmp.csv";
+	LogFile.StatLogFinal = "../Logs/BTPog."$GetAbsoluteTime()$"."$class'BTP_Misc_Utils'.static.GetMapName(Level)$"."$FileCounter$".csv";
 	SetEncoding();
 	LogFile.OpenLog();
 
@@ -42,7 +42,7 @@ function InitLogFile()
 		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,"
 		$"Netspeed_Min,Netspeed_Max");
 	
-	if (BTP_Misc_ServerConfig.IsDebugging)
+	if (ServerConfig.IsDebugging)
 		Log("[BTPog/CapLogger] Opened BTP_CapLogger_Main file "$LogFile.StatLogFinal);
 }
 
@@ -50,7 +50,7 @@ function CloseLogFile()
 {
 	if (LogFile != None)
 	{
-		if (BTP_Misc_ServerConfig.IsDebugging)
+		if (ServerConfig.IsDebugging)
 			Log("[BTPog/CapLogger] Closing BTP_CapLogger_Main file "$LogFile.StatLogFinal);
 
 		LogFile.StopLog();
@@ -59,7 +59,7 @@ function CloseLogFile()
 	}
 }
 
-function LogCap(PlayerPawn PlayerPawn, LogData LogData)
+function LogCap(PlayerPawn PlayerPawn, BTP_CapLogger_Structs.LogData LogData)
 {
 	if (LogFile == None) InitLogFile();
 
@@ -67,7 +67,7 @@ function LogCap(PlayerPawn PlayerPawn, LogData LogData)
 		LogData.UniqueId$","$
 		GetAbsoluteTimeISO8601()$","$
 		Replace(Level.Game.GameReplicationInfo.ShortName, ",", "")$","$
-        GetMap()$","$
+        class'BTP_Misc_Utils'.static.GetMapName(Level)$","$
 		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
 		LogData.CustomID$","$
@@ -90,7 +90,7 @@ function LogCap(PlayerPawn PlayerPawn, LogData LogData)
 
     LogFile.FileFlush();
 	
-	if (BTP_Misc_ServerConfig.FilePerCap) CloseLogFile();
+	if (ServerConfig.FilePerCap) CloseLogFile();
 }
 
 function string Replace(string Source, string Search, string Replace)
@@ -105,7 +105,7 @@ function string Replace(string Source, string Search, string Replace)
 	return Source;
 }
 
-function string StatsAnalysisToString(StatsAnalysis Analysis, int Decimals)
+function string StatsAnalysisToString(BTP_CapLogger_Structs.StatsAnalysis Analysis, int Decimals)
 {
 	return class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC1, Decimals)$","$
 		class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC5, Decimals)$","$
@@ -113,17 +113,11 @@ function string StatsAnalysisToString(StatsAnalysis Analysis, int Decimals)
 		class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC50, Decimals);
 }
 
-function string StatsAnalysisToDetailedString(StatsAnalysis Analysis, int Decimals)
+function string StatsAnalysisToDetailedString(BTP_CapLogger_Structs.StatsAnalysis Analysis, int Decimals)
 {
 	return StatsAnalysisToString(Analysis, Decimals)$","$
 		class'BTP_Misc_Utils'.static.FloatToString(Analysis.PC100, Decimals)$","$
 		class'BTP_Misc_Utils'.static.FloatToString(Analysis.NumberOfDataPoints, 0);
-}
-
-
-function string GetMap()
-{
-    return Left(string(Level), InStr(string(Level), "."));
 }
 
 function string GetAbsoluteTimeISO8601()

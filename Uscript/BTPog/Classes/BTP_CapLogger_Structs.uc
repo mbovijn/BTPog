@@ -1,4 +1,4 @@
-class BTP_CapLogger_Abstract extends Info abstract;
+class BTP_CapLogger_Structs extends Object;
 
 struct StatsAnalysis
 {

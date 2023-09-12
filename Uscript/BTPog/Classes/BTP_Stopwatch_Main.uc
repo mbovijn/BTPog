@@ -1,267 +1,262 @@
-class BTP_Stopwatch_Main extends Info;
+class BTP_Stopwatch_Main extends Info dependson(BTP_Stopwatch_Structs);
 
-var PlayerPawn PlayerPawn;
-var BTP_Stopwatch_Trigger Triggers[32];
+// CLIENT VARIABLES
 var BTP_Stopwatch_ClientConfig ClientConfig;
 
-var float SpawnTimestamp;
-var float BestCapTime; // Storing this server-side to be consistent with the actual cap times.
+// SERVER VARIABLES
+var BTP_Stopwatch_Structs.ClientConfigDto ClientConfigDto;
+
+var BTP_Stopwatch_Controller RedController;
+var BTP_Stopwatch_Controller BlueController;
 
 replication
 {
-	reliable if (Role == ROLE_Authority)
-		PlayerPawn, PlayerSpawnedEvent_ToClient, PlayerCappedEvent_ToClient, ExecuteCommand_ToClient;
 	reliable if (Role < ROLE_Authority)
-		ResetBestCapTime_ToServer;
+		ReplicateConfigToServer, ReplicateStopwatchCollectionToServer;
+	reliable if (Role == ROLE_Authority)
+		ReplicateConfigToClient, ReplicateStopwatchCollectionToClient;
 }
 
-simulated function PreBeginPlay()
+function ReplicateConfigToServer(BTP_Stopwatch_Structs.ClientConfigDto aClientConfigDto)
+{
+	ClientConfigDto = aClientConfigDto;
+}
+
+function ReplicateStopwatchCollectionToServer(BTP_Stopwatch_Structs.StopwatchCollection aStopwatchCollection)
+{
+	if (aStopwatchCollection.Team == 0)
+	{
+		RedController = Spawn(class'BTP_Stopwatch_Controller', Owner);
+		RedController.Init(PlayerPawn(Owner), Self, aStopwatchCollection);
+	}
+	else if (aStopwatchCollection.Team == 1)
+	{
+		BlueController = Spawn(class'BTP_Stopwatch_Controller', Owner);
+		BlueController.Init(PlayerPawn(Owner), Self, aStopwatchCollection);
+	}
+	else
+	{
+		Log("[BTPog/Stopwatch] Received StopwatchCollection with invalid team " $ aStopwatchCollection.Team $ "from the client");
+	}
+}
+
+simulated function ReplicateConfigToClient(BTP_Stopwatch_Structs.ClientConfigDto aClientConfigDto)
+{
+	ClientConfig.UpdateClientConfig(aClientConfigDto);
+}
+
+simulated function ReplicateStopwatchCollectionToClient(BTP_Stopwatch_Structs.StopwatchCollection aStopwatchCollection)
+{
+	ClientConfig.UpdateStopwatchCollection(aStopwatchCollection);
+}
+
+simulated function PostNetBeginPlay()
 {
     local Object Obj;
-
-    PlayerPawn = PlayerPawn(Owner);
-
     if (Role < ROLE_Authority)
     {
-        Obj = new (none, 'BTPog') class'Object';
+        Obj = new (none, 'BTPog_Stopwatch') class'Object';
 	    ClientConfig = new (Obj, 'Stopwatch_ClientConfig') class'BTP_Stopwatch_ClientConfig';
 
 	    ClientConfig.ValidateConfig();
 		ClientConfig.SaveConfig();
+
+		ReplicateConfigToTheServer();
     }
+}
+
+simulated function ReplicateConfigToTheServer()
+{
+	local string MapName;
+	MapName = class'BTP_Misc_Utils'.static.GetMapName(Level);
+
+	ReplicateConfigToServer(ClientConfig.GetClientConfig());
+	ReplicateStopwatchCollectionToServer(ClientConfig.GetStopwatchCollection(MapName, 0)); // RED side
+	ReplicateStopwatchCollectionToServer(ClientConfig.GetStopwatchCollection(MapName, 1)); // BLUE side
+}
+
+function BTP_Stopwatch_Controller GetController()
+{
+	switch (PlayerPawn(Owner).PlayerReplicationInfo.Team)
+	{
+		case 0: return RedController;
+		case 1: return BlueController;
+		default: return None;
+	}
 }
 
 function PlayerCappedEvent()
 {
-	local float NewCapTime;
-	NewCapTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
-	
-	if (NewCapTime < BestCapTime || BestCapTime == 0)
-	{
-		PlayerCappedEvent_ToClient();
-		BestCapTime = NewCapTime;
-	}
-}
+	local BTP_Stopwatch_Controller Controller;
+	Controller = GetController();
 
-simulated function PlayerCappedEvent_ToClient()
-{
-	local int Index;
-	for (Index = 0; Index < ArrayCount(Triggers); Index++)
-		if (Triggers[Index] != None)
-			Triggers[Index].SetNewBestTime();
+	if (Controller != None) Controller.PlayerCappedEvent();
 }
 
 function PlayerSpawnedEvent()
 {
-	SpawnTimestamp = Level.TimeSeconds;
-	PlayerSpawnedEvent_ToClient();
+	local BTP_Stopwatch_Controller Controller;
+	Controller = GetController();
+
+	if (Controller != None) Controller.PlayerSpawnedEvent();
 }
 
-simulated function PlayerSpawnedEvent_ToClient()
+function ExecuteCommand(String MutateString)
 {
-	local int Index;
-	
-	for (Index = 0; Index < ArrayCount(Triggers); Index++)
-		if (Triggers[Index] != None)
-			Triggers[Index].SetSpawnTimestamp(Level.TimeSeconds);
-	
-	SpawnTimestamp = Level.TimeSeconds;
+	local BTP_Stopwatch_Controller Controller;
+	Controller = GetController();
+
+	if (Controller == None)
+	{
+		ClientMessage("Please wait until BTPog has initialized");
+		return;
+	}
+
+	if (!ExecuteCommandInternal(Controller, MutateString))
+	{
+		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
+	}
 }
 
-function ResetBestCapTime_ToServer()
+function bool ExecuteCommandInternal(BTP_Stopwatch_Controller Controller, string MutateString)
 {
-	BestCapTime = 0;
-}
-
-function ExecuteCommand(string MutateString)
-{
-	ExecuteCommand_ToClient(MutateString);
-}
-
-simulated function ExecuteCommand_ToClient(string MutateString)
-{
-	local string Argument;
-	Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2);
+	local string Argument, RemainingArguments;
+	Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
+	RemainingArguments = class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString);
 
 	if (Argument == "" || Argument == "0" || int(Argument) != 0)
 	{
-		ExecuteCreateCommand(MutateString, int(Argument));
+		return ExecuteCreateCommand(RemainingArguments, int(Argument));
 	}
-	else if (Argument == "delete")
+	else if (Argument == "create")
 	{
-		ExecuteDeleteCommand(MutateString);
+		Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(RemainingArguments);
+		
+		if (Argument == "" || Argument == "0" || int(Argument) != 0)
+		{
+			RemainingArguments = class'BTP_Misc_Utils'.static.GetRemainingArguments(RemainingArguments);
+			return ExecuteCreateCommand(RemainingArguments, int(Argument));
+		}
+
+		return False;
+	}
+	else if (Argument == "delete" || Argument == "del")
+	{
+		return ExecuteDeleteCommand(RemainingArguments);
 	}
 	else if (Argument == "reset")
 	{
-		ExecuteResetCommand();
+		Controller.Reset();
+		return True;
 	}
 	else if (Argument == "precision")
 	{
-		ExecutePrecisionCommand(MutateString);
+		return ExecutePrecisionCommand(RemainingArguments);
 	}
 	else if (Argument == "print")
 	{
-		ExecutePrintCommand();
+		Controller.Print();
+		return True;
+	}
+	else if (Argument == "toggle")
+	{
+		return ExecuteToggleCommand();
+	}
+	else if (Argument == "retriggerdelay")
+	{
+		return ExecuteRetriggerDelayCommand(RemainingArguments);
+	}
+	else if (Argument == "texture")
+	{
+		return ExecuteTextureCommand();
+	}
+
+	return False;
+}
+
+function bool ExecuteCreateCommand(string MutateString, int Index)
+{
+	local string Argument;
+	Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
+
+	if (Argument == "")
+	{
+		GetController().CreateAtPlayerPosition(Index);
+		return True;
 	}
 	else
 	{
-		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
+		GetController().CreateAt(Index, class'BTP_Misc_Utils'.static.ToVector(Argument));
+		return True;
 	}
 }
 
-simulated function ExecutePrintCommand()
-{
-	local int Index;
-	for (Index = 0; Index < ArrayCount(Triggers); Index++)
-			if (Triggers[Index] != None) Triggers[Index].Print();
-}
-
-simulated function ExecuteResetCommand()
-{
-	local int Index;
-
-	for (Index = 0; Index < ArrayCount(Triggers); Index++)
-			if (Triggers[Index] != None)
-				Triggers[Index].ResetBestTime();
-	
-	ResetBestCapTime_ToServer();
-
-	ClientMessage("Best times have been reset");
-}
-
-simulated function ExecuteDeleteCommand(string MutateString)
+function bool ExecuteDeleteCommand(string MutateString)
 {
 	local string Argument;
-	Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3);
+	Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
 
 	if (Argument == "all")
 	{
-		DeleteAll();
+		GetController().DeleteAll();
+		return True;
 	}
 	else if (Argument == "0" || int(Argument) != 0)
 	{
-		Delete(int(Argument));
+		GetController().Delete(int(Argument));
+		return True;
 	}
-	else
-	{
-		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
-	}
-}
-
-simulated function Delete(int Index)
-{
-	if (!IsValidIndex(Index))
-		return;
 	
-	DeleteInternal(Index);
-	ResetBestCapTimeIfNoTriggers();
+	return False;
 }
 
-simulated function DeleteAll()
+function bool ExecutePrecisionCommand(string MutateString)
 {
-	local int Index;
-	for (Index = 0; Index < ArrayCount(Triggers); Index++)
-			if (Triggers[Index] != None) DeleteInternal(Index);
-	ResetBestCapTime_ToServer();
-}
-
-simulated function bool IsValidIndex(int Index)
-{
-	if (Index < 0 || Index >= ArrayCount(Triggers))
-	{
-		ClientMessage("Please select a stopwatch index between 0 and "$(ArrayCount(Triggers) - 1));
-		return false;
-	}
-	return true;
-}
-
-simulated function ResetBestCapTimeIfNoTriggers()
-{
-	local int i;
-	for (i = 0; i < ArrayCount(Triggers); i++)
-			if (Triggers[i] != None) return;
-	ResetBestCapTime_ToServer();
-}
-
-simulated function ExecuteCreateCommand(string MutateString, int Index)
-{
-	if (!IsValidIndex(Index))
-		return;
-	
-	ResetBestCapTimeIfNoTriggers();
-
-	if (class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3) == "")
-		Create(Owner.Location, Index);
-	else
-		Create(ToVector(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3)), Index);
-}
-
-simulated function ExecutePrecisionCommand(string MutateString)
-{
-	local int Index;
 	local string Argument;
+	Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
+	if (!(Argument == "0" || (int(Argument) > 0 && int(Argument) <= 3))) return False;
+
+	ClientConfigDto.PrecisionDecimals = int(Argument);
+	ReplicateConfigToClient(ClientConfigDto);
 	
-	Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3);
-	if (!(Argument == "0" || (int(Argument) > 0 && int(Argument) <= 3)))
-	{
-		ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
-		return;
-	}
+	ClientMessage("Configured the stopwatch precision to " $ ClientConfigDto.PrecisionDecimals $ " decimals");
+	return True;
+}
 
-	ClientConfig.PrecisionDecimals = int(Argument);
-	ClientConfig.SaveConfig();
-
-	for (Index = 0; Index < ArrayCount(Triggers); Index++)
-		if (Triggers[Index] != None)
-			Triggers[Index].PrecisionDecimals = ClientConfig.PrecisionDecimals;
+function bool ExecuteToggleCommand()
+{
+	ClientConfigDto.DisplayTimes = !ClientConfigDto.DisplayTimes;
+	ReplicateConfigToClient(ClientConfigDto);
 	
-	ClientMessage("Configured the stopwatch precision to "$ClientConfig.PrecisionDecimals$" decimals");
+	ClientMessage("Toggled on/off the display of stopwatch times");
+	return True;
 }
 
-simulated function DeleteInternal(int Index)
+function bool ExecuteRetriggerDelayCommand(string MutateString)
 {
-	if (Triggers[Index] == None)
-	{
-		ClientMessage("No stopwatch found at index "$Index);
-		return;
-	}
+	local string Argument;
+	Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
+	if (!(float(Argument) > 0.2 && float(Argument) <= 10.0)) return False;
 
-	Triggers[Index].Destroy();
-	Triggers[Index] = None;
-	ClientMessage("Deleted stopwatch at index "$Index);
+	ClientConfigDto.ReTriggerDelay = float(Argument);
+	ReplicateConfigToClient(ClientConfigDto);
+	
+	ClientMessage("Configured the retrigger delay to " $ ClientConfigDto.PrecisionDecimals $ " seconds");
+	return True;
 }
 
-simulated function Create(Vector Location, int Index)
+function bool ExecuteTextureCommand()
 {
-	if (Triggers[Index] != None) Triggers[Index].Destroy();
-
-    Triggers[Index] = Spawn(class'BTP_Stopwatch_Trigger', Owner, , RemoveDecimals(Location));
-	Triggers[Index].Init(Index, SpawnTimestamp, ClientConfig.PrecisionDecimals);
-
-    ClientMessage("Created stopwatch "$Index$" at location "$class'BTP_Misc_Utils'.static.ToStringWithoutDecimals(Location));
+	ClientConfigDto.DisplayTextures = !ClientConfigDto.DisplayTextures;
+	ReplicateConfigToClient(ClientConfigDto);
+	
+	ClientMessage("Toggled on/off the display of stopwatch textures");
+	return True;
 }
 
-simulated function Vector ToVector(String VectorString)
+function ClientMessage(string Message)
 {
-	local Vector NewVector;
-	NewVector.X = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 0, ","));
-	NewVector.Y = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 1, ","));
-	NewVector.Z = int(class'BTP_Misc_Utils'.static.GetStringPart(VectorString, 2, ","));
-	return NewVector;
-}
-
-simulated function Vector RemoveDecimals(Vector OldVector)
-{
-	local Vector NewVector;
-	NewVector.X = int(OldVector.X);
-	NewVector.Y = int(OldVector.Y);
-	NewVector.Z = int(OldVector.Z);
-	return NewVector;
-}
-
-simulated function ClientMessage(string Message)
-{
-    PlayerPawn.ClientMessage("[BTPog] "$Message);
+    PlayerPawn(Owner).ClientMessage("[BTPog/Stopwatch] " $ Message);
 }
 
 defaultproperties

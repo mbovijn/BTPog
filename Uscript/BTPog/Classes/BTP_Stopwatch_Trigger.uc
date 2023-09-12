@@ -1,86 +1,99 @@
 class BTP_Stopwatch_Trigger extends Triggers;
 
 var PlayerPawn PlayerPawn;
-var int ID;
-var int PrecisionDecimals;
+var BTP_Stopwatch_Main Stopwatch_Main;
+
+var int Id;
 
 var float SpawnTimestamp;
 var float TempBestTime;
 var float BestTime;
 
-var float ReTriggerDelay;
 var float TriggerTime;
 
-simulated function PreBeginPlay()
+function PreBeginPlay()
 {
    PlayerPawn = PlayerPawn(Owner);
 }
 
-simulated function Init(int aIndex, float aSpawnTimestamp, int aPrecisionDecimals)
+function Init(int aId, float aSpawnTimestamp, BTP_Stopwatch_Main aMain)
 {
-	ID = aIndex;
+	Id = aId;
 	SpawnTimestamp = aSpawnTimestamp;
-	PrecisionDecimals = aPrecisionDecimals;
+	Stopwatch_Main = aMain;
+
+	SetVisuals();
 }
 
-simulated function SetSpawnTimestamp(float aSpawnTimestamp)
+function SetVisuals()
+{
+	Mesh			= LodMesh'Botpack.UTRingex';
+	// Skin			= Texture'CPFlag';
+	Style			= STY_Normal;
+	DrawScale		= 1.0;
+	bMeshEnviromap	= false;
+
+	// LoopAnim('Explo');
+}
+
+function SetSpawnTimestamp(float aSpawnTimestamp)
 {
     SpawnTimestamp = aSpawnTimestamp;
 	TempBestTime = 0;
 }
 
-simulated function ResetBestTime()
+function ResetBestTime()
 {
 	BestTime = 0;
 }
 
-simulated function SetNewBestTime()
+function SetNewBestTime()
 {
 	BestTime = TempBestTime;
 }
 
-simulated function Print()
+function Print()
 {
-	PlayerPawn.ClientMessage("[BTPog] Index = "$ID$", Location = ("$class'BTP_Misc_Utils'.static.ToStringWithoutDecimals(Location)
-								$"), BestTime = "$class'BTP_Misc_Utils'.static.FloatToString(BestTime, PrecisionDecimals));
+	PlayerPawn.ClientMessage("[BTPog/Stopwatch] Index = " $ Id $ ", BestTime = " $ class'BTP_Misc_Utils'.static.FloatToString(BestTime, Stopwatch_Main.ClientConfigDto.PrecisionDecimals)
+								$ "Location = (" $ class'BTP_Misc_Utils'.static.ToStringWithoutDecimals(Location) $ ")");
 }
 
-simulated function Touch(Actor Other)
+function Touch(Actor Other)
 {
 	local float NewTime;
 
 	if (PlayerPawn == Other)
 	{
-		if (ReTriggerDelay > 0)
+		if (Stopwatch_Main.ClientConfigDto.ReTriggerDelay > 0)
 		{
-			if (Level.TimeSeconds - TriggerTime < ReTriggerDelay)
+			if (Level.TimeSeconds - TriggerTime < Stopwatch_Main.ClientConfigDto.ReTriggerDelay)
 				return;
 			TriggerTime = Level.TimeSeconds;
 		}
 
 		NewTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
-		PrintTime(NewTime);
+		if (Stopwatch_Main.ClientConfigDto.DisplayTimes) PrintTime(NewTime);
 		
 		if (NewTime < TempBestTime || TempBestTime == 0)
 			TempBestTime = NewTime;
 	}
 }
 
-simulated function PrintTime(float NewTime)
+function PrintTime(float NewTime)
 {
 	local int TruncatedNewTime, TruncatedBestTime;
 	
-	TruncatedNewTime = int(NewTime * (10**PrecisionDecimals));
-	TruncatedBestTime = int(BestTime * (10**PrecisionDecimals));
+	TruncatedNewTime = int(NewTime * (10**Stopwatch_Main.ClientConfigDto.PrecisionDecimals));
+	TruncatedBestTime = int(BestTime * (10**Stopwatch_Main.ClientConfigDto.PrecisionDecimals));
 
 	ClientProgressMessage(
-		class'BTP_Misc_Utils'.static.FloatToString(NewTime, PrecisionDecimals),
-		class'BTP_Misc_Utils'.static.FloatToDeltaString((TruncatedNewTime - TruncatedBestTime) / (10**PrecisionDecimals), PrecisionDecimals),
+		class'BTP_Misc_Utils'.static.FloatToString(NewTime, Stopwatch_Main.ClientConfigDto.PrecisionDecimals),
+		class'BTP_Misc_Utils'.static.FloatToDeltaString((TruncatedNewTime - TruncatedBestTime) / (10**Stopwatch_Main.ClientConfigDto.PrecisionDecimals), Stopwatch_Main.ClientConfigDto.PrecisionDecimals),
 		DetermineTextColor(TruncatedNewTime, TruncatedBestTime)
 	);
 }
 
-simulated function ClientProgressMessage(string StopwatchTime, string StopwatchDelta, Color Color)
+function ClientProgressMessage(string StopwatchTime, string StopwatchDelta, Color Color)
 {
 	local string Message;
 
@@ -90,15 +103,15 @@ simulated function ClientProgressMessage(string StopwatchTime, string StopwatchD
 	Message = StopwatchTime;
 	if (BestTime > 0)
 	{
-		Message = Message$" ("$StopwatchDelta$")";
+		Message = Message $ " (" $ StopwatchDelta $ ")";
 		PlayerPawn.SetProgressColor(Color, 6);
 	}
 
     PlayerPawn.SetProgressMessage(Message, 6);
-	PlayerPawn.ClientMessage("[BTPog] Stopwatch "$ID$": "$Message);
+	PlayerPawn.ClientMessage("[BTPog/Stopwatch] " $ Id $ ": " $ Message);
 }
 
-simulated function Color DetermineTextColor(int TruncatedNewTime, int TruncatedBestTime)
+function Color DetermineTextColor(int TruncatedNewTime, int TruncatedBestTime)
 {
 	if (TruncatedNewTime <= TruncatedBestTime || TruncatedBestTime == 0)
 		return Green();
@@ -106,7 +119,7 @@ simulated function Color DetermineTextColor(int TruncatedNewTime, int TruncatedB
 		return Red();
 }
 
-simulated function Color Green()
+function Color Green()
 {
 	local Color ColorGreen;
 	ColorGreen.R = 0;
@@ -115,7 +128,7 @@ simulated function Color Green()
 	return ColorGreen;
 }
 
-simulated function Color Red()
+function Color Red()
 {
 	local Color ColorRed;
 	ColorRed.R = 255;
@@ -124,7 +137,7 @@ simulated function Color Red()
 	return ColorRed;
 }
 
-simulated function Tick(float DeltaTime)
+function Tick(float DeltaTime)
 {
 	if (Owner == None)
 		Destroy();
@@ -132,7 +145,27 @@ simulated function Tick(float DeltaTime)
 
 defaultproperties
 {
-    ReTriggerDelay=2.0
 	CollisionRadius=60
 	CollisionHeight=30
+
+	AmbientGlow=64
+	bHidden=false
+	bStatic=false
+	bNoDelete=false
+	bUnlit=false
+	bMovable=true
+	bCollideActors=true
+	bCollideWhenPlacing=false
+	bMeshEnviromap=true
+	LightBrightness=255
+	LightHue=191
+	LightSaturation=64
+	LightEffect=LE_Shock
+	LightRadius=0
+	LightType=LT_Steady
+	DrawType=DT_Mesh
+	Style=STY_Translucent
+	DrawScale=1
+	
+	bOnlyOwnerSee=True
 }
