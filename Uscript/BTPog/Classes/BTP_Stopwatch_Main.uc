@@ -9,6 +9,8 @@ var BTP_Stopwatch_Structs.ClientConfigDto ClientConfigDto;
 var BTP_Stopwatch_Controller RedController;
 var BTP_Stopwatch_Controller BlueController;
 
+var float SpawnTimestamp;
+
 replication
 {
 	reliable if (Role < ROLE_Authority)
@@ -27,12 +29,12 @@ function ReplicateStopwatchCollectionToServer(BTP_Stopwatch_Structs.StopwatchCol
 	if (aStopwatchCollection.Team == 0)
 	{
 		RedController = Spawn(class'BTP_Stopwatch_Controller', Owner);
-		RedController.Init(PlayerPawn(Owner), Self, aStopwatchCollection);
+		RedController.Init(PlayerPawn(Owner), Self, SpawnTimestamp, aStopwatchCollection);
 	}
 	else if (aStopwatchCollection.Team == 1)
 	{
 		BlueController = Spawn(class'BTP_Stopwatch_Controller', Owner);
-		BlueController.Init(PlayerPawn(Owner), Self, aStopwatchCollection);
+		BlueController.Init(PlayerPawn(Owner), Self, SpawnTimestamp, aStopwatchCollection);
 	}
 	else
 	{
@@ -97,8 +99,9 @@ function PlayerSpawnedEvent()
 {
 	local BTP_Stopwatch_Controller Controller;
 	Controller = GetController();
-
 	if (Controller != None) Controller.PlayerSpawnedEvent();
+
+	SpawnTimestamp = Level.TimeSeconds;
 }
 
 function ExecuteCommand(String MutateString)
@@ -247,10 +250,13 @@ function bool ExecuteRetriggerDelayCommand(string MutateString)
 
 function bool ExecuteTextureCommand()
 {
-	ClientConfigDto.DisplayTextures = !ClientConfigDto.DisplayTextures;
+	ClientConfigDto.DisplayTexture = !ClientConfigDto.DisplayTexture;
 	ReplicateConfigToClient(ClientConfigDto);
+
+	RedController.ToggleTexture(!ClientConfigDto.DisplayTexture);
+	BlueController.ToggleTexture(!ClientConfigDto.DisplayTexture);
 	
-	ClientMessage("Toggled on/off the display of stopwatch textures");
+	ClientMessage("Set the display of stopwatch textures to " $ ClientConfigDto.DisplayTexture);
 	return True;
 }
 

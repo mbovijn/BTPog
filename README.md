@@ -88,12 +88,15 @@ You could also set stopwatches when rushing in order to get quicker feedback on 
 
 | Command                                           | Description
 | ---                                               | ---
-| `!btpog sw` or `!btpog sw <id>`                   | Sets an invisible stopwatch at your current location (and deletes any previously set stopwatch). You can set up to 32 stopwatches. Valid id values: 0, 1, 2, ... 31
-| `!btpog sw <id> 50,10,-10`                        | Sets an invisible stopwatch at location 50,10,-10 (and deletes any previously set stopwatch).
+| `!btpog sw` or `!btpog sw <id>`                   | Sets an invisible stopwatch at your current location. You can set up to 14 stopwatches. Valid id values: 0, 1, 2, ... 13
+| `!btpog sw <id> 50,10,-10`                        | Sets an invisible stopwatch at location 50,10,-10.
 | `!btpog sw reset`                                 | Removes the best times associated with all stopwatches.
 | `!btpog sw delete <id>/all`                       | Delete a stopwatch. Valid id values: 0, 1, 2, ... 31, all
 | `!btpog sw precision 3`                           | Sets the amount of decimals after the dot for stopwatch times. Defaults to 2 (e.g. 8.63), but any value between 0 and 3 is valid.
-| `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the screen.
+| `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the console.
+| `!btpog sw toggle`                                | Turns on/off the display of the stopwatch times when you go over them.
+| `!btpog sw retriggerdelay 0.5`                    | How many seconds after having triggered a stopwatch, should it be triggerable again? The default value is set to 1.5, but any value between 0.2 and 10 is valid.
+| `!btpog sw texture`                               | Hide or show stopwatches.
 </details>
 
 ## Suicide Module

@@ -1,10 +1,10 @@
 class BTP_Stopwatch_Structs extends Object;
 
 struct ClientConfigDto {
-    var config int PrecisionDecimals;
-    var config float ReTriggerDelay;
-    var config bool DisplayTimes;
-    var config bool DisplayTextures;
+    var int PrecisionDecimals;
+    var float ReTriggerDelay;
+    var bool DisplayTimes;
+    var bool DisplayTexture;
 };
 
 struct Stopwatch {

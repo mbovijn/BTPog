@@ -1,8 +1,10 @@
-class BTP_Stats_Main extends Info;
+class BTP_Stats_Main extends Info dependson(BTP_Stats_Structs);
 
 var PlayerPawn PlayerPawn;
 
-var BTP_Stats_ClientConfig ClientConfig;
+var BTP_Stats_ClientConfig ClientConfig; // CLIENT VAR
+var BTP_Stats_Structs.ClientConfigDto ClientConfigDto; // SERVER VAR
+
 var BTP_Stats_Inventory StatsInventory;
 
 var EDodgeDir PreviousDodgeDir;
@@ -27,6 +29,8 @@ replication
 {
 	reliable if (Role == ROLE_Authority)
 		PlayerPawn, ToggleIsActive, ToggleIsDebugging, PlayerSpawnedEventToClient;
+	reliable if (Role < ROLE_Authority)
+		ReplicateConfigToServer;
 }
 
 simulated function PreBeginPlay()
@@ -40,7 +44,14 @@ simulated function PreBeginPlay()
 		Obj = new (none, 'BTPog') class'Object';
 		ClientConfig = new (Obj, 'Stats_ClientConfig') class'BTP_Stats_ClientConfig';
 		ClientConfig.SaveConfig();
+
+		ReplicateConfigToServer(ClientConfig.GetClientConfig());
 	}
+}
+
+function ReplicateConfigToServer(BTP_Stats_Structs.ClientConfigDto aClientConfigDto)
+{
+	ClientConfigDto = aClientConfigDto;
 }
 
 function InitStatsInventory()
@@ -66,7 +77,7 @@ function ExecuteCommand(string MutateString)
 
 function PlayerSpawnedEvent()
 {
-	InitStatsInventory(); // The engine destroys this on death.
+	if (ClientConfigDto.IsActive) InitStatsInventory(); // The engine destroys this on death.
 	PlayerSpawnedEventToClient();
 }
 
@@ -79,6 +90,8 @@ simulated function ToggleIsActive()
 {
     ClientConfig.IsActive = !ClientConfig.IsActive;
     ClientConfig.SaveConfig();
+
+	ReplicateConfigToServer(ClientConfig.GetClientConfig());
 }
 
 simulated function ToggleIsDebugging()
@@ -86,6 +99,8 @@ simulated function ToggleIsDebugging()
     ClientConfig.IsDebugging = !ClientConfig.IsDebugging;
     ClientMessage("Stats Debugging Enabled = "$ClientConfig.IsDebugging);
     ClientConfig.SaveConfig();
+
+	ReplicateConfigToServer(ClientConfig.GetClientConfig());
 }
 
 simulated function CustomTick(float DeltaTime)

@@ -3,7 +3,7 @@ class BTP_Stopwatch_ClientConfig extends Object perobjectconfig dependson(BTP_St
 var config int PrecisionDecimals;
 var config float ReTriggerDelay;
 var config bool DisplayTimes;
-var config bool DisplayTextures;
+var config bool DisplayTexture;
 
 var config array<BTP_Stopwatch_Structs.StopwatchCollection> StopwatchCollections;
 
@@ -29,7 +29,7 @@ function BTP_Stopwatch_Structs.ClientConfigDto GetClientConfig()
     ClientConfigDto.PrecisionDecimals = PrecisionDecimals;
     ClientConfigDto.ReTriggerDelay = ReTriggerDelay;
     ClientConfigDto.DisplayTimes = DisplayTimes;
-    ClientConfigDto.DisplayTextures = DisplayTextures;
+    ClientConfigDto.DisplayTexture = DisplayTexture;
     
     return ClientConfigDto;
 }
@@ -58,12 +58,13 @@ function bool FindStopwatchCollection(string MapName, byte Team, out int Index)
 	while (F <= C)
     {
 		Index = F + ((C - F) / 2);
-		if ((StopwatchCollections[Index].Map $ string(StopwatchCollections[Index].Team)) < (MapName $ string(Team)))
+		if ((Caps(StopwatchCollections[Index].Map) $ string(StopwatchCollections[Index].Team)) < (MapName $ string(Team)))
 			F = ++Index;
-		else if ((StopwatchCollections[Index].Map $ string(StopwatchCollections[Index].Team)) > (MapName $ string(Team)))
+		else if ((Caps(StopwatchCollections[Index].Map) $ string(StopwatchCollections[Index].Team)) > (MapName $ string(Team)))
 			C = Index-1;
-		else
-			return true;
+		else {
+            return true;
+        }
 	}
 
 	return false;
@@ -85,7 +86,7 @@ function UpdateClientConfig(BTP_Stopwatch_Structs.ClientConfigDto aClientConfigD
     PrecisionDecimals = aClientConfigDto.PrecisionDecimals;
     ReTriggerDelay = aClientConfigDto.ReTriggerDelay;
     DisplayTimes = aClientConfigDto.DisplayTimes;
-    DisplayTextures = aClientConfigDto.DisplayTextures;
+    DisplayTexture = aClientConfigDto.DisplayTexture;
 
     SaveConfig();
 }
@@ -95,5 +96,5 @@ defaultproperties
     PrecisionDecimals=2
     ReTriggerDelay=1.5
     DisplayTimes=True
-    DisplayTextures=True
+    DisplayTexture=False
 }

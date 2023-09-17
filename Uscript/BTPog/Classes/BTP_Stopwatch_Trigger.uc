@@ -27,13 +27,8 @@ function Init(int aId, float aSpawnTimestamp, BTP_Stopwatch_Main aMain)
 
 function SetVisuals()
 {
-	Mesh			= LodMesh'Botpack.UTRingex';
-	// Skin			= Texture'CPFlag';
-	Style			= STY_Normal;
-	DrawScale		= 1.0;
-	bMeshEnviromap	= false;
-
-	// LoopAnim('Explo');
+	Mesh = LodMesh'Botpack.UTRingex';
+	bHidden = !Stopwatch_Main.ClientConfigDto.DisplayTexture;
 }
 
 function SetSpawnTimestamp(float aSpawnTimestamp)
@@ -72,7 +67,7 @@ function Touch(Actor Other)
 		}
 
 		NewTime = (Level.TimeSeconds - SpawnTimestamp) / Level.TimeDilation;
-		if (Stopwatch_Main.ClientConfigDto.DisplayTimes) PrintTime(NewTime);
+		PrintTime(NewTime);
 		
 		if (NewTime < TempBestTime || TempBestTime == 0)
 			TempBestTime = NewTime;
@@ -96,18 +91,18 @@ function PrintTime(float NewTime)
 function ClientProgressMessage(string StopwatchTime, string StopwatchDelta, Color Color)
 {
 	local string Message;
-
-	PlayerPawn.ClearProgressMessages();
-    PlayerPawn.SetProgressTime(2);
-
 	Message = StopwatchTime;
-	if (BestTime > 0)
+	if (BestTime > 0) Message = Message $ " (" $ StopwatchDelta $ ")";
+
+    if (Stopwatch_Main.ClientConfigDto.DisplayTimes)
 	{
-		Message = Message $ " (" $ StopwatchDelta $ ")";
-		PlayerPawn.SetProgressColor(Color, 6);
+		PlayerPawn.ClearProgressMessages();
+		PlayerPawn.SetProgressTime(2);
+
+		if (BestTime > 0) PlayerPawn.SetProgressColor(Color, 6);
+		PlayerPawn.SetProgressMessage(Message, 6);
 	}
 
-    PlayerPawn.SetProgressMessage(Message, 6);
 	PlayerPawn.ClientMessage("[BTPog/Stopwatch] " $ Id $ ": " $ Message);
 }
 
@@ -149,14 +144,11 @@ defaultproperties
 	CollisionHeight=30
 
 	AmbientGlow=64
-	bHidden=false
 	bStatic=false
-	bNoDelete=false
 	bUnlit=false
-	bMovable=true
 	bCollideActors=true
 	bCollideWhenPlacing=false
-	bMeshEnviromap=true
+	bMeshEnviromap=false
 	LightBrightness=255
 	LightHue=191
 	LightSaturation=64
@@ -164,8 +156,7 @@ defaultproperties
 	LightRadius=0
 	LightType=LT_Steady
 	DrawType=DT_Mesh
-	Style=STY_Translucent
+	Style=STY_Normal
 	DrawScale=1
-	
 	bOnlyOwnerSee=True
 }
