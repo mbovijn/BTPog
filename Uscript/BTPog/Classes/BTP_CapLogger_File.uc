@@ -43,7 +43,7 @@ function InitLogFile()
 		$"Netspeed_Min,Netspeed_Max");
 	
 	if (ServerConfig.IsDebugging)
-		Log("[BTPog/CapLogger] Opened BTP_CapLogger_Main file "$LogFile.StatLogFinal);
+		Log("[BTPog/CapLogger] Opened CapLogger file "$LogFile.StatLogFinal);
 }
 
 function CloseLogFile()
@@ -51,7 +51,7 @@ function CloseLogFile()
 	if (LogFile != None)
 	{
 		if (ServerConfig.IsDebugging)
-			Log("[BTPog/CapLogger] Closing BTP_CapLogger_Main file "$LogFile.StatLogFinal);
+			Log("[BTPog/CapLogger] Closing CapLogger file "$LogFile.StatLogFinal);
 
 		LogFile.StopLog();
         LogFile.Destroy();
