@@ -18,7 +18,7 @@ function SetupFlagBaseSubscriptions()
     SetEventIfNotExistsOnAllFlagBases();
     GetUniqueEventsFromAllFlagBases(Events);
 
-    SpawnBTP_Misc_CapEventPublisherHelpers(Events);
+    SpawnCapEventPublisherHelpers(Events);
 }
 
 function SetEventIfNotExistsOnAllFlagBases()
@@ -47,7 +47,7 @@ function AddEventIfNotThereYet(name Event, out name Events[16])
     Events[i] = Event;
 }
 
-function SpawnBTP_Misc_CapEventPublisherHelpers(name Events[16]) {
+function SpawnCapEventPublisherHelpers(name Events[16]) {
     local int i;
     for (i = 0; i < ArrayCount(Events); i++)
     {

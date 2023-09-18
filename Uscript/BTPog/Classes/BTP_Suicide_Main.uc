@@ -184,7 +184,6 @@ function CreateMoverTracker(int Index, Mover aMover)
 {
     if (MoverTrackers[Index] != None)
     {
-        MoverTrackers[Index].Destroy();
         MoverTrackers[Index] = None;
     }
 
@@ -194,7 +193,7 @@ function CreateMoverTracker(int Index, Mover aMover)
         return;
     }
 
-    MoverTrackers[Index] = Spawn(class'BTP_Suicide_MoverTracker', Owner);
+    MoverTrackers[Index] = new class'BTP_Suicide_MoverTracker';
     MoverTrackers[Index].Init(PlayerPawn, aMover);
     ClientMessage("Selected mover with name "$aMover.Name);
 }

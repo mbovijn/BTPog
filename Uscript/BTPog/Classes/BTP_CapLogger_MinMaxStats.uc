@@ -1,4 +1,4 @@
-class BTP_CapLogger_MinMaxStats extends Info dependson(BTP_CapLogger_Structs);
+class BTP_CapLogger_MinMaxStats extends Object dependson(BTP_CapLogger_Structs);
 
 var BTP_CapLogger_Structs.StatsMinMaxAnalysis Analysis;
 

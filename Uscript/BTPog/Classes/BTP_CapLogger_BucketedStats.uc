@@ -1,4 +1,4 @@
-class BTP_CapLogger_BucketedStats extends Info dependson(BTP_CapLogger_Structs);
+class BTP_CapLogger_BucketedStats extends Object dependson(BTP_CapLogger_Structs);
 
 struct Bucket
 {

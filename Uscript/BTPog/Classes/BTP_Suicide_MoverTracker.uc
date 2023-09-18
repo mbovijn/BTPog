@@ -1,4 +1,4 @@
-class BTP_Suicide_MoverTracker extends Info;
+class BTP_Suicide_MoverTracker extends Object;
 
 var PlayerPawn PlayerPawn;
 var Mover Mover;

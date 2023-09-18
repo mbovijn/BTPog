@@ -89,21 +89,13 @@ function PlayerSpawnedEvent()
 
 simulated function PlayerSpawnedEvent_ToClient(String DemoSpawnMarker)
 {
-	if (DodgeBlockStats != None) DodgeBlockStats.Destroy();
-	if (DodgeDoubleTapStats != None) DodgeDoubleTapStats.Destroy();
-	if (DodgeAfterLandingStats != None) DodgeAfterLandingStats.Destroy();
-	if (TimeBetweenDodgesStats != None) TimeBetweenDodgesStats.Destroy();
-	if (FPSStats != None) FPSStats.Destroy();
-	if (PingStats != None) PingStats.Destroy();
-	if (NetspeedStats != None) NetspeedStats.Destroy();
-
-	DodgeBlockStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	DodgeDoubleTapStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	DodgeAfterLandingStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	TimeBetweenDodgesStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	FPSStats = Spawn(class'BTP_CapLogger_BucketedStats', Owner);
-	PingStats = Spawn(class'BTP_CapLogger_BucketedStats', Owner);
-	NetspeedStats = Spawn(class'BTP_CapLogger_MinMaxStats', Owner);
+	DodgeBlockStats = new class'BTP_CapLogger_Stats';
+	DodgeDoubleTapStats = new class'BTP_CapLogger_Stats';
+	DodgeAfterLandingStats = new class'BTP_CapLogger_Stats';
+	TimeBetweenDodgesStats = new class'BTP_CapLogger_Stats';
+	FPSStats = new class'BTP_CapLogger_BucketedStats';
+	PingStats = new class'BTP_CapLogger_BucketedStats';
+	NetspeedStats = new class'BTP_CapLogger_MinMaxStats';
 
 	SpawnTimestamp = Level.TimeSeconds;
 	PlayerJustSpawned = True;

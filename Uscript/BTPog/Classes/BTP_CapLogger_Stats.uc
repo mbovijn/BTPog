@@ -1,4 +1,4 @@
-class BTP_CapLogger_Stats extends Info dependson(BTP_CapLogger_Structs);
+class BTP_CapLogger_Stats extends Object dependson(BTP_CapLogger_Structs);
 
 var float Values[1024];
 var int Index;
