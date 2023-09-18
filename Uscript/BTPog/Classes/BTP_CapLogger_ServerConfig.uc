@@ -28,7 +28,7 @@ function ValidateConfig()
 	if (MaxTrackedLocations < 0 || MaxTrackedLocations > 1000)
 	{
 		Log("[BTPog/CapLogger] MaxTrackedLocations is set to an invalid value. Resetting..");
-		MaxTrackedLocations = 100;
+		MaxTrackedLocations = 0;
 	}
 
 	if (TrackedLocationPeriod < 0.1 || TrackedLocationPeriod > 10)
@@ -45,6 +45,6 @@ defaultproperties
 	FilePerCap=False
 	IsDebugging=False
 	MaxZoneCheckpoints=100
-	MaxTrackedLocations=100
+	MaxTrackedLocations=0
 	TrackedLocationPeriod=5
 }

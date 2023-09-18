@@ -203,6 +203,7 @@ function AddZoneCheckpoint(byte NewZoneNumber)
 	AmountOfZoneCheckpoints++;
 }
 
+// TODO - take samples every 1 second, then at cap time, depending on the length, downsample
 function AddTrackedLocation(vector Location)
 {
 	local String Time;
