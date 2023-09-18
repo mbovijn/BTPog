@@ -18,6 +18,10 @@ var string ZoneCheckpoints;
 var byte PreviousZoneNumber;
 var int AmountOfZoneCheckpoints;
 
+var float TrackedLocationTime;
+var string TrackedLocations;
+var int AmountOfTrackedLocations;
+
 var BTP_CapLogger_ServerConfig ServerConfig;
 
 // CLIENT VARS
@@ -159,6 +163,8 @@ function ReportInfo_ToServer(
 	LogData.HardwareID = HardwareIdPropertyRetriever.GetProperty();
 	LogData.CustomID = IdPropertyRetriever.GetProperty();
 	LogData.ZoneCheckpoints = ZoneCheckpoints;
+	LogData.TrackedLocations = TrackedLocations;
+	LogData.CustomIDOtherPlayersOnTeam = GetCustomIdsOfOtherPlayersOnTeam();
 
 	CapLogger_File.LogCap(PlayerPawn, LogData);
 }
@@ -174,8 +180,14 @@ function Tick(float DeltaTime)
 	{
 		AddZoneCheckpoint(PlayerPawn.FootRegion.ZoneNumber);
 	}
-
 	PreviousZoneNumber = PlayerPawn.FootRegion.ZoneNumber;
+
+	if (TrackedLocationTime > ServerConfig.TrackedLocationPeriod)
+	{
+		AddTrackedLocation(PlayerPawn.Location);
+		TrackedLocationTime = 0;
+	}
+	TrackedLocationTime += DeltaTime;
 }
 
 function AddZoneCheckpoint(byte NewZoneNumber)
@@ -197,6 +209,49 @@ function AddZoneCheckpoint(byte NewZoneNumber)
 	ZoneCheckpoints = ZoneCheckpoints $ NewZoneNumber $ "-" $ Time $ ";";
 	
 	AmountOfZoneCheckpoints++;
+}
+
+function AddTrackedLocation(vector Location)
+{
+	local String Time;
+	
+	if (AmountOfTrackedLocations >= ServerConfig.MaxTrackedLocations)
+	{
+		if (ServerConfig.IsDebugging)
+		{
+			Log("[BTPog/CapLogger] Could not track anymore locations for player "
+				$ PlayerPawn.PlayerReplicationInfo.PlayerName $ " since the limit of "
+				$ ServerConfig.MaxTrackedLocations $ " was reached");
+		}
+		return;
+	}
+
+	Time = class'BTP_Misc_Utils'.static.TimeDeltaToString(Level.TimeSeconds - SpawnTimestamp, Level.TimeDilation);
+	TrackedLocations = TrackedLocations $ Location.X $ "|" $ Location.Y $ "|" $ Location.Z $ "|" $ Time $ ";";
+
+	AmountOfTrackedLocations++;
+}
+
+function String GetCustomIdsOfOtherPlayersOnTeam()
+{
+	local Pawn Pawn;
+	local BTP_Misc_PropertyRetriever PropertyRetriever;
+	local string Ids;
+
+	for (Pawn = Level.PawnList; Pawn != None; Pawn = Pawn.NextPawn)
+	{
+		if (Pawn.isA('PlayerPawn') && !Pawn.isA('MessagingSpectator') && Pawn.bIsPlayer
+			&& Pawn.PlayerReplicationInfo.Team == PlayerPawn.PlayerReplicationInfo.Team
+			&& Pawn.PlayerReplicationInfo.PlayerID != PlayerPawn.PlayerReplicationInfo.PlayerID)
+		{
+			PropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', Pawn); // TODO - does it have to be an actor? why not object?
+			PropertyRetriever.Init(PlayerPawn(Pawn), ServerConfig.IdPropertyToLog);
+			Ids = Ids $ PropertyRetriever.GetProperty() $ ";";
+			PropertyRetriever.Destroy();
+		}
+	}
+
+	return Ids;
 }
 
 simulated function CustomTick(float DeltaTime)

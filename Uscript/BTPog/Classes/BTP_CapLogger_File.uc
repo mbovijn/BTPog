@@ -33,7 +33,7 @@ function InitLogFile()
 
 	FileCounter++;
 
-    LogFile.FileLog("Id,Timestamp,ServerName,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,"
+    LogFile.FileLog("Id,Timestamp,ServerName,Map,PlayerName,IP,CustomID,CustomIDOtherPlayersOnTeam,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,TrackedLocations,"
 		$"DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,"
 		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,"
 		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,"
@@ -71,6 +71,7 @@ function LogCap(PlayerPawn PlayerPawn, BTP_CapLogger_Structs.LogData LogData)
 		Replace(PlayerPawn.PlayerReplicationInfo.PlayerName, ",", "")$","$
 		GetPlayerIP(PlayerPawn)$","$
 		LogData.CustomID$","$
+		LogData.CustomIDOtherPlayersOnTeam$","$
 		LogData.HardwareID$","$
 		LogData.ClientEngineVersion$","$
 		LogData.Renderer$","$
@@ -79,6 +80,7 @@ function LogCap(PlayerPawn PlayerPawn, BTP_CapLogger_Structs.LogData LogData)
 		class'BTP_Misc_Utils'.static.FloatToString(LogData.CapTime, 3)$","$
 		class'BTP_Misc_Utils'.static.FloatToDeltaString(LogData.ClientCapTimeDelta, 3)$","$
 		LogData.ZoneCheckpoints$","$
+		LogData.TrackedLocations$","$
 		StatsAnalysisToDetailedString(LogData.DodgeBlock, 3)$","$
 		StatsAnalysisToDetailedString(LogData.DodgeDoubleTap, 3)$","$
         StatsAnalysisToDetailedString(LogData.DodgeAfterLanding, 3)$","$

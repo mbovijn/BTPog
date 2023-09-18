@@ -34,4 +34,6 @@ struct LogData
 	var String HardwareID;
 	var String CustomID;
 	var String ZoneCheckpoints;
+	var String TrackedLocations;
+	var String CustomIDOtherPlayersOnTeam;
 };
