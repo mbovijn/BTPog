@@ -45,6 +45,6 @@ defaultproperties
 	FilePerCap=False
 	IsDebugging=False
 	MaxZoneCheckpoints=100
-	MaxTrackedLocations=0
+	MaxTrackedLocations=100
 	TrackedLocationPeriod=5
 }

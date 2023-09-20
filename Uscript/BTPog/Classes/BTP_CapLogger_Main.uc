@@ -188,12 +188,12 @@ function Tick(float DeltaTime)
 	}
 	PreviousZoneNumber = PlayerPawn.FootRegion.ZoneNumber;
 
-	if (TrackedLocationTime > ServerConfig.TrackedLocationPeriod)
-	{
-		AddTrackedLocation(PlayerPawn.Location);
-		TrackedLocationTime = 0;
-	}
-	TrackedLocationTime += DeltaTime;
+	// if (TrackedLocationTime > ServerConfig.TrackedLocationPeriod)
+	// {
+	// 	AddTrackedLocation(PlayerPawn.Location);
+	// 	TrackedLocationTime = 0;
+	// }
+	// TrackedLocationTime += DeltaTime;
 }
 
 function AddZoneCheckpoint(byte NewZoneNumber)
@@ -217,7 +217,6 @@ function AddZoneCheckpoint(byte NewZoneNumber)
 	AmountOfZoneCheckpoints++;
 }
 
-// TODO - take samples every 1 second, then at cap time, depending on the length, downsample
 function AddTrackedLocation(vector Location)
 {
 	local String Time;
