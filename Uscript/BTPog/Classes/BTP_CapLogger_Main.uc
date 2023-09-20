@@ -37,10 +37,20 @@ var float PreviousDodgeClickTimer;
 var bool PlayerJustSpawned;
 var string UniqueCapId;
 
+var int ForwardKeyPressesBeforeDodgeCounter;
+var float MostRecentForwardKeyPress;
+var int BackKeyPressesBeforeDodgeCounter;
+var float MostRecentBackKeyPress;
+var int LeftKeyPressesBeforeDodgeCounter;
+var float MostRecentLeftKeyPress;
+var int RightKeyPressesBeforeDodgeCounter;
+var float MostRecentRightKeyPress;
+
 var BTP_CapLogger_Stats DodgeBlockStats;
 var BTP_CapLogger_Stats DodgeDoubleTapStats;
 var BTP_CapLogger_Stats DodgeAfterLandingStats;
 var BTP_CapLogger_Stats TimeBetweenDodgesStats;
+var BTP_CapLogger_Stats KeyPressesBeforeDodgeStats;
 var BTP_CapLogger_BucketedStats FPSStats;
 var BTP_CapLogger_BucketedStats PingStats;
 var BTP_CapLogger_MinMaxStats NetspeedStats;
@@ -93,6 +103,7 @@ simulated function PlayerSpawnedEvent_ToClient(String DemoSpawnMarker)
 	DodgeDoubleTapStats = new class'BTP_CapLogger_Stats';
 	DodgeAfterLandingStats = new class'BTP_CapLogger_Stats';
 	TimeBetweenDodgesStats = new class'BTP_CapLogger_Stats';
+	KeyPressesBeforeDodgeStats = new class'BTP_CapLogger_Stats';
 	FPSStats = new class'BTP_CapLogger_BucketedStats';
 	PingStats = new class'BTP_CapLogger_BucketedStats';
 	NetspeedStats = new class'BTP_CapLogger_MinMaxStats';
@@ -116,6 +127,7 @@ simulated function PlayerCappedEvent_ToClient(String DemoCapMarker)
 		DodgeDoubleTapStats.Analyze(),
 		DodgeAfterLandingStats.Analyze(),
 		TimeBetweenDodgesStats.Analyze(),
+		KeyPressesBeforeDodgeStats.Analyze(),
 		FPSStats.Analyze(),
 		PingStats.Analyze(),
 		NetspeedStats.Analyze(),
@@ -130,6 +142,7 @@ function ReportInfo_ToServer(
 	BTP_CapLogger_Structs.StatsAnalysis DodgeDoubleTap,
 	BTP_CapLogger_Structs.StatsAnalysis DodgeAfterLanding,
 	BTP_CapLogger_Structs.StatsAnalysis TimeBetweenDodges,
+	BTP_CapLogger_Structs.StatsAnalysis KeyPressesBeforeDodge,
 	BTP_CapLogger_Structs.StatsAnalysis FPS,
 	BTP_CapLogger_Structs.StatsAnalysis Ping,
 	BTP_CapLogger_Structs.StatsMinMaxAnalysis Netspeed,
@@ -157,6 +170,7 @@ function ReportInfo_ToServer(
 	LogData.ZoneCheckpoints = ZoneCheckpoints;
 	LogData.TrackedLocations = TrackedLocations;
 	LogData.CustomIDOtherPlayersOnTeam = GetCustomIdsOfOtherPlayersOnTeam();
+	LogData.KeyPressesBeforeDodge = KeyPressesBeforeDodge;
 
 	CapLogger_File.LogCap(PlayerPawn, LogData);
 }
@@ -252,6 +266,7 @@ simulated function CustomTick(float DeltaTime)
 	if (Role == ROLE_Authority) return;
 
 	MeasureFPS(DeltaTime);
+	MeasureMovementKeyPresses();
 
 	if (PlayerPawn.PlayerReplicationInfo != None && PlayerPawn.PlayerReplicationInfo.Ping > 0 && PingStats != None)
 		PingStats.AddValue(PlayerPawn.PlayerReplicationInfo.Ping, PlayerPawn.PlayerReplicationInfo.Ping);
@@ -375,6 +390,63 @@ simulated function string GetRenderer()
 	}
 	
 	return Renderer;
+}
+
+simulated function MeasureMovementKeyPresses()
+{
+	if (PlayerPawn.bWasForward && PlayerPawn.bEdgeForward)
+	{
+		ForwardKeyPressesBeforeDodgeCounter++;
+		MostRecentForwardKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasBack && PlayerPawn.bEdgeBack)
+	{
+		BackKeyPressesBeforeDodgeCounter++;
+		MostRecentBackKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasLeft && PlayerPawn.bEdgeLeft)
+	{
+		LeftKeyPressesBeforeDodgeCounter++;
+		MostRecentLeftKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasRight && PlayerPawn.bEdgeRight)
+	{
+		RightKeyPressesBeforeDodgeCounter++;
+		MostRecentRightKeyPress = Level.TimeSeconds;
+	}
+	
+	if (PlayerPawn.DodgeDir == DODGE_Active)
+	{
+		if (PreviousDodgeDir == DODGE_Forward)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(ForwardKeyPressesBeforeDodgeCounter);
+			ForwardKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Back)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(BackKeyPressesBeforeDodgeCounter);
+			BackKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Left)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(LeftKeyPressesBeforeDodgeCounter);
+			LeftKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Right)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(RightKeyPressesBeforeDodgeCounter);
+			RightKeyPressesBeforeDodgeCounter = 0;
+		}
+	}
+
+	if (Level.TimeSeconds - MostRecentForwardKeyPress > PlayerPawn.DodgeClickTime)
+		ForwardKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentBackKeyPress > PlayerPawn.DodgeClickTime)
+		BackKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentLeftKeyPress > PlayerPawn.DodgeClickTime)
+		LeftKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentRightKeyPress > PlayerPawn.DodgeClickTime)
+		RightKeyPressesBeforeDodgeCounter = 0;
 }
 
 defaultproperties

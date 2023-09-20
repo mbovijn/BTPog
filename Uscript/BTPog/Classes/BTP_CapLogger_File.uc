@@ -38,6 +38,7 @@ function InitLogFile()
 		$"DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,"
 		$"DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,"
 		$"TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,"
+		$"KeyPressesBeforeDodge_1PC,KeyPressesBeforeDodge_5PC,KeyPressesBeforeDodge_25PC,KeyPressesBeforeDodge_50PC,KeyPressesBeforeDodge_100PC,KeyPressesBeforeDodge_Count,"
 		$"FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,"
 		$"Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,"
 		$"Netspeed_Min,Netspeed_Max");
@@ -85,6 +86,7 @@ function LogCap(PlayerPawn PlayerPawn, BTP_CapLogger_Structs.LogData LogData)
 		StatsAnalysisToDetailedString(LogData.DodgeDoubleTap, 3)$","$
         StatsAnalysisToDetailedString(LogData.DodgeAfterLanding, 3)$","$
 		StatsAnalysisToDetailedString(LogData.TimeBetweenDodges, 3)$","$
+		StatsAnalysisToDetailedString(LogData.KeyPressesBeforeDodge, 0)$","$
 		StatsAnalysisToString(LogData.FPS, 0)$","$
 		StatsAnalysisToString(LogData.Ping, 0)$","$
 		LogData.Netspeed.Min$","$LogData.Netspeed.Max

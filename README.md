@@ -43,6 +43,8 @@ You'll want to strive to get this value to `1.000`. This can be done by:
 - Buying a mouse with a high polling rate. Generally bluetooth mice have a very low polling rate. Test this [here](https://www.clickspeedtester.com/mouse-polling-rate-checker/).
 
 Though, from my experience, even with a value `1.000`, bouncing would sometimes still not work. I don't know why.. But lowering my FPS helped.
+#### Key Presses Before Dodge
+The amount of key presses just before a dodge occurs.
 
 | Command                                           | Description
 | ---                                               | ---
@@ -64,6 +66,7 @@ BOESRVETOZE8JRU8ARPTSK86,2023-09-18T20:14:11.845,UT Server,CTF-BT-andACTION-dbl,
 - DodgeDoubleTap: percentiles on the time interval between two consecutive key presses which resulted in a dodge.
 - DodgeAfterLanding: percentiles on how quick a player dodged after having landed on the ground. Only values below 0.2 seconds are taken into account.
 - TimeBetweenDodges: percentiles on the time between the end of the last dodge (player landed), and the beginning of the next dodge. Only values below 0.6 seconds are taken into account.
+- KeyPressesBeforeDodge: percentiles on the amount of key presses before a dodge. Normally this value should be always 2. 
 - FPS: percentiles on the FPS of a player. The FPS calculation can be tweaked with the 'TicksPerFPSCalculation' server-side setting.
 - Ping: percentiles on the ping of a player.
 - SpawnCount: the amount of times a player has spawned before the cap. If the count is 1, it could mean that the player used a reconnect bug to have a faster cap time.

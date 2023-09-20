@@ -14,6 +14,16 @@ var float DodgeBlockDuration;
 var float DodgeDoubleTapInterval;
 var float TimeBetweenTwoDodges;
 
+var int KeyPressesBeforeDodge;
+var int ForwardKeyPressesBeforeDodgeCounter;
+var float MostRecentForwardKeyPress;
+var int BackKeyPressesBeforeDodgeCounter;
+var float MostRecentBackKeyPress;
+var int LeftKeyPressesBeforeDodgeCounter;
+var float MostRecentLeftKeyPress;
+var int RightKeyPressesBeforeDodgeCounter;
+var float MostRecentRightKeyPress;
+
 var EPhysics PreviousPhysics;
 var float StartedFallingTimestamp;
 var float AirTime;
@@ -119,6 +129,7 @@ simulated function CustomTick(float DeltaTime)
 		Messages[3] = "Air Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
 		Messages[4] = "Ground Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
 		Messages[5] = "Tick Hit Rate = "$class'BTP_Misc_Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
+		Messages[6] = "Key Presses Before Dodge = " $ KeyPressesBeforeDodge;
 		ClientProgressMessage(Messages);
 	}
 
@@ -169,6 +180,8 @@ simulated function UpdateStats(float DeltaTime)
 		GroundTime = Level.TimeSeconds - StartedWalkingTimestamp;
 	}
 
+	UpdateKeyPressLoggerStat();
+
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
 	PlayerJustSpawned = False;
@@ -200,6 +213,63 @@ simulated function bool HasStoppedDodging()
 simulated function bool IsAfterDodgeBlock()
 {
 	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && !PlayerJustSpawned && PreviousPhysics != PHYS_None;
+}
+
+simulated function UpdateKeyPressLoggerStat()
+{
+	if (PlayerPawn.bWasForward && PlayerPawn.bEdgeForward)
+	{
+		ForwardKeyPressesBeforeDodgeCounter++;
+		MostRecentForwardKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasBack && PlayerPawn.bEdgeBack)
+	{
+		BackKeyPressesBeforeDodgeCounter++;
+		MostRecentBackKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasLeft && PlayerPawn.bEdgeLeft)
+	{
+		LeftKeyPressesBeforeDodgeCounter++;
+		MostRecentLeftKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasRight && PlayerPawn.bEdgeRight)
+	{
+		RightKeyPressesBeforeDodgeCounter++;
+		MostRecentRightKeyPress = Level.TimeSeconds;
+	}
+	
+	if (PlayerPawn.DodgeDir == DODGE_Active)
+	{
+		if (PreviousDodgeDir == DODGE_Forward)
+		{
+			KeyPressesBeforeDodge = ForwardKeyPressesBeforeDodgeCounter;
+			ForwardKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Back)
+		{
+			KeyPressesBeforeDodge = BackKeyPressesBeforeDodgeCounter;
+			BackKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Left)
+		{
+			KeyPressesBeforeDodge = LeftKeyPressesBeforeDodgeCounter;
+			LeftKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Right)
+		{
+			KeyPressesBeforeDodge = RightKeyPressesBeforeDodgeCounter;
+			RightKeyPressesBeforeDodgeCounter = 0;
+		}
+	}
+
+	if (Level.TimeSeconds - MostRecentForwardKeyPress > PlayerPawn.DodgeClickTime)
+		ForwardKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentBackKeyPress > PlayerPawn.DodgeClickTime)
+		BackKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentLeftKeyPress > PlayerPawn.DodgeClickTime)
+		LeftKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentRightKeyPress > PlayerPawn.DodgeClickTime)
+		RightKeyPressesBeforeDodgeCounter = 0;
 }
 
 // Alternative would be to draw using:
