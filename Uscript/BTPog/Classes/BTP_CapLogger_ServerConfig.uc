@@ -8,6 +8,8 @@ var config String IdPropertyToLog;
 var config bool FilePerCap;
 var config bool IsDebugging;
 var config int MaxZoneCheckpoints;
+var config int MaxTrackedLocations;
+var config float TrackedLocationPeriod;
 
 function ValidateConfig()
 {
@@ -22,6 +24,18 @@ function ValidateConfig()
 		Log("[BTPog/CapLogger] MaxZoneCheckpoints is set to an invalid value. Resetting..");
 		MaxZoneCheckpoints = 100;
 	}
+
+	if (MaxTrackedLocations < 0 || MaxTrackedLocations > 1000)
+	{
+		Log("[BTPog/CapLogger] MaxTrackedLocations is set to an invalid value. Resetting..");
+		MaxTrackedLocations = 0;
+	}
+
+	if (TrackedLocationPeriod < 0.1 || TrackedLocationPeriod > 10)
+	{
+		Log("[BTPog/CapLogger] TrackedLocationPeriod is set to an invalid value. Resetting..");
+		TrackedLocationPeriod = 5;
+	}
 }
 
 defaultproperties
@@ -31,4 +45,6 @@ defaultproperties
 	FilePerCap=False
 	IsDebugging=False
 	MaxZoneCheckpoints=100
+	MaxTrackedLocations=100
+	TrackedLocationPeriod=5
 }

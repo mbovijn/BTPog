@@ -1,4 +1,4 @@
-class BTP_CapLogger_Abstract extends Info abstract;
+class BTP_CapLogger_Structs extends Object;
 
 struct StatsAnalysis
 {
@@ -24,6 +24,7 @@ struct LogData
 	var StatsAnalysis DodgeDoubleTap;
 	var StatsAnalysis DodgeAfterLanding;
 	var StatsAnalysis TimeBetweenDodges;
+	var StatsAnalysis KeyPressesBeforeDodge;
 	var StatsAnalysis FPS;
 	var StatsAnalysis Ping;
 	var StatsMinMaxAnalysis Netspeed;
@@ -34,4 +35,6 @@ struct LogData
 	var String HardwareID;
 	var String CustomID;
 	var String ZoneCheckpoints;
+	var String TrackedLocations;
+	var String CustomIDOtherPlayersOnTeam;
 };

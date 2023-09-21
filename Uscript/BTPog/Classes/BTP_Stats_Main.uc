@@ -1,9 +1,11 @@
-class BTP_Stats_Main extends Info;
+class BTP_Stats_Main extends Info dependson(BTP_Stats_Structs);
 
 var PlayerPawn PlayerPawn;
 
-var BTP_Stats_ClientConfig ClientConfig;
-var BTP_Stats_Inventory BTP_Stats_Inventory;
+var BTP_Stats_ClientConfig ClientConfig; // CLIENT VAR
+var BTP_Stats_Structs.ClientConfigDto ClientConfigDto; // SERVER VAR
+
+var BTP_Stats_Inventory StatsInventory;
 
 var EDodgeDir PreviousDodgeDir;
 var float PreviousDodgeClickTimer;
@@ -11,6 +13,16 @@ var float StoppedDodgingTimestamp;
 var float DodgeBlockDuration;
 var float DodgeDoubleTapInterval;
 var float TimeBetweenTwoDodges;
+
+var int KeyPressesBeforeDodge;
+var int ForwardKeyPressesBeforeDodgeCounter;
+var float MostRecentForwardKeyPress;
+var int BackKeyPressesBeforeDodgeCounter;
+var float MostRecentBackKeyPress;
+var int LeftKeyPressesBeforeDodgeCounter;
+var float MostRecentLeftKeyPress;
+var int RightKeyPressesBeforeDodgeCounter;
+var float MostRecentRightKeyPress;
 
 var EPhysics PreviousPhysics;
 var float StartedFallingTimestamp;
@@ -27,6 +39,8 @@ replication
 {
 	reliable if (Role == ROLE_Authority)
 		PlayerPawn, ToggleIsActive, ToggleIsDebugging, PlayerSpawnedEventToClient;
+	reliable if (Role < ROLE_Authority)
+		ReplicateConfigToServer;
 }
 
 simulated function PreBeginPlay()
@@ -40,20 +54,27 @@ simulated function PreBeginPlay()
 		Obj = new (none, 'BTPog') class'Object';
 		ClientConfig = new (Obj, 'Stats_ClientConfig') class'BTP_Stats_ClientConfig';
 		ClientConfig.SaveConfig();
+
+		ReplicateConfigToServer(ClientConfig.GetClientConfig());
 	}
 }
 
-function InitBTP_Stats_Inventory()
+function ReplicateConfigToServer(BTP_Stats_Structs.ClientConfigDto aClientConfigDto)
 {
-	BTP_Stats_Inventory = Spawn(class'BTP_Stats_Inventory', Owner);
-	BTP_Stats_Inventory.BTP_Stats_Main = Self;
+	ClientConfigDto = aClientConfigDto;
+}
 
-	PlayerPawn.AddInventory(BTP_Stats_Inventory);
+function InitStatsInventory()
+{
+	StatsInventory = Spawn(class'BTP_Stats_Inventory', Owner);
+	StatsInventory.BTP_Stats_Main = Self;
+
+	PlayerPawn.AddInventory(StatsInventory);
 }
 
 function ExecuteCommand(string MutateString)
 {
-	switch(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2))
+	switch(class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString))
 	{
 		case "debug":
 			ToggleIsDebugging();
@@ -66,8 +87,7 @@ function ExecuteCommand(string MutateString)
 
 function PlayerSpawnedEvent()
 {
-	InitBTP_Stats_Inventory(); // Because it gets destroyed on death.
-
+	if (ClientConfigDto.IsActive) InitStatsInventory(); // The engine destroys this on death.
 	PlayerSpawnedEventToClient();
 }
 
@@ -80,13 +100,17 @@ simulated function ToggleIsActive()
 {
     ClientConfig.IsActive = !ClientConfig.IsActive;
     ClientConfig.SaveConfig();
+
+	ReplicateConfigToServer(ClientConfig.GetClientConfig());
 }
 
 simulated function ToggleIsDebugging()
 {
     ClientConfig.IsDebugging = !ClientConfig.IsDebugging;
-    ClientMessage("BTP_Stats_Main Debugging Enabled = "$ClientConfig.IsDebugging);
+    ClientMessage("Stats Debugging Enabled = "$ClientConfig.IsDebugging);
     ClientConfig.SaveConfig();
+
+	ReplicateConfigToServer(ClientConfig.GetClientConfig());
 }
 
 simulated function CustomTick(float DeltaTime)
@@ -104,7 +128,8 @@ simulated function CustomTick(float DeltaTime)
 		Messages[2] = "Time Between Dodges = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(TimeBetweenTwoDodges, Level.TimeDilation)$" seconds";
 		Messages[3] = "Air Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(AirTime, Level.TimeDilation)$" seconds";
 		Messages[4] = "Ground Time = "$class'BTP_Misc_Utils'.static.TimeDeltaToString(GroundTime, Level.TimeDilation)$" seconds";
-		Messages[5] = "Tick Input Hit Rate = "$class'BTP_Misc_Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
+		Messages[5] = "Tick Hit Rate = "$class'BTP_Misc_Utils'.static.FloatToString(float(InputTestTicksWithInput)/InputTestTicks, 3)$" ("$InputTestTicksWithInput$"/"$InputTestTicks$")";
+		Messages[6] = "Key Presses Before Dodge = " $ KeyPressesBeforeDodge;
 		ClientProgressMessage(Messages);
 	}
 
@@ -155,6 +180,8 @@ simulated function UpdateStats(float DeltaTime)
 		GroundTime = Level.TimeSeconds - StartedWalkingTimestamp;
 	}
 
+	UpdateKeyPressLoggerStat();
+
 	PreviousDodgeDir = PlayerPawn.DodgeDir;
 	PreviousPhysics = PlayerPawn.Physics;
 	PlayerJustSpawned = False;
@@ -186,6 +213,63 @@ simulated function bool HasStoppedDodging()
 simulated function bool IsAfterDodgeBlock()
 {
 	return PreviousDodgeDir == DODGE_Done && PlayerPawn.DodgeDir == DODGE_None && !PlayerJustSpawned && PreviousPhysics != PHYS_None;
+}
+
+simulated function UpdateKeyPressLoggerStat()
+{
+	if (PlayerPawn.bWasForward && PlayerPawn.bEdgeForward)
+	{
+		ForwardKeyPressesBeforeDodgeCounter++;
+		MostRecentForwardKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasBack && PlayerPawn.bEdgeBack)
+	{
+		BackKeyPressesBeforeDodgeCounter++;
+		MostRecentBackKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasLeft && PlayerPawn.bEdgeLeft)
+	{
+		LeftKeyPressesBeforeDodgeCounter++;
+		MostRecentLeftKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasRight && PlayerPawn.bEdgeRight)
+	{
+		RightKeyPressesBeforeDodgeCounter++;
+		MostRecentRightKeyPress = Level.TimeSeconds;
+	}
+	
+	if (PlayerPawn.DodgeDir == DODGE_Active)
+	{
+		if (PreviousDodgeDir == DODGE_Forward)
+		{
+			KeyPressesBeforeDodge = ForwardKeyPressesBeforeDodgeCounter;
+			ForwardKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Back)
+		{
+			KeyPressesBeforeDodge = BackKeyPressesBeforeDodgeCounter;
+			BackKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Left)
+		{
+			KeyPressesBeforeDodge = LeftKeyPressesBeforeDodgeCounter;
+			LeftKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Right)
+		{
+			KeyPressesBeforeDodge = RightKeyPressesBeforeDodgeCounter;
+			RightKeyPressesBeforeDodgeCounter = 0;
+		}
+	}
+
+	if (Level.TimeSeconds - MostRecentForwardKeyPress > PlayerPawn.DodgeClickTime)
+		ForwardKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentBackKeyPress > PlayerPawn.DodgeClickTime)
+		BackKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentLeftKeyPress > PlayerPawn.DodgeClickTime)
+		LeftKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentRightKeyPress > PlayerPawn.DodgeClickTime)
+		RightKeyPressesBeforeDodgeCounter = 0;
 }
 
 // Alternative would be to draw using:

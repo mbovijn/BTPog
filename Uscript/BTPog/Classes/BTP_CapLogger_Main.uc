@@ -1,4 +1,4 @@
-class BTP_CapLogger_Main extends BTP_CapLogger_Abstract;
+class BTP_CapLogger_Main extends Info dependson(BTP_CapLogger_Structs);
 
 // SERVER & CLIENT VARS
 var PlayerPawn PlayerPawn;
@@ -7,10 +7,10 @@ var float SpawnTimestamp;
 var float CapTime;
 
 // SERVER VARS
-var BTP_CapLogger_File BTP_CapLogger_File;
+var BTP_CapLogger_File CapLogger_File;
 
-var BTP_Misc_PropertyRetriever HardwareIdBTP_Misc_PropertyRetriever;
-var BTP_Misc_PropertyRetriever IdBTP_Misc_PropertyRetriever;
+var BTP_Misc_PropertyRetriever HardwareIdPropertyRetriever;
+var BTP_Misc_PropertyRetriever IdPropertyRetriever;
 
 var int SpawnCount;
 
@@ -18,7 +18,11 @@ var string ZoneCheckpoints;
 var byte PreviousZoneNumber;
 var int AmountOfZoneCheckpoints;
 
-var BTP_CapLogger_ServerConfig BTP_CapLogger_ServerConfig;
+var float TrackedLocationTime;
+var string TrackedLocations;
+var int AmountOfTrackedLocations;
+
+var BTP_CapLogger_ServerConfig ServerConfig;
 
 // CLIENT VARS
 var int TicksPerFPSCalculation; // See BTP_CapLogger_ServerConfig
@@ -33,10 +37,20 @@ var float PreviousDodgeClickTimer;
 var bool PlayerJustSpawned;
 var string UniqueCapId;
 
+var int ForwardKeyPressesBeforeDodgeCounter;
+var float MostRecentForwardKeyPress;
+var int BackKeyPressesBeforeDodgeCounter;
+var float MostRecentBackKeyPress;
+var int LeftKeyPressesBeforeDodgeCounter;
+var float MostRecentLeftKeyPress;
+var int RightKeyPressesBeforeDodgeCounter;
+var float MostRecentRightKeyPress;
+
 var BTP_CapLogger_Stats DodgeBlockStats;
 var BTP_CapLogger_Stats DodgeDoubleTapStats;
 var BTP_CapLogger_Stats DodgeAfterLandingStats;
 var BTP_CapLogger_Stats TimeBetweenDodgesStats;
+var BTP_CapLogger_Stats KeyPressesBeforeDodgeStats;
 var BTP_CapLogger_BucketedStats FPSStats;
 var BTP_CapLogger_BucketedStats PingStats;
 var BTP_CapLogger_MinMaxStats NetspeedStats;
@@ -44,7 +58,7 @@ var BTP_CapLogger_MinMaxStats NetspeedStats;
 replication
 {
 	reliable if (Role == ROLE_Authority)
-		PlayerPawn, PlayerSpawnedEvent_ToClient, PlayerCappedEvent_ToClient, ReplicateConfig_ToClient, DemoMarker_ToClient;
+		PlayerPawn, PlayerSpawnedEvent_ToClient, PlayerCappedEvent_ToClient, ReplicateConfig_ToClient;
 	reliable if (Role < ROLE_Authority)
 		ReportInfo_ToServer;
 }
@@ -54,28 +68,19 @@ simulated function ReplicateConfig_ToClient(float aTicksPerFPSCalculation)
 	TicksPerFPSCalculation = aTicksPerFPSCalculation;
 }
 
-function Init(PlayerPawn aPlayerPawn, BTP_CapLogger_File aBTP_CapLogger_File, BTP_CapLogger_ServerConfig aBTP_CapLogger_ServerConfig)
+function Init(PlayerPawn aPlayerPawn, BTP_CapLogger_File aCapLogger_File, BTP_CapLogger_ServerConfig aCapLogger_ServerConfig)
 {
-	BTP_CapLogger_File = aBTP_CapLogger_File;
+	CapLogger_File = aCapLogger_File;
 	PlayerPawn = aPlayerPawn;
-	BTP_CapLogger_ServerConfig = aBTP_CapLogger_ServerConfig;
+	ServerConfig = aCapLogger_ServerConfig;
 
-	HardwareIdBTP_Misc_PropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', PlayerPawn);
-	HardwareIdBTP_Misc_PropertyRetriever.Init(PlayerPawn, "ACEReplicationInfo.hwHash");
+	HardwareIdPropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', PlayerPawn);
+	HardwareIdPropertyRetriever.Init(PlayerPawn, "ACEReplicationInfo.hwHash");
 
-	IdBTP_Misc_PropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', PlayerPawn);
-	IdBTP_Misc_PropertyRetriever.Init(PlayerPawn, aBTP_CapLogger_ServerConfig.IdPropertyToLog);
+	IdPropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', PlayerPawn);
+	IdPropertyRetriever.Init(PlayerPawn, aCapLogger_ServerConfig.IdPropertyToLog);
 
-	ReplicateConfig_ToClient(aBTP_CapLogger_ServerConfig.TicksPerFPSCalculation);
-}
-
-function Timer()
-{
-	DemoMarker_ToClient("BTPOG_1S_AFTER_SPAWN_MARKER:" $ UniqueCapId);
-}
-
-simulated function DemoMarker_ToClient(String DemoSpawnMarker)
-{
+	ReplicateConfig_ToClient(aCapLogger_ServerConfig.TicksPerFPSCalculation);
 }
 
 function PlayerSpawnedEvent()
@@ -90,26 +95,18 @@ function PlayerSpawnedEvent()
 	UniqueCapId = class'BTP_Misc_Utils'.static.GenerateUniqueId();
 	
 	PlayerSpawnedEvent_ToClient("BTPOG_SPAWN_MARKER:" $ UniqueCapId);
-	SetTimer(1.0, False);
 }
 
 simulated function PlayerSpawnedEvent_ToClient(String DemoSpawnMarker)
 {
-	if (DodgeBlockStats != None) DodgeBlockStats.Destroy();
-	if (DodgeDoubleTapStats != None) DodgeDoubleTapStats.Destroy();
-	if (DodgeAfterLandingStats != None) DodgeAfterLandingStats.Destroy();
-	if (TimeBetweenDodgesStats != None) TimeBetweenDodgesStats.Destroy();
-	if (FPSStats != None) FPSStats.Destroy();
-	if (PingStats != None) PingStats.Destroy();
-	if (NetspeedStats != None) NetspeedStats.Destroy();
-
-	DodgeBlockStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	DodgeDoubleTapStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	DodgeAfterLandingStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	TimeBetweenDodgesStats = Spawn(class'BTP_CapLogger_Stats', Owner);
-	FPSStats = Spawn(class'BTP_CapLogger_BucketedStats', Owner);
-	PingStats = Spawn(class'BTP_CapLogger_BucketedStats', Owner);
-	NetspeedStats = Spawn(class'BTP_CapLogger_MinMaxStats', Owner);
+	DodgeBlockStats = new class'BTP_CapLogger_Stats';
+	DodgeDoubleTapStats = new class'BTP_CapLogger_Stats';
+	DodgeAfterLandingStats = new class'BTP_CapLogger_Stats';
+	TimeBetweenDodgesStats = new class'BTP_CapLogger_Stats';
+	KeyPressesBeforeDodgeStats = new class'BTP_CapLogger_Stats';
+	FPSStats = new class'BTP_CapLogger_BucketedStats';
+	PingStats = new class'BTP_CapLogger_BucketedStats';
+	NetspeedStats = new class'BTP_CapLogger_MinMaxStats';
 
 	SpawnTimestamp = Level.TimeSeconds;
 	PlayerJustSpawned = True;
@@ -130,6 +127,7 @@ simulated function PlayerCappedEvent_ToClient(String DemoCapMarker)
 		DodgeDoubleTapStats.Analyze(),
 		DodgeAfterLandingStats.Analyze(),
 		TimeBetweenDodgesStats.Analyze(),
+		KeyPressesBeforeDodgeStats.Analyze(),
 		FPSStats.Analyze(),
 		PingStats.Analyze(),
 		NetspeedStats.Analyze(),
@@ -140,19 +138,20 @@ simulated function PlayerCappedEvent_ToClient(String DemoCapMarker)
 }
 
 function ReportInfo_ToServer(
-	StatsAnalysis DodgeBlock,
-	StatsAnalysis DodgeDoubleTap,
-	StatsAnalysis DodgeAfterLanding,
-	StatsAnalysis TimeBetweenDodges,
-	StatsAnalysis FPS,
-	StatsAnalysis Ping,
-	StatsMinMaxAnalysis Netspeed,
+	BTP_CapLogger_Structs.StatsAnalysis DodgeBlock,
+	BTP_CapLogger_Structs.StatsAnalysis DodgeDoubleTap,
+	BTP_CapLogger_Structs.StatsAnalysis DodgeAfterLanding,
+	BTP_CapLogger_Structs.StatsAnalysis TimeBetweenDodges,
+	BTP_CapLogger_Structs.StatsAnalysis KeyPressesBeforeDodge,
+	BTP_CapLogger_Structs.StatsAnalysis FPS,
+	BTP_CapLogger_Structs.StatsAnalysis Ping,
+	BTP_CapLogger_Structs.StatsMinMaxAnalysis Netspeed,
 	float ClientCapTime,
 	String ClientEngineVersion,
 	String Renderer
 )
 {
-	local LogData LogData;
+	local BTP_CapLogger_Structs.LogData LogData;
 	LogData.UniqueId = UniqueCapId;
 	LogData.CapTime = CapTime;
 	LogData.DodgeBlock = DodgeBlock;
@@ -166,11 +165,14 @@ function ReportInfo_ToServer(
 	LogData.ClientEngineVersion = ClientEngineVersion;
 	LogData.SpawnCount = SpawnCount;
 	LogData.Renderer = Renderer;
-	LogData.HardwareID = HardwareIdBTP_Misc_PropertyRetriever.GetProperty();
-	LogData.CustomID = IdBTP_Misc_PropertyRetriever.GetProperty();
+	LogData.HardwareID = HardwareIdPropertyRetriever.GetProperty();
+	LogData.CustomID = IdPropertyRetriever.GetProperty();
 	LogData.ZoneCheckpoints = ZoneCheckpoints;
+	LogData.TrackedLocations = TrackedLocations;
+	LogData.CustomIDOtherPlayersOnTeam = GetCustomIdsOfOtherPlayersOnTeam();
+	LogData.KeyPressesBeforeDodge = KeyPressesBeforeDodge;
 
-	BTP_CapLogger_File.LogCap(PlayerPawn, LogData);
+	CapLogger_File.LogCap(PlayerPawn, LogData);
 }
 
 // The CustomTick function only gets called on the client. So, to execute something on each tick on the server,
@@ -184,21 +186,27 @@ function Tick(float DeltaTime)
 	{
 		AddZoneCheckpoint(PlayerPawn.FootRegion.ZoneNumber);
 	}
-
 	PreviousZoneNumber = PlayerPawn.FootRegion.ZoneNumber;
+
+	// if (TrackedLocationTime > ServerConfig.TrackedLocationPeriod)
+	// {
+	// 	AddTrackedLocation(PlayerPawn.Location);
+	// 	TrackedLocationTime = 0;
+	// }
+	// TrackedLocationTime += DeltaTime;
 }
 
 function AddZoneCheckpoint(byte NewZoneNumber)
 {
 	local String Time;
 
-	if (AmountOfZoneCheckpoints >= BTP_CapLogger_ServerConfig.MaxZoneCheckpoints)
+	if (AmountOfZoneCheckpoints >= ServerConfig.MaxZoneCheckpoints)
 	{
-		if (BTP_CapLogger_ServerConfig.IsDebugging)
+		if (ServerConfig.IsDebugging)
 		{
 			Log("[BTPog/CapLogger] Could not track anymore zone checkpoints for player "
 				$ PlayerPawn.PlayerReplicationInfo.PlayerName $ " since the limit of "
-				$ BTP_CapLogger_ServerConfig.MaxZoneCheckpoints $ " was reached");
+				$ ServerConfig.MaxZoneCheckpoints $ " was reached");
 		}
 		return;
 	}
@@ -209,11 +217,55 @@ function AddZoneCheckpoint(byte NewZoneNumber)
 	AmountOfZoneCheckpoints++;
 }
 
+function AddTrackedLocation(vector Location)
+{
+	local String Time;
+	
+	if (AmountOfTrackedLocations >= ServerConfig.MaxTrackedLocations)
+	{
+		if (ServerConfig.IsDebugging)
+		{
+			Log("[BTPog/CapLogger] Could not track anymore locations for player "
+				$ PlayerPawn.PlayerReplicationInfo.PlayerName $ " since the limit of "
+				$ ServerConfig.MaxTrackedLocations $ " was reached");
+		}
+		return;
+	}
+
+	Time = class'BTP_Misc_Utils'.static.TimeDeltaToString(Level.TimeSeconds - SpawnTimestamp, Level.TimeDilation);
+	TrackedLocations = TrackedLocations $ Location.X $ "|" $ Location.Y $ "|" $ Location.Z $ "|" $ Time $ ";";
+
+	AmountOfTrackedLocations++;
+}
+
+function String GetCustomIdsOfOtherPlayersOnTeam()
+{
+	local Pawn Pawn;
+	local BTP_Misc_PropertyRetriever PropertyRetriever;
+	local string Ids;
+
+	for (Pawn = Level.PawnList; Pawn != None; Pawn = Pawn.NextPawn)
+	{
+		if (Pawn.isA('PlayerPawn') && !Pawn.isA('MessagingSpectator') && Pawn.bIsPlayer
+			&& Pawn.PlayerReplicationInfo.Team == PlayerPawn.PlayerReplicationInfo.Team
+			&& Pawn.PlayerReplicationInfo.PlayerID != PlayerPawn.PlayerReplicationInfo.PlayerID)
+		{
+			PropertyRetriever = Spawn(class'BTP_Misc_PropertyRetriever', Pawn);
+			PropertyRetriever.Init(PlayerPawn(Pawn), ServerConfig.IdPropertyToLog);
+			Ids = Ids $ PropertyRetriever.GetProperty() $ ";";
+			PropertyRetriever.Destroy();
+		}
+	}
+
+	return Ids;
+}
+
 simulated function CustomTick(float DeltaTime)
 {
 	if (Role == ROLE_Authority) return;
 
 	MeasureFPS(DeltaTime);
+	MeasureMovementKeyPresses();
 
 	if (PlayerPawn.PlayerReplicationInfo != None && PlayerPawn.PlayerReplicationInfo.Ping > 0 && PingStats != None)
 		PingStats.AddValue(PlayerPawn.PlayerReplicationInfo.Ping, PlayerPawn.PlayerReplicationInfo.Ping);
@@ -227,7 +279,7 @@ simulated function CustomTick(float DeltaTime)
 		// straight from e.g. DODGE_Forward to DODGE_Done. This can happen when a player dodges against the underside of a slope. For example on the
 		// map BT-1545. If DODGE_Done is set the DodgeClickTimer will be equal to 0.
 		if (DodgeDoubleTapStats != None && (PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime)) > 0)
-			DodgeDoubleTapStats.AddValue(PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime) / Level.TimeDilation);
+			DodgeDoubleTapStats.AddValue((PlayerPawn.DodgeClickTime - (PreviousDodgeClickTimer - DeltaTime)) / Level.TimeDilation);
 
 		if (DodgeAfterLandingStats != None)
 		{
@@ -337,6 +389,63 @@ simulated function string GetRenderer()
 	}
 	
 	return Renderer;
+}
+
+simulated function MeasureMovementKeyPresses()
+{
+	if (PlayerPawn.bWasForward && PlayerPawn.bEdgeForward)
+	{
+		ForwardKeyPressesBeforeDodgeCounter++;
+		MostRecentForwardKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasBack && PlayerPawn.bEdgeBack)
+	{
+		BackKeyPressesBeforeDodgeCounter++;
+		MostRecentBackKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasLeft && PlayerPawn.bEdgeLeft)
+	{
+		LeftKeyPressesBeforeDodgeCounter++;
+		MostRecentLeftKeyPress = Level.TimeSeconds;
+	}
+	if (PlayerPawn.bWasRight && PlayerPawn.bEdgeRight)
+	{
+		RightKeyPressesBeforeDodgeCounter++;
+		MostRecentRightKeyPress = Level.TimeSeconds;
+	}
+	
+	if (PlayerPawn.DodgeDir == DODGE_Active)
+	{
+		if (PreviousDodgeDir == DODGE_Forward)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(ForwardKeyPressesBeforeDodgeCounter);
+			ForwardKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Back)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(BackKeyPressesBeforeDodgeCounter);
+			BackKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Left)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(LeftKeyPressesBeforeDodgeCounter);
+			LeftKeyPressesBeforeDodgeCounter = 0;
+		}
+		else if (PreviousDodgeDir == DODGE_Right)
+		{
+			KeyPressesBeforeDodgeStats.AddValue(RightKeyPressesBeforeDodgeCounter);
+			RightKeyPressesBeforeDodgeCounter = 0;
+		}
+	}
+
+	if (Level.TimeSeconds - MostRecentForwardKeyPress > PlayerPawn.DodgeClickTime)
+		ForwardKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentBackKeyPress > PlayerPawn.DodgeClickTime)
+		BackKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentLeftKeyPress > PlayerPawn.DodgeClickTime)
+		LeftKeyPressesBeforeDodgeCounter = 0;
+	if (Level.TimeSeconds - MostRecentRightKeyPress > PlayerPawn.DodgeClickTime)
+		RightKeyPressesBeforeDodgeCounter = 0;
 }
 
 defaultproperties

@@ -2,17 +2,17 @@ class BTP_Controller extends Info;
 
 var PlayerPawn PlayerPawn;
 
-var BTP_Suicide_Main BTP_Suicide_Main;
-var BTP_Stopwatch_Main BTP_Stopwatch_Main;
-var BTP_Stats_Main BTP_Stats_Main;
-var BTP_ZeroPing_Main BTP_ZeroPing_Main;
-var BTP_CapLogger_Main BTP_CapLogger_Main;
+var BTP_Suicide_Main Suicide_Main;
+var BTP_Stopwatch_Main Stopwatch_Main;
+var BTP_Stats_Main Stats_Main;
+var BTP_ZeroPing_Main ZeroPing_Main;
+var BTP_CapLogger_Main CapLogger_Main;
 
 replication
 {
 	// Replicating these objects such that the 'CustomTick' function on each of them can be called from the client.
     reliable if (Role == ROLE_Authority)
-		BTP_ZeroPing_Main, BTP_Stats_Main, BTP_CapLogger_Main;
+		ZeroPing_Main, Stats_Main, CapLogger_Main;
 }
 
 function PreBeginPlay()
@@ -20,47 +20,47 @@ function PreBeginPlay()
     PlayerPawn = PlayerPawn(Owner);
 }
 
-function Init(BTP_Misc_ServerConfig BTP_Misc_ServerConfig, BTP_CapLogger_File BTP_CapLogger_File, BTP_CapLogger_ServerConfig BTP_CapLogger_ServerConfig)
+function Init(BTP_Misc_ServerConfig ServerConfig, BTP_CapLogger_File CapLogger_File, BTP_CapLogger_ServerConfig CapLogger_ServerConfig)
 {
-    if (BTP_Misc_ServerConfig.IsBTSuicideEnabled) BTP_Suicide_Main = Spawn(class'BTP_Suicide_Main', Owner);
-    if (BTP_Misc_ServerConfig.IsBTStopwatchEnabled) BTP_Stopwatch_Main = Spawn(class'BTP_Stopwatch_Main', Owner);
-    if (BTP_Misc_ServerConfig.IsBTStatsEnabled) BTP_Stats_Main = Spawn(class'BTP_Stats_Main', Owner);
-    if (BTP_Misc_ServerConfig.IsBTZeroPingDodgeEnabled) BTP_ZeroPing_Main = Spawn(class'BTP_ZeroPing_Main', Owner);
-    if (BTP_Misc_ServerConfig.IsBTCapLoggerEnabled)
+    if (ServerConfig.IsBTSuicideEnabled) Suicide_Main = Spawn(class'BTP_Suicide_Main', Owner);
+    if (ServerConfig.IsBTStopwatchEnabled) Stopwatch_Main = Spawn(class'BTP_Stopwatch_Main', Owner);
+    if (ServerConfig.IsBTStatsEnabled) Stats_Main = Spawn(class'BTP_Stats_Main', Owner);
+    if (ServerConfig.IsBTZeroPingDodgeEnabled) ZeroPing_Main = Spawn(class'BTP_ZeroPing_Main', Owner);
+    if (ServerConfig.IsBTCapLoggerEnabled)
     {
-        BTP_CapLogger_Main = Spawn(class'BTP_CapLogger_Main', Owner);
-        BTP_CapLogger_Main.Init(PlayerPawn(Owner), BTP_CapLogger_File, BTP_CapLogger_ServerConfig);
+        CapLogger_Main = Spawn(class'BTP_CapLogger_Main', Owner);
+        CapLogger_Main.Init(PlayerPawn(Owner), CapLogger_File, CapLogger_ServerConfig);
     }
 }
 
 function ExecuteCommand(string MutateString)
 {
-	switch(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 1))
+    switch(class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString))
 	{
 		case "suicide":
-            if (BTP_Suicide_Main == None)
+            if (Suicide_Main == None)
                 ClientMessage("BTP_Suicide_Main module is disabled on this server");
             else
-			    BTP_Suicide_Main.ExecuteCommand(MutateString);
+			    Suicide_Main.ExecuteCommand(class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
             break;
 		case "stopwatch":
         case "sw":
-            if (BTP_Stopwatch_Main == None)
+            if (Stopwatch_Main == None)
                 ClientMessage("BTP_Stopwatch_Main module is disabled on this server");
             else
-			    BTP_Stopwatch_Main.ExecuteCommand(MutateString);
+			    Stopwatch_Main.ExecuteCommand(class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
             break;
 		case "stats":
-            if (BTP_Stats_Main == None)
+            if (Stats_Main == None)
                 ClientMessage("BTP_Stats_Main module is disabled on this server");
             else
-			    BTP_Stats_Main.ExecuteCommand(MutateString);
+			    Stats_Main.ExecuteCommand(class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
 			break;
         case "zpdodge":
-            if (BTP_ZeroPing_Main == None)
+            if (ZeroPing_Main == None)
                 ClientMessage("BTP_ZeroPing_Main module is disabled on this server");
             else
-			    BTP_ZeroPing_Main.ExecuteCommand(MutateString);
+			    ZeroPing_Main.ExecuteCommand(class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
 			break;
 		default: ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
 	}
@@ -68,16 +68,16 @@ function ExecuteCommand(string MutateString)
 
 function PlayerSpawnedEvent()
 {
-    if (BTP_Stopwatch_Main != None) BTP_Stopwatch_Main.PlayerSpawnedEvent();
-    if (BTP_CapLogger_Main != None) BTP_CapLogger_Main.PlayerSpawnedEvent();
-    if (BTP_ZeroPing_Main != None) BTP_ZeroPing_Main.PlayerSpawnedEvent();
-    if (BTP_Stats_Main != None) BTP_Stats_Main.PlayerSpawnedEvent();
+    if (Stopwatch_Main != None) Stopwatch_Main.PlayerSpawnedEvent();
+    if (CapLogger_Main != None) CapLogger_Main.PlayerSpawnedEvent();
+    if (ZeroPing_Main != None) ZeroPing_Main.PlayerSpawnedEvent();
+    if (Stats_Main != None) Stats_Main.PlayerSpawnedEvent();
 }
 
 function PlayerCappedEvent()
 {
-    if (BTP_Stopwatch_Main != None) BTP_Stopwatch_Main.PlayerCappedEvent();
-    if (BTP_CapLogger_Main != None) BTP_CapLogger_Main.PlayerCappedEvent();
+    if (Stopwatch_Main != None) Stopwatch_Main.PlayerCappedEvent();
+    if (CapLogger_Main != None) CapLogger_Main.PlayerCappedEvent();
 }
 
 simulated function Tick(float DeltaTime)
@@ -85,20 +85,20 @@ simulated function Tick(float DeltaTime)
     if (Role < ROLE_Authority)
     {
         // Calling the 'Tick' functions here such that I have control over the order in which they're called.
-        if (BTP_ZeroPing_Main != None) BTP_ZeroPing_Main.CustomTick(DeltaTime);
-        if (BTP_Stats_Main != None) BTP_Stats_Main.CustomTick(DeltaTime);
-        if (BTP_CapLogger_Main != None) BTP_CapLogger_Main.CustomTick(DeltaTime);
+        if (ZeroPing_Main != None) ZeroPing_Main.CustomTick(DeltaTime);
+        if (Stats_Main != None) Stats_Main.CustomTick(DeltaTime);
+        if (CapLogger_Main != None) CapLogger_Main.CustomTick(DeltaTime);
     }
     else
     {
         // Cleanup
         if (Owner == None)
         {
-            if (BTP_Suicide_Main != None) BTP_Suicide_Main.Destroy();
-            if (BTP_Stopwatch_Main != None) BTP_Stopwatch_Main.Destroy();
-            if (BTP_Stats_Main != None) BTP_Stats_Main.Destroy();
-            if (BTP_ZeroPing_Main != None) BTP_ZeroPing_Main.Destroy();
-            if (BTP_CapLogger_Main != None) BTP_CapLogger_Main.Destroy();
+            if (Suicide_Main != None) Suicide_Main.Destroy();
+            if (Stopwatch_Main != None) Stopwatch_Main.Destroy();
+            if (Stats_Main != None) Stats_Main.Destroy();
+            if (ZeroPing_Main != None) ZeroPing_Main.Destroy();
+            if (CapLogger_Main != None) CapLogger_Main.Destroy();
             Destroy();
         }
     }

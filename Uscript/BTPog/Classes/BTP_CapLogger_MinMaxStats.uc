@@ -1,6 +1,6 @@
-class BTP_CapLogger_MinMaxStats extends BTP_CapLogger_Abstract;
+class BTP_CapLogger_MinMaxStats extends Object dependson(BTP_CapLogger_Structs);
 
-var StatsMinMaxAnalysis Analysis;
+var BTP_CapLogger_Structs.StatsMinMaxAnalysis Analysis;
 
 function AddValue(int Value)
 {
@@ -12,7 +12,7 @@ function AddValue(int Value)
         Analysis.Max = Value;
 }
 
-function StatsMinMaxAnalysis Analyze()
+function BTP_CapLogger_Structs.StatsMinMaxAnalysis Analyze()
 {
     return Analysis;
 }

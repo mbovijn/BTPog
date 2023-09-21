@@ -1,12 +1,12 @@
-# Author
-Fulcrum
-
 # Description
-BTPog is a UT99 Mutator most useful for the [Bunnytrack](https://github.com/mbovijn/BTPlusPlusTE_beta3) mod. See the section below to get to know more about the individual modules.
+BTPog is a Unreal Tournament (UT99) ServerActor to enhance the [Bunnytrack](https://github.com/mbovijn/BTPlusPlusTE_beta3) experience. See the section below to get to know more about the individual modules.
 
 # Modules
 
 ## ZeroPing Module
+<details>
+<summary>Click for more info</summary><p>
+
 After having dodged the game blocks you from dodging again for [0.35](https://github.com/mbovijn/UT99/blob/master/Engine/PlayerPawn.uc#L4254) seconds (0.32 for BT whichs runs on [hardcore](https://github.com/mbovijn/UT99/blob/master/Botpack/DeathMatchPlus.uc#L139) mode). Unfortunately, players with a higher ping experience a large dodge block duration. BTP_ZeroPing_Main's aim is to level the playing field, and provide an equal dodge block duration for all players, regardless of ping.
 
 Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get to know more about why this is happening.
@@ -15,8 +15,12 @@ Click [here](https://github.com/mbovijn/BTPog/blob/master/DodgeBlock.md) to get 
 | ---                                               | ---
 | `!btpog zpdodge`                                  | Toggles the functionality on/off. Enabled by default.
 | `!btpog zpdodge debug`                            | Toggles the display of a message on/off each time ZeroPingDodge kicks in.
+</details>
 
 ## Stats Module
+<details>
+<summary>Click for more info</summary><p>
+
 Shows the following information on-screen:
 #### Ground Time
 Time in seconds you spent on the ground.
@@ -28,7 +32,7 @@ Time in seconds between two consecutive key presses that resulted in a dodge.
 Time in seconds that you're blocked from dodging again after just having dodged.
 #### Time Between Dodges
 Time between the end of the last dodge (player landed), and the beginning of the next dodge.
-#### Tick Input Hit Rate
+#### Tick Hit Rate
 This can be used to measure how effective you're able to bounce. In order to bounce, you need to jump on the exact tick that your character landed on the ground. So generally people do this by binding jump to the scroll wheel, as you're able to input jumps way faster like that.
 
 To use this, first change your scoll wheel bind as follows: `set input mousewheeldown jump | btpoginputtest`. Now, each time you jump with the scroll wheel, you'll see a stat such as for example `0.068 (5/73)`. This means that for a duration of 73 ticks, UT99 registered 5 jump inputs, with the first and last ticks (of those 73 ticks) being ticks with jump inputs.
@@ -39,25 +43,32 @@ You'll want to strive to get this value to `1.000`. This can be done by:
 - Buying a mouse with a high polling rate. Generally bluetooth mice have a very low polling rate. Test this [here](https://www.clickspeedtester.com/mouse-polling-rate-checker/).
 
 Though, from my experience, even with a value `1.000`, bouncing would sometimes still not work. I don't know why.. But lowering my FPS helped.
+#### Key Presses Before Dodge
+The amount of key presses just before a dodge occurs.
 
 | Command                                           | Description
 | ---                                               | ---
 | `!btpog stats`                                    | Toggles the on-screen stats on/off.
 | `!btpog stats debug`                              | Toggles debug logging for stats on/off. These can be found in your `UnrealTournament.log` file.
+</details>
 
 ## CapLogger Module
+<details>
+<summary>Click for more info</summary><p>
+
 Logs some information each time a player caps. These logs can be found in the UT `Logs` folder. Example:
 ```
-Id,Timestamp,ServerName,Map,PlayerName,IP,CustomID,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,Netspeed_Min,Netspeed_Max
-LIJG4CWPVRUF7PDFBDJGO5YR,2023-05-05T17:53:55.725,UT Server,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.734,+0.007,,0.318,0.318,0.318,0.321,0.322,6,0.137,0.137,0.141,0.147,0.197,7,0.000,0.000,0.000,0.000,0.000,0,0.484,0.484,0.484,0.536,0.536,2,184,193,193,194,26,26,26,26,6000,15000
-HXRACVS5L98NFN6YHWB1E9GO,2023-05-05T17:55:11.109,UT Server,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.625,+0.005,,0.320,0.320,0.320,0.321,0.321,6,0.147,0.147,0.156,0.183,0.235,7,0.000,0.000,0.000,0.000,0.000,0,0.521,0.521,0.521,0.544,0.544,2,179,192,193,194,25,40,40,40,6000,15000
-W4P30OY64MXQKKBN5AME6VT0,2023-05-05T17:57:05.516,UT Server,CTF-BT-andACTION-dbl,Fulcrum,127.0.0.1,227007666677416,,469d - Feb  7 2023 Preview,OpenGLDrv,2,0,7.567,+0.001,,0.318,0.318,0.318,0.319,0.322,6,0.157,0.157,0.158,0.162,0.219,7,0.000,0.000,0.000,0.000,0.000,0,0.498,0.498,0.498,0.514,0.514,2,181,192,193,194,26,26,26,26,6000,15000
+Id,Timestamp,ServerName,Map,PlayerName,IP,CustomID,CustomIDOtherPlayersOnTeam,HWID,EngineVersion,Renderer,SpawnCount,Team,CapTime,ClientCapTime,ZoneCheckpoints,TrackedLocations,DodgeBlock_1PC,DodgeBlock_5PC,DodgeBlock_25PC,DodgeBlock_50PC,DodgeBlock_100PC,DodgeBlock_Count,DodgeDoubleTap_1PC,DodgeDoubleTap_5PC,DodgeDoubleTap_25PC,DodgeDoubleTap_50PC,DodgeDoubleTap_100PC,DodgeDoubleTap_Count,DodgeAfterLanding_1PC,DodgeAfterLanding_5PC,DodgeAfterLanding_25PC,DodgeAfterLanding_50PC,DodgeAfterLanding_100PC,DodgeAfterLanding_Count,TimeBetweenDodges_1PC,TimeBetweenDodges_5PC,TimeBetweenDodges_25PC,TimeBetweenDodges_50PC,TimeBetweenDodges_100PC,TimeBetweenDodges_Count,KeyPressesBeforeDodge_1PC,KeyPressesBeforeDodge_5PC,KeyPressesBeforeDodge_25PC,KeyPressesBeforeDodge_50PC,KeyPressesBeforeDodge_100PC,KeyPressesBeforeDodge_Count,FPS_1PC,FPS_5PC,FPS_25PC,FPS_50PC,Ping_1PC,Ping_5PC,Ping_25PC,Ping_50PC,Netspeed_Min,Netspeed_Max
+WH9Y0F0KT0JIQWY25SAEOJW6,2023-09-21T18:04:39.792,UT Server,CTF-BT-andACTION-dbl,Ful,127.0.0.1,227009880093884416,,,469d - Aug  9 2023 Preview,OpenGLDrv,1,1,7.794,+0.018,,,0.319,0.319,0.320,0.321,0.323,6,0.119,0.119,0.120,0.132,0.180,7,0.000,0.000,0.000,0.000,0.000,0,0.468,0.468,0.474,0.493,0.534,4,2,2,2,2,2,7,126,182,184,185,26,26,83,83,25000,25000
+ZPA20I22528RO9JIRAYBEC3A,2023-09-21T18:05:22.217,UT Server,CTF-BT-andACTION-dbl,Ful,127.0.0.1,227009880093884416,,,469d - Aug  9 2023 Preview,OpenGLDrv,1,1,8.691,-0.107,,,0.318,0.318,0.321,0.321,0.321,5,0.125,0.125,0.131,0.153,0.181,6,0.000,0.000,0.000,0.000,0.000,0,0.471,0.471,0.471,0.543,0.543,2,2,2,2,2,3,6,62,183,184,185,25,25,25,25,25000,25000
+IV2CSQW4YRWE9KVJMOOJYRWO,2023-09-21T18:05:31.036,UT Server,CTF-BT-andACTION-dbl,Ful,127.0.0.1,227009880093884416,,,469d - Aug  9 2023 Preview,OpenGLDrv,2,1,7.789,+0.007,,,0.321,0.321,0.321,0.322,0.323,5,0.082,0.082,0.110,0.152,0.234,6,0.000,0.000,0.000,0.000,0.000,0,0.466,0.466,0.466,0.533,0.533,2,2,2,2,2,2,6,183,183,184,185,25,25,61,61,25000,25000
 ```
 - ClientCapTime: the CapTime from the perspective of the client. This should be roughly equal to the server-side CapTime. If the client-side CapTime is significantly higher than the server-side CapTime, it could mean that the player is using a speed hack. See [this diagram](https://github.com/mbovijn/BTPog/blob/master/Resources/ClientCapTime.drawio.png) for more information on how this works.
 - DodgeBlock: percentiles on how long a player got blocked from dodging after just having dodged.
 - DodgeDoubleTap: percentiles on the time interval between two consecutive key presses which resulted in a dodge.
 - DodgeAfterLanding: percentiles on how quick a player dodged after having landed on the ground. Only values below 0.2 seconds are taken into account.
 - TimeBetweenDodges: percentiles on the time between the end of the last dodge (player landed), and the beginning of the next dodge. Only values below 0.6 seconds are taken into account.
+- KeyPressesBeforeDodge: percentiles on the amount of key presses before a dodge. Normally this value should be 2. 
 - FPS: percentiles on the FPS of a player. The FPS calculation can be tweaked with the 'TicksPerFPSCalculation' server-side setting.
 - Ping: percentiles on the ping of a player.
 - SpawnCount: the amount of times a player has spawned before the cap. If the count is 1, it could mean that the player used a reconnect bug to have a faster cap time.
@@ -66,24 +77,37 @@ W4P30OY64MXQKKBN5AME6VT0,2023-05-05T17:57:05.516,UT Server,CTF-BT-andACTION-dbl,
 - ZoneCheckpoints: when a player runs through a map and caps, he/she will usually transition through different zones. Each time the player changes zone, the current time and zone identifiers are stored.
 - Id: unique identifier for the cap.
 - ServerName: identifies which server a cap was made on. This value is taken from the server INI from the `ShortName` key under `[Engine.GameReplicationInfo]`.
+- TrackedLocations: every X seconds the player location will be logged together with the player's timer. Can be configured with `MaxTrackedLocations` and `TrackedLocationPeriod` in the ServerSettings.
+- CustomIDOtherPlayersOnTeam: similar to the `CustomID` field, but for other players on the team of the player that capped.
 
 These statistics are interesting if you want to analyze whether a player cheated. You could also use this data to keep track of player caps.
+</details>
 
 ## Stopwatch Module
+<details>
+<summary>Click for more info</summary><p>
+
 Are you sometimes not sure which particular set of moves is faster in order to pass a certain obstacle? Just set a !cp before the obstacle, and a stopwatch after the obstacle. Once you touch the invisible stopwatch, the time it took to reach the stopwatch will appear on screen.
 
 You could also set stopwatches when rushing in order to get quicker feedback on how the run is going. On top of that, whenever you cap and it's a personal best, the individual stopwatch times are saved, in order to give a delta time for the next run.
 
 | Command                                           | Description
 | ---                                               | ---
-| `!btpog sw` or `!btpog sw <id>`                   | Sets an invisible stopwatch at your current location (and deletes any previously set stopwatch). You can set up to 32 stopwatches. Valid id values: 0, 1, 2, ... 31
-| `!btpog sw <id> 50,10,-10`                        | Sets an invisible stopwatch at location 50,10,-10 (and deletes any previously set stopwatch).
+| `!btpog sw` or `!btpog sw <id>`                   | Sets an invisible stopwatch at your current location. You can set up to 14 stopwatches. Valid id values: 0, 1, 2, ... 13
+| `!btpog sw <id> 50,10,-10`                        | Sets an invisible stopwatch at location 50,10,-10.
 | `!btpog sw reset`                                 | Removes the best times associated with all stopwatches.
-| `!btpog sw delete <id>`                           | Delete a stopwatch. Valid id values: 0, 1, 2, ... 31, all
+| `!btpog sw delete <id>/all`                       | Delete a stopwatch. Valid id values: 0, 1, 2, ... 31, all
 | `!btpog sw precision 3`                           | Sets the amount of decimals after the dot for stopwatch times. Defaults to 2 (e.g. 8.63), but any value between 0 and 3 is valid.
-| `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the screen.
+| `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the console.
+| `!btpog sw toggle`                                | Turns on/off the display of the stopwatch times when you go over them.
+| `!btpog sw retriggerdelay 0.5`                    | How many seconds after having triggered a stopwatch, should it be triggerable again? The default value is set to 1.5, but any value between 0.2 and 10 is valid.
+| `!btpog sw texture`                               | Hide or show stopwatches.
+</details>
 
 ## Suicide Module
+<details>
+<summary>Click for more info</summary><p>
+
 Got loop movers in the map you want to rush? Use this in order to suicide at the right time, so that when you arrive at the mover, the mover is in the optimal location.
 
 >Not all BT maps are deterministic. Some of them have movers that are looping continuously. So when you try to rush such a map, it usually comes down to a matter of luck when you arrive at such a mover. The mover could be in an optimal position, or not. If not, you're losing valuable time.
@@ -109,9 +133,10 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v21.Main
+ServerActors=BTPog_v21.BTP_Main
 ServerPackages=BTPog_v21
 ```
+</details><p>
 
 # Configuration
 As a server admin you can configure which modules you want to be active on your server. Here's an example of a BTPog.ini file:

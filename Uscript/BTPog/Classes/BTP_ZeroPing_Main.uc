@@ -33,7 +33,7 @@ simulated function PreBeginPlay()
 
 function ExecuteCommand(string MutateString)
 {
-    switch(class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2))
+    switch(class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString))
 	{
 		case "debug":
 			ToggleIsDebugging();

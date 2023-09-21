@@ -58,11 +58,11 @@ function bool HasSelectedAtLeastOneMover()
 function ExecuteCommand(string MutateString)
 {
 	local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 2);
+    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
 
     if (Argument == "0" || int(Argument) != 0)
     {
-        ExecuteIndexCommand(int(Argument), MutateString);
+        ExecuteIndexCommand(int(Argument), class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
     }
     else if (Argument == "fire")
     {
@@ -93,7 +93,7 @@ function ExecutePrintCommand()
 function ExecuteIndexCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 3);
+    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
 
     if (Index < 0 || Index >= ArrayCount(MoverTrackers))
     {
@@ -103,15 +103,15 @@ function ExecuteIndexCommand(int Index, string MutateString)
 
     if (Argument == "select")
     {
-        ExecuteSelectCommand(Index, MutateString);
+        ExecuteSelectCommand(Index, class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
     }
     else if (Argument == "time")
     {
-        ExecuteTimeCommand(Index, MutateString);
+        ExecuteTimeCommand(Index, class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
     }
     else if (Argument == "alpha")
     {
-        ExecuteAlphaCommand(Index, MutateString);
+        ExecuteAlphaCommand(Index, class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
     }
     else
     {
@@ -122,7 +122,7 @@ function ExecuteIndexCommand(int Index, string MutateString)
 function ExecuteAlphaCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 4);
+    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
 
     if (MoverTrackers[Index] == None)
     {
@@ -158,7 +158,7 @@ function ExecuteFireCommand()
 function ExecuteTimeCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 4);
+    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
 
     if (MoverTrackers[Index] == None)
     {
@@ -172,7 +172,7 @@ function ExecuteTimeCommand(int Index, string MutateString)
 function ExecuteSelectCommand(int Index, string MutateString)
 {
     local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetArgument(MutateString, 4);
+    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
 
     if (Argument == "")
         CreateMoverTracker(Index, GetTargettedMover());
@@ -184,7 +184,6 @@ function CreateMoverTracker(int Index, Mover aMover)
 {
     if (MoverTrackers[Index] != None)
     {
-        MoverTrackers[Index].Destroy();
         MoverTrackers[Index] = None;
     }
 
@@ -194,7 +193,7 @@ function CreateMoverTracker(int Index, Mover aMover)
         return;
     }
 
-    MoverTrackers[Index] = Spawn(class'BTP_Suicide_MoverTracker', Owner);
+    MoverTrackers[Index] = new class'BTP_Suicide_MoverTracker';
     MoverTrackers[Index].Init(PlayerPawn, aMover);
     ClientMessage("Selected mover with name "$aMover.Name);
 }

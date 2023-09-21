@@ -1,4 +1,4 @@
-class BTP_CapLogger_Stats extends BTP_CapLogger_Abstract;
+class BTP_CapLogger_Stats extends Object dependson(BTP_CapLogger_Structs);
 
 var float Values[1024];
 var int Index;
@@ -13,9 +13,9 @@ function AddValue(float Value)
     Values[Index++] = Value;
 }
 
-function StatsAnalysis Analyze()
+function BTP_CapLogger_Structs.StatsAnalysis Analyze()
 {
-    local StatsAnalysis StatsAnalysis;
+    local BTP_CapLogger_Structs.StatsAnalysis StatsAnalysis;
 
     if (Index > 1) SortArray(0, Index - 1);
 

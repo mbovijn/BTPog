@@ -1,11 +1,11 @@
 class BTP_Misc_CapEventPublisher extends Info;
 
-var Main Subscriber;
-var BTP_Misc_ServerConfig BTP_Misc_ServerConfig;
+var BTP_Main Subscriber;
+var BTP_Misc_ServerConfig ServerConfig;
 
-function Init(Main aSubscriber, BTP_Misc_ServerConfig aBTP_Misc_ServerConfig)
+function Init(BTP_Main aSubscriber, BTP_Misc_ServerConfig aServerConfig)
 {
-    BTP_Misc_ServerConfig = aBTP_Misc_ServerConfig;
+    ServerConfig = aServerConfig;
     Subscriber = aSubscriber;
 
     SetupFlagBaseSubscriptions();
@@ -18,7 +18,7 @@ function SetupFlagBaseSubscriptions()
     SetEventIfNotExistsOnAllFlagBases();
     GetUniqueEventsFromAllFlagBases(Events);
 
-    SpawnBTP_Misc_CapEventPublisherHelpers(Events);
+    SpawnCapEventPublisherHelpers(Events);
 }
 
 function SetEventIfNotExistsOnAllFlagBases()
@@ -26,7 +26,7 @@ function SetEventIfNotExistsOnAllFlagBases()
     local FlagBase FlagBase;
     foreach AllActors(class'FlagBase', FlagBase)
     {
-        if (BTP_Misc_ServerConfig.IsDebugging) Log("FlagBase Event = "$FlagBase.Event);
+        if (ServerConfig.IsDebugging) Log("FlagBase Event = "$FlagBase.Event);
         if (FlagBase.Event == '') FlagBase.Event = 'BTPog';
     }
 }
@@ -47,13 +47,13 @@ function AddEventIfNotThereYet(name Event, out name Events[16])
     Events[i] = Event;
 }
 
-function SpawnBTP_Misc_CapEventPublisherHelpers(name Events[16]) {
+function SpawnCapEventPublisherHelpers(name Events[16]) {
     local int i;
     for (i = 0; i < ArrayCount(Events); i++)
     {
         if (Events[i] != '')
         {
-            if (BTP_Misc_ServerConfig.IsDebugging) Log("Spawning BTP_Misc_CapEventPublisherHelper with Event = "$Events[i]);
+            if (ServerConfig.IsDebugging) Log("Spawning BTP_Misc_CapEventPublisherHelper with Event = "$Events[i]);
             Spawn(class'BTP_Misc_CapEventPublisherHelper', Self, Events[i]);
         }
     }
