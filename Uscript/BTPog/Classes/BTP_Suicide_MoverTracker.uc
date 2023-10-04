@@ -88,5 +88,5 @@ function SetTimePoint(string OptionalTimePoint)
 
 function ClientMessage(string Message)
 {
-    PlayerPawn.ClientMessage("[BTPog] "$Message);
+    PlayerPawn.ClientMessage("[BTPog/Suicide] "$Message);
 }

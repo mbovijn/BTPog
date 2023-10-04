@@ -1,230 +1,84 @@
-class BTP_Suicide_Main extends Info;
+class BTP_Suicide_Main extends Info dependson(BTP_Suicide_Structs);
 
-var PlayerPawn PlayerPawn;
-var BTP_Suicide_MoverTracker MoverTrackers[4];
-var bool HasRequestedSuicide;
-var bool HasRequestedFire;
+var BTP_Suicide_ClientConfig ClientConfig; // CLIENT VARIABLE
 
-function PreBeginPlay()
+var BTP_Suicide_Controller RedController;
+var BTP_Suicide_Controller BlueController;
+
+replication
 {
-    PlayerPawn = PlayerPawn(Owner);
+	reliable if (Role < ROLE_Authority)
+		ReplicateMoverTrackerCollectionToServer;
+	reliable if (Role == ROLE_Authority)
+		ReplicateMoverTrackerCollectionToClient;
 }
 
-function Tick(float DeltaTime)
+simulated function PostNetBeginPlay()
 {
-    TickMoverTrackers(DeltaTime);
-
-    if ((HasRequestedSuicide || HasRequestedFire) && CanSuicide(DeltaTime))
+	local string MapName;
+    if (Role < ROLE_Authority)
     {
-        if (HasRequestedSuicide)
-        {
-            PlayerPawn.KilledBy(None);
-            HasRequestedSuicide = false;
-        }
-        else
-        {
-            PlayerPawn.Fire();
-            HasRequestedFire = false;
-        }
+        ClientConfig = class'BTP_Suicide_ClientConfig'.static.Create();
+		MapName = class'BTP_Misc_Utils'.static.GetMapName(Level);
+		
+        ReplicateMoverTrackerCollectionToServer(ClientConfig.GetMoverTrackerCollection(MapName, 0)); // RED side
+	    ReplicateMoverTrackerCollectionToServer(ClientConfig.GetMoverTrackerCollection(MapName, 1)); // BLUE side
     }
 }
 
-function TickMoverTrackers(float DeltaTime)
+function ReplicateMoverTrackerCollectionToServer(BTP_Suicide_Structs.MoverTrackerCollection MoverTrackerCollection)
 {
-    local int Index;
-    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
-        if (MoverTrackers[Index] != None)
-            MoverTrackers[Index].CustomTick(DeltaTime);
+	if (MoverTrackerCollection.Team == 0)
+	{
+		RedController = Spawn(class'BTP_Suicide_Controller', Owner);
+		RedController.Init(PlayerPawn(Owner), Self, MoverTrackerCollection);
+	}
+	else if (MoverTrackerCollection.Team == 1)
+	{
+		BlueController = Spawn(class'BTP_Suicide_Controller', Owner);
+		BlueController.Init(PlayerPawn(Owner), Self, MoverTrackerCollection);
+	}
+	else
+	{
+		Log("[BTPog/Suicide] Received MoverTrackerCollection with invalid team " $ MoverTrackerCollection.Team $ "from the client");
+	}
 }
 
-function bool CanSuicide(float DeltaTime)
+simulated function ReplicateMoverTrackerCollectionToClient(BTP_Suicide_Structs.MoverTrackerCollection MoverTrackerCollection)
 {
-    local int Index;
-    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
-        if (MoverTrackers[Index] != None && !MoverTrackers[Index].CanSuicide(DeltaTime))
-            return false;
-    return HasSelectedAtLeastOneMover();
+	ClientConfig.UpdateMoverTrackerCollection(MoverTrackerCollection);
 }
 
-function bool HasSelectedAtLeastOneMover()
+function BTP_Suicide_Controller GetController()
 {
-    local int Index;
-    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
-        if (MoverTrackers[Index] != None)
-            return true;
-    return false;
+	switch (PlayerPawn(Owner).PlayerReplicationInfo.Team)
+	{
+		case 0: return RedController;
+		case 1: return BlueController;
+		default: return None;
+	}
 }
 
-function ExecuteCommand(string MutateString)
+function ExecuteCommand(String MutateString)
 {
-	local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
+	local BTP_Suicide_Controller Controller;
 
-    if (Argument == "0" || int(Argument) != 0)
-    {
-        ExecuteIndexCommand(int(Argument), class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
-    }
-    else if (Argument == "fire")
-    {
-        ExecuteFireCommand();
-    }
-    else if (Argument == "suicide")
-    {
-        ExecuteSuicideCommand();
-    }
-    else if (Argument == "print")
-    {
-        ExecutePrintCommand();
-    }
-    else
-    {
-        ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
-    }
-}
+	Controller = GetController();
+	if (Controller == None)
+	{
+		ClientMessage("Please try again once initialization has finished");
+		return;
+	}
 
-function ExecutePrintCommand()
-{
-    local int Index;
-    for (Index = 0; Index < ArrayCount(MoverTrackers); Index++)
-        if (MoverTrackers[Index] != None)
-            MoverTrackers[Index].Print(Index);
-}
-
-function ExecuteIndexCommand(int Index, string MutateString)
-{
-    local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
-
-    if (Index < 0 || Index >= ArrayCount(MoverTrackers))
-    {
-        ClientMessage("Please specify an index between 0 and "$(ArrayCount(MoverTrackers) - 1));
-        return;
-    }
-
-    if (Argument == "select")
-    {
-        ExecuteSelectCommand(Index, class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
-    }
-    else if (Argument == "time")
-    {
-        ExecuteTimeCommand(Index, class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
-    }
-    else if (Argument == "alpha")
-    {
-        ExecuteAlphaCommand(Index, class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
-    }
-    else
-    {
-        ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
-    }
-}
-
-function ExecuteAlphaCommand(int Index, string MutateString)
-{
-    local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
-
-    if (MoverTrackers[Index] == None)
-    {
-        ClientMessage("First select a mover");
-        return;
-    }
-
-    MoverTrackers[Index].SetAlpha(float(Argument));
-}
-
-function ExecuteSuicideCommand()
-{
-    if (!HasSelectedAtLeastOneMover())
-    {
-        ClientMessage("First select a mover and configure a time point");
-        return;
-    }
-
-    HasRequestedSuicide = true;
-}
-
-function ExecuteFireCommand()
-{
-    if (!HasSelectedAtLeastOneMover())
-    {
-        ClientMessage("First select a mover and configure a time point");
-        return;
-    }
-
-    HasRequestedFire = true;
-}
-
-function ExecuteTimeCommand(int Index, string MutateString)
-{
-    local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
-
-    if (MoverTrackers[Index] == None)
-    {
-        ClientMessage("First select a mover");
-        return;
-    }
-
-    MoverTrackers[Index].SetTimePoint(Argument);
-}
-
-function ExecuteSelectCommand(int Index, string MutateString)
-{
-    local string Argument;
-    Argument = class'BTP_Misc_Utils'.static.GetFirstArgument(MutateString);
-
-    if (Argument == "")
-        CreateMoverTracker(Index, GetTargettedMover());
-    else
-        CreateMoverTracker(Index, GetMoverByName(Argument));
-}
-
-function CreateMoverTracker(int Index, Mover aMover)
-{
-    if (MoverTrackers[Index] != None)
-    {
-        MoverTrackers[Index] = None;
-    }
-
-    if (aMover == None)
-    {
-        ClientMessage("No mover found");
-        return;
-    }
-
-    MoverTrackers[Index] = new class'BTP_Suicide_MoverTracker';
-    MoverTrackers[Index].Init(PlayerPawn, aMover);
-    ClientMessage("Selected mover with name "$aMover.Name);
-}
-
-function Mover GetMoverByName(String Name)
-{
-    local Mover Mover;
-	foreach AllActors(Class'Mover', Mover)
-		if (string(Mover.Name) == Name) return Mover;
-    return None;
-}
-
-// Taken from https://github.com/bunnytrack/TriggerMover
-function Mover GetTargettedMover()
-{
-	local Actor HitActor;
-	local vector X, Y, Z, HitLocation, HitNormal, EndTrace, StartTrace;
-	local Mover HitMover;
-
-	GetAxes(PlayerPawn.ViewRotation, X, Y, Z);
-
-	StartTrace = PlayerPawn.Location + PlayerPawn.EyeHeight * vect(0, 0, 1);
-	EndTrace = StartTrace + X * 10000;
-
-	HitActor = Trace(HitLocation, HitNormal, EndTrace, StartTrace, false);
-	HitMover = Mover(HitActor);
-
-	return HitMover;
+	Controller.ExecuteCommand(MutateString);
 }
 
 function ClientMessage(string Message)
 {
-    PlayerPawn.ClientMessage("[BTPog] "$Message);
+    PlayerPawn(Owner).ClientMessage("[BTPog/Suicide] "$Message);
+}
+
+defaultproperties
+{
+	RemoteRole=ROLE_SimulatedProxy
 }

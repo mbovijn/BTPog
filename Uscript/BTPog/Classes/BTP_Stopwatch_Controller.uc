@@ -179,7 +179,7 @@ function Reset()
 	
 	BestCapTime = 0;
 
-	ClientMessage("Best times have been reset");
+	ClientMessage("Stopwatch times have been reset");
 
     Main.ReplicateStopwatchCollectionToClient(CreateStopwatchCollection());
 }

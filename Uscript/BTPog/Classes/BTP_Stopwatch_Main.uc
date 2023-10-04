@@ -19,6 +19,8 @@ replication
 		ReplicateConfigToClient, ReplicateStopwatchCollectionToClient;
 }
 
+// TODO - consider moving stopwatches to the client - on a server with a low tickrate times are inconsistent
+
 function ReplicateConfigToServer(BTP_Stopwatch_Structs.ClientConfigDto aClientConfigDto)
 {
 	ClientConfigDto = aClientConfigDto;
@@ -111,7 +113,7 @@ function ExecuteCommand(String MutateString)
 
 	if (Controller == None)
 	{
-		ClientMessage("Please wait until BTPog has initialized");
+		ClientMessage("Please try again once initialization has finished");
 		return;
 	}
 
@@ -222,7 +224,7 @@ function bool ExecutePrecisionCommand(string MutateString)
 	ClientConfigDto.PrecisionDecimals = int(Argument);
 	ReplicateConfigToClient(ClientConfigDto);
 	
-	ClientMessage("Configured the stopwatch precision to " $ ClientConfigDto.PrecisionDecimals $ " decimals");
+	ClientMessage("Configured stopwatch precision to " $ ClientConfigDto.PrecisionDecimals $ " decimals");
 	return True;
 }
 
@@ -231,7 +233,7 @@ function bool ExecuteToggleCommand()
 	ClientConfigDto.DisplayTimes = !ClientConfigDto.DisplayTimes;
 	ReplicateConfigToClient(ClientConfigDto);
 	
-	ClientMessage("Toggled on/off the display of stopwatch times");
+	ClientMessage("Toggled the display of stopwatch times");
 	return True;
 }
 
@@ -244,7 +246,7 @@ function bool ExecuteRetriggerDelayCommand(string MutateString)
 	ClientConfigDto.ReTriggerDelay = float(Argument);
 	ReplicateConfigToClient(ClientConfigDto);
 	
-	ClientMessage("Configured the retrigger delay to " $ ClientConfigDto.PrecisionDecimals $ " seconds");
+	ClientMessage("Configured retrigger delay to " $ ClientConfigDto.PrecisionDecimals $ " seconds");
 	return True;
 }
 

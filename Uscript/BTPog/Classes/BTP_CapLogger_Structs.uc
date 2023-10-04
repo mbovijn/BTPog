@@ -25,6 +25,7 @@ struct LogData
 	var StatsAnalysis DodgeAfterLanding;
 	var StatsAnalysis TimeBetweenDodges;
 	var StatsAnalysis KeyPressesBeforeDodge;
+	var StatsAnalysis KeyPressesAfterDodge;
 	var StatsAnalysis FPS;
 	var StatsAnalysis Ping;
 	var StatsMinMaxAnalysis Netspeed;
