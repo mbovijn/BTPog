@@ -4,7 +4,6 @@ struct ClientConfigDto {
     var int PrecisionDecimals;
     var float ReTriggerDelay;
     var bool DisplayTimes;
-    var bool DisplayTexture;
 };
 
 struct Stopwatch {

@@ -106,7 +106,7 @@ function CreateMoverTracker(int Index, Mover aMover)
 
     if (aMover == None)
     {
-        ClientMessage("Failed - No mover found");
+        ClientMessage("No mover found - cleared existing mover if set");
         return;
     }
 
@@ -193,7 +193,7 @@ function ExecuteIndexCommand(int Index, string MutateString)
     {
         ExecuteAlphaCommand(Index, class'BTP_Misc_Utils'.static.GetRemainingArguments(MutateString));
     }
-    else
+        else
     {
         ClientMessage("Invalid parameters specified. More info at https://github.com/mbovijn/BTPog");
     }

@@ -21,14 +21,6 @@ function Init(int aId, float aSpawnTimestamp, BTP_Stopwatch_Main aMain)
 	Id = aId;
 	SpawnTimestamp = aSpawnTimestamp;
 	Stopwatch_Main = aMain;
-
-	SetVisuals();
-}
-
-function SetVisuals()
-{
-	Mesh = LodMesh'Botpack.UTRingex';
-	bHidden = !Stopwatch_Main.ClientConfigDto.DisplayTexture;
 }
 
 function SetSpawnTimestamp(float aSpawnTimestamp)
@@ -142,21 +134,4 @@ defaultproperties
 {
 	CollisionRadius=60
 	CollisionHeight=30
-
-	AmbientGlow=64
-	bStatic=false
-	bUnlit=false
-	bCollideActors=true
-	bCollideWhenPlacing=false
-	bMeshEnviromap=false
-	LightBrightness=255
-	LightHue=191
-	LightSaturation=64
-	LightEffect=LE_Shock
-	LightRadius=0
-	LightType=LT_Steady
-	DrawType=DT_Mesh
-	Style=STY_Normal
-	DrawScale=1
-	bOnlyOwnerSee=True
 }

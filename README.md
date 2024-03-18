@@ -101,7 +101,6 @@ You could also set stopwatches when rushing in order to get quicker feedback on 
 | `!btpog sw print`                                 | Prints all configured stopwatches with parameters to the console.
 | `!btpog sw toggle`                                | Turns on/off the display of the stopwatch times when you go over them.
 | `!btpog sw retriggerdelay 0.5`                    | How many seconds after having triggered a stopwatch, should it be triggerable again? The default value is set to 1.5, but any value between 0.2 and 10 is valid.
-| `!btpog sw texture`                               | Hide or show stopwatches.
 </details>
 
 ## Suicide Module
@@ -113,7 +112,7 @@ Got loop movers in the map you want to rush? Use this in order to suicide at the
 >Not all BT maps are deterministic. Some of them have movers that are looping continuously. So when you try to rush such a map, it usually comes down to a matter of luck when you arrive at such a mover. The mover could be in an optimal position, or not. If not, you're losing valuable time.
 What rushers can do is, go to the mover, and suicide when the mover is in a particular position, such that when you respawn and rush the map, the mover is in the optimal location. This works, but it's annoying, since you repeat the whole process over and over again. This mutator is trying to address that by allowing you to queue up a suicide action, and only actually executing the suicide when the mover is in the configured location.
 
-Up to 4 movers can be selected. As such, when executing some commands, a slot/id needs to be specified. Values values are 0, 1, 2 and 3.
+Up to 4 movers can be selected. As such, when executing some commands, a slot/id needs to be specified. Valid values are 0, 1, 2 and 3.
 
 | Command                                            | Description
 | ---                                                | ---
@@ -125,7 +124,7 @@ Up to 4 movers can be selected. As such, when executing some commands, a slot/id
 | `!btpog suicide suicide`                           | Queue up a suicide action. The mutator will make you suicide you as soon as the movers are in the configured location.
 | `!btpog suicide print`                             | Prints all selected movers with parameters to the screen.
 
-For ease of use you could bind your suicide key to the suicide command e.g. `set input g mutate btpog suicide suicide`.
+For ease of use you could bind your suicide key to the suicide command e.g. `set input g mutate btpog suicide suicide`. To delete the selection of a mover, just aim at something that's not a mover, and execute the select command.
 
 # Installation
 1. Download the latest release from the [Releases page](https://github.com/mbovijn/BTPog/releases/).
@@ -133,8 +132,8 @@ For ease of use you could bind your suicide key to the suicide command e.g. `set
 3. Configure BTPog accordingly by editing `BTPog.ini`.
 4. Add the following lines under the `[Engine.GameEngine]` section in `UnrealTournament.ini`:
 ```
-ServerActors=BTPog_v22.BTP_Main
-ServerPackages=BTPog_v22
+ServerActors=BTPog_v23.BTP_Main
+ServerPackages=BTPog_v23
 ```
 </details><p>
 

@@ -53,7 +53,7 @@ static function BTP_Suicide_ClientConfig Create()
     local BTP_Suicide_ClientConfig ClientConfig;
 
 	Obj = new (none, 'BTPog_Suicide') class'Object';
-	ClientConfig = new (Obj, 'Stopwatch_ClientConfig') class'BTP_Suicide_ClientConfig';
+	ClientConfig = new (Obj, 'Suicide_ClientConfig') class'BTP_Suicide_ClientConfig';
 	ClientConfig.SaveConfig();
 
     return ClientConfig;

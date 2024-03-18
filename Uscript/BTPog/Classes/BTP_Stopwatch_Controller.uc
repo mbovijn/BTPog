@@ -94,15 +94,6 @@ function Print()
             Triggers[Index].Print();
 }
 
-function ToggleTexture(bool Hide)
-{
-    local int Index;
-
-	for (Index = 0; Index < ArrayCount(Triggers); Index++)
-        if (Triggers[Index] != None)
-            Triggers[Index].bHidden = Hide;
-}
-
 function CreateAtPlayerPosition(int Index)
 {
     CreateAt(Index, PlayerPawn.Location);

@@ -3,7 +3,6 @@ class BTP_Stopwatch_ClientConfig extends Object perobjectconfig dependson(BTP_St
 var config int PrecisionDecimals;
 var config float ReTriggerDelay;
 var config bool DisplayTimes;
-var config bool DisplayTexture;
 
 var config array<BTP_Stopwatch_Structs.StopwatchCollection> StopwatchCollections;
 
@@ -29,7 +28,6 @@ function BTP_Stopwatch_Structs.ClientConfigDto GetClientConfig()
     ClientConfigDto.PrecisionDecimals = PrecisionDecimals;
     ClientConfigDto.ReTriggerDelay = ReTriggerDelay;
     ClientConfigDto.DisplayTimes = DisplayTimes;
-    ClientConfigDto.DisplayTexture = DisplayTexture;
     
     return ClientConfigDto;
 }
@@ -86,7 +84,6 @@ function UpdateClientConfig(BTP_Stopwatch_Structs.ClientConfigDto aClientConfigD
     PrecisionDecimals = aClientConfigDto.PrecisionDecimals;
     ReTriggerDelay = aClientConfigDto.ReTriggerDelay;
     DisplayTimes = aClientConfigDto.DisplayTimes;
-    DisplayTexture = aClientConfigDto.DisplayTexture;
 
     SaveConfig();
 }
@@ -96,5 +93,4 @@ defaultproperties
     PrecisionDecimals=2
     ReTriggerDelay=1.5
     DisplayTimes=True
-    DisplayTexture=False
 }

@@ -171,10 +171,6 @@ function bool ExecuteCommandInternal(BTP_Stopwatch_Controller Controller, string
 	{
 		return ExecuteRetriggerDelayCommand(RemainingArguments);
 	}
-	else if (Argument == "texture")
-	{
-		return ExecuteTextureCommand();
-	}
 
 	return False;
 }
@@ -247,18 +243,6 @@ function bool ExecuteRetriggerDelayCommand(string MutateString)
 	ReplicateConfigToClient(ClientConfigDto);
 	
 	ClientMessage("Configured retrigger delay to " $ ClientConfigDto.PrecisionDecimals $ " seconds");
-	return True;
-}
-
-function bool ExecuteTextureCommand()
-{
-	ClientConfigDto.DisplayTexture = !ClientConfigDto.DisplayTexture;
-	ReplicateConfigToClient(ClientConfigDto);
-
-	RedController.ToggleTexture(!ClientConfigDto.DisplayTexture);
-	BlueController.ToggleTexture(!ClientConfigDto.DisplayTexture);
-	
-	ClientMessage("Set the display of stopwatch textures to " $ ClientConfigDto.DisplayTexture);
 	return True;
 }
 
